@@ -1,0 +1,25 @@
+-r requirements.txt
+
+# Development Tools
+ipython==8.19.0
+ipdb==0.13.13
+rich==13.7.0
+
+# Testing
+pytest-xdist==3.5.0
+pytest-timeout==2.2.0
+pytest-benchmark==4.0.0
+
+# Code Quality
+pre-commit==3.6.0
+coverage==7.4.0
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==2.0.0
+
+# Environment Management
+python-dotenv==1.0.0
+
+# Debugging
+debugpy==1.8.1
