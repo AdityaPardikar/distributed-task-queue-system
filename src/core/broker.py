@@ -1,9 +1,11 @@
 """Core broker for Redis operations"""
 
-from typing import Any, Optional
+import json
+from typing import Any, Dict, Optional, List
 
 from src.cache.client import RedisClient, get_redis_client
 from src.cache.keys import CacheKeys
+from src.core.serializer import get_serializer
 
 
 class TaskBroker:
@@ -12,33 +14,138 @@ class TaskBroker:
     def __init__(self, redis_client: RedisClient = None):
         """Initialize task broker"""
         self.redis = redis_client or get_redis_client()
+        self.serializer = get_serializer("json")
 
-    # Task queue operations
-    def enqueue_task(self, task_id: str, priority: str = "MEDIUM") -> bool:
-        """Add task to queue"""
-        key = CacheKeys.task_queue(priority)
+    # Task queue operations with priority
+    def enqueue_task(
+        self, 
+        task_id: str, 
+        priority: int = 5,
+        task_data: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """Add task to priority-based queue.
+        
+        Args:
+            task_id: Unique task identifier
+            priority: Priority level (1-10, where 10 is highest)
+            task_data: Optional task metadata to store
+            
+        Returns:
+            True if task was enqueued successfully
+        """
+        # Validate priority
+        if not 1 <= priority <= 10:
+            priority = 5  # Default to medium priority
+        
+        # Determine queue based on priority
+        if priority >= 8:
+            queue = "HIGH"
+        elif priority >= 4:
+            queue = "MEDIUM"
+        else:
+            queue = "LOW"
+        
+        key = CacheKeys.task_queue(queue)
+        
+        # Store task metadata if provided
+        if task_data:
+            self.set_task_metadata(task_id, task_data)
+        
+        # Add to queue
         return self.redis.rpush(key, task_id) > 0
 
-    def dequeue_task(self, priority: str = "MEDIUM", timeout: int = 5) -> Optional[str]:
-        """Get next task from queue"""
-        key = CacheKeys.task_queue(priority)
-        result = self.redis.blpop(key, timeout)
-        return result[1] if result else None
+    def dequeue_task(
+        self, 
+        priorities: Optional[List[str]] = None,
+        timeout: int = 5
+    ) -> Optional[str]:
+        """Get next task from queue, checking high priority first.
+        
+        Args:
+            priorities: List of priorities to check (default: ["HIGH", "MEDIUM", "LOW"])
+            timeout: Blocking timeout in seconds
+            
+        Returns:
+            Task ID or None if no tasks available
+        """
+        if priorities is None:
+            priorities = ["HIGH", "MEDIUM", "LOW"]
+        
+        # Try each priority queue in order
+        for priority in priorities:
+            key = CacheKeys.task_queue(priority)
+            result = self.redis.blpop(key, timeout=1)  # Short timeout for each queue
+            if result:
+                return result[1]
+        
+        return None
+
+    def get_task_metadata(self, task_id: str) -> Dict[str, Any]:
+        """Get task metadata from Redis.
+        
+        Args:
+            task_id: Task identifier
+            
+        Returns:
+            Task metadata dictionary
+        """
+        key = CacheKeys.task_meta(task_id)
+        data = self.redis.hgetall(key)
+        
+        # Deserialize JSON fields if needed
+        if data and "payload" in data:
+            try:
+                data["payload"] = json.loads(data["payload"])
+            except (json.JSONDecodeError, TypeError):
+                pass
+        
+        return data
+
+    def set_task_metadata(self, task_id: str, metadata: Dict[str, Any]) -> bool:
+        """Set task metadata in Redis.
+        
+        Args:
+            task_id: Task identifier
+            metadata: Dictionary of metadata to store
+            
+        Returns:
+            True if metadata was set successfully
+        """
+        key = CacheKeys.task_meta(task_id)
+        
+        # Serialize complex fields
+        processed_metadata = {}
+        for k, v in metadata.items():
+            if isinstance(v, (dict, list)):
+                processed_metadata[k] = json.dumps(v)
+            else:
+                processed_metadata[k] = str(v)
+        
+        return self.redis.hset(key, processed_metadata) > 0
+
+    def update_task_status(self, task_id: str, status: str, **extra_fields) -> bool:
+        """Update task status and optional extra fields.
+        
+        Args:
+            task_id: Task identifier
+            status: New status value
+            **extra_fields: Additional fields to update
+            
+        Returns:
+            True if status was updated successfully
+        """
+        key = CacheKeys.task_meta(task_id)
+        update_data = {"status": status}
+        update_data.update(extra_fields)
+        
+        # Convert values to strings
+        processed_data = {k: str(v) for k, v in update_data.items()}
+        
+        return self.redis.hset(key, processed_data) > 0
 
     def get_task_meta(self, task_id: str) -> dict:
-        """Get task metadata"""
-        key = CacheKeys.task_meta(task_id)
-        return self.redis.hgetall(key)
-
-    def set_task_meta(self, task_id: str, metadata: dict) -> bool:
-        """Set task metadata"""
-        key = CacheKeys.task_meta(task_id)
-        return self.redis.hset(key, metadata) > 0
-
-    def update_task_meta(self, task_id: str, field: str, value: Any) -> bool:
-        """Update task metadata field"""
-        key = CacheKeys.task_meta(task_id)
-        return self.redis.hset(key, {field: value}) > 0
+        """Get task metadata (alias for backward compatibility)"""
+        return self.get_task_metadata(task_id)
 
     def delete_task_meta(self, task_id: str) -> bool:
         """Delete task metadata"""
