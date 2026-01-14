@@ -1,6 +1,8 @@
 """Task routes"""
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+import json
+from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -13,9 +15,20 @@ from src.config.constants import MSG_TASK_CREATED, MSG_TASK_CANCELLED, TASK_STAT
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-@router.post("", response_model=TaskResponse, status_code=201)
+@router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 async def create_task(task: TaskCreate, db: Session = Depends(get_db)):
-    """Create a new task"""
+    """Create and enqueue a new task.
+    
+    Args:
+        task: Task creation request with name, priority, payload
+        db: Database session
+        
+    Returns:
+        Created task with ID and status
+        
+    Raises:
+        HTTPException: If task creation or enqueueing fails
+    """
     try:
         # Create task in database
         db_task = Task(
@@ -28,21 +41,56 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db)):
             scheduled_at=task.scheduled_at,
             parent_task_id=task.parent_task_id,
             campaign_id=task.campaign_id,
+            status=TASK_STATUS_PENDING,
         )
         db.add(db_task)
         db.commit()
         db.refresh(db_task)
 
         # Enqueue in Redis if not scheduled
+        broker = get_broker()
         if not task.scheduled_at:
-            broker = get_broker()
-            priority_name = "MEDIUM"  # Default priority name
-            broker.enqueue_task(str(db_task.task_id), priority_name)
+            # Store task metadata in Redis
+            task_metadata = {
+                "task_id": str(db_task.task_id),
+                "task_name": db_task.task_name,
+                "priority": db_task.priority,
+                "status": db_task.status,
+                "created_at": db_task.created_at.isoformat(),
+                "payload": json.dumps({
+                    "args": task.task_args,
+                    "kwargs": task.task_kwargs
+                })
+            }
+            
+            # Enqueue with priority
+            success = broker.enqueue_task(
+                task_id=str(db_task.task_id),
+                priority=task.priority,
+                task_data=task_metadata
+            )
+            
+            if not success:
+                db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to enqueue task to Redis"
+                )
+        else:
+            # Schedule for future execution
+            scheduled_timestamp = int(task.scheduled_at.timestamp())
+            broker.schedule_task(str(db_task.task_id), scheduled_timestamp)
 
         return TaskResponse.model_validate(db_task)
+        
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to create task: {str(e)}"
+        )
 
 
 @router.get("", response_model=TaskListResponse)

@@ -10,22 +10,45 @@ from pydantic import BaseModel, Field, field_validator
 class TaskCreate(BaseModel):
     """Schema for creating a task"""
 
-    task_name: str = Field(..., min_length=1, max_length=255, description="Task name")
-    task_args: List[Any] = Field(default=[], description="Task arguments")
+    task_name: str = Field(..., min_length=1, max_length=255, description="Task name/type")
+    task_args: List[Any] = Field(default=[], description="Task positional arguments")
     task_kwargs: Dict[str, Any] = Field(default={}, description="Task keyword arguments")
-    priority: int = Field(default=5, ge=1, le=10, description="Task priority (1-10)")
-    max_retries: int = Field(default=5, ge=0, le=10, description="Max retry attempts")
-    timeout_seconds: int = Field(default=300, ge=1, le=3600, description="Task timeout")
-    scheduled_at: Optional[datetime] = Field(None, description="Schedule time")
-    parent_task_id: Optional[UUID] = Field(None, description="Parent task ID")
-    campaign_id: Optional[UUID] = Field(None, description="Campaign ID")
+    priority: int = Field(default=5, ge=1, le=10, description="Task priority (1=lowest, 10=highest)")
+    max_retries: int = Field(default=5, ge=0, le=10, description="Maximum retry attempts")
+    timeout_seconds: int = Field(default=300, ge=1, le=3600, description="Task timeout in seconds")
+    scheduled_at: Optional[datetime] = Field(None, description="Scheduled execution time")
+    parent_task_id: Optional[UUID] = Field(None, description="Parent task ID for dependencies")
+    campaign_id: Optional[UUID] = Field(None, description="Campaign ID if part of campaign")
+
+    @field_validator('task_name')
+    @classmethod
+    def validate_task_name(cls, v: str) -> str:
+        """Validate task name format"""
+        if not v or not v.strip():
+            raise ValueError("Task name cannot be empty")
+        return v.strip()
+
+    @field_validator('task_kwargs')
+    @classmethod
+    def validate_task_kwargs(cls, v: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate task kwargs are JSON-serializable"""
+        # This is a basic check; actual serialization will be tested later
+        if not isinstance(v, dict):
+            raise ValueError("task_kwargs must be a dictionary")
+        return v
 
     class Config:
         json_schema_extra = {
             "example": {
                 "task_name": "send_email",
-                "task_kwargs": {"email": "user@example.com", "subject": "Hello"},
-                "priority": 5,
+                "task_kwargs": {
+                    "to": "user@example.com",
+                    "subject": "Welcome!",
+                    "body": "Hello and welcome!"
+                },
+                "priority": 8,
+                "max_retries": 3,
+                "timeout_seconds": 60
             }
         }
 
