@@ -186,29 +186,152 @@ async def get_worker_tasks(
     }
 
 
-@router.post("/{worker_id}/pause")
-async def pause_worker(worker_id: UUID, db: Session = Depends(get_db)):
-    """Pause a worker"""
+@router.patch("/{worker_id}/status", response_model=WorkerResponse)
+async def update_worker_status(
+    worker_id: UUID,
+    new_status: str = Query(..., regex="^(ACTIVE|DRAINING|OFFLINE)$"),
+    db: Session = Depends(get_db)
+):
+    """Update worker status.
+    
+    Status transitions:
+    - ACTIVE: Worker is actively accepting tasks
+    - DRAINING: Worker stops accepting new tasks but finishes existing ones
+    - OFFLINE: Worker is offline and all tasks should be reassigned
+    """
     worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
-
+    
     if not worker:
-        raise HTTPException(status_code=404, detail="Worker not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    try:
+        # Validate status transition
+        current_status = worker.status
+        valid_transitions = {
+            "ACTIVE": ["DRAINING", "OFFLINE"],
+            "DRAINING": ["OFFLINE", "ACTIVE"],
+            "OFFLINE": ["ACTIVE"]
+        }
+        
+        if new_status not in valid_transitions.get(current_status, []):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot transition from {current_status} to {new_status}"
+            )
+        
+        # If transitioning to DRAINING, no immediate action needed
+        # If transitioning to OFFLINE, reassign tasks
+        if new_status == "OFFLINE":
+            # Get all running/queued tasks for this worker
+            tasks = db.query(Task).filter(
+                Task.worker_id == worker_id,
+                Task.status.in_(["RUNNING", "QUEUED"])
+            ).all()
+            
+            broker = get_broker()
+            
+            # Reassign tasks back to queue
+            for task in tasks:
+                # Reset worker_id
+                task.worker_id = None
+                
+                # Requeue if it was running (mark as QUEUED with attempt counter)
+                if task.status == "RUNNING":
+                    if task.retry_count < task.max_retries:
+                        task.status = "QUEUED"
+                        task.retry_count += 1
+                        # Re-enqueue in Redis
+                        broker.enqueue_task(task)
+                    else:
+                        task.status = "FAILED"
+                        task.failed_at = datetime.utcnow()
+                        task.error_message = "Worker failed and max retries exceeded"
+                # If already QUEUED, leave as is (might already be queued)
+            
+            db.commit()
+        
+        # Update worker status
+        worker.status = new_status
+        worker.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(worker)
+        
+        # Update in Redis
+        broker = get_broker()
+        broker.redis.hset(
+            f"worker:{worker_id}",
+            "status",
+            new_status
+        )
+        
+        return WorkerResponse.model_validate(worker)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Status update failed: {str(e)}"
+        )
 
-    worker.status = "PAUSED"
-    db.commit()
 
-    return {"detail": "Worker paused", "worker_id": worker_id}
-
-
-@router.post("/{worker_id}/resume")
-async def resume_worker(worker_id: UUID, db: Session = Depends(get_db)):
-    """Resume a worker"""
+@router.delete("/{worker_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def deregister_worker(
+    worker_id: UUID,
+    reassign_tasks: bool = Query(True, description="Reassign running tasks to queue"),
+    db: Session = Depends(get_db)
+):
+    """Deregister a worker from the system.
+    
+    This gracefully removes a worker, optionally reassigning its tasks.
+    """
     worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
-
+    
     if not worker:
-        raise HTTPException(status_code=404, detail="Worker not found")
-
-    worker.status = "ACTIVE"
-    db.commit()
-
-    return {"detail": "Worker resumed", "worker_id": worker_id}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    try:
+        broker = get_broker()
+        
+        # Reassign tasks if requested
+        if reassign_tasks:
+            tasks = db.query(Task).filter(
+                Task.worker_id == worker_id,
+                Task.status.in_(["RUNNING", "QUEUED"])
+            ).all()
+            
+            for task in tasks:
+                task.worker_id = None
+                
+                if task.status == "RUNNING":
+                    if task.retry_count < task.max_retries:
+                        task.status = "QUEUED"
+                        task.retry_count += 1
+                        broker.enqueue_task(task)
+                    else:
+                        task.status = "FAILED"
+                        task.failed_at = datetime.utcnow()
+                        task.error_message = "Worker deregistered and max retries exceeded"
+        
+        # Remove from Redis
+        broker.deregister_worker(str(worker_id))
+        broker.redis.delete(f"worker:{worker_id}")
+        broker.redis.delete(f"worker:{worker_id}:tasks")
+        
+        # Delete from database
+        db.delete(worker)
+        db.commit()
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Deregistration failed: {str(e)}"
+        )
