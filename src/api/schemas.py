@@ -73,12 +73,28 @@ class TaskResponse(BaseModel):
 
 
 class TaskListResponse(BaseModel):
-    """Schema for task list response"""
+    """Schema for task list response with pagination"""
 
     items: List[TaskResponse]
     total: int
     page: int
     page_size: int
+    has_next: bool = False
+    has_previous: bool = False
+    total_pages: int = 1
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "items": [],
+                "total": 150,
+                "page": 1,
+                "page_size": 20,
+                "has_next": True,
+                "has_previous": False,
+                "total_pages": 8
+            }
+        }
 
 
 class WorkerResponse(BaseModel):

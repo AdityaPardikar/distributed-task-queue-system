@@ -95,25 +95,68 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db)):
 
 @router.get("", response_model=TaskListResponse)
 async def list_tasks(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
-    status: str = Query(None),
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page"),
+    status: str = Query(None, description="Filter by status"),
+    priority: int = Query(None, ge=1, le=10, description="Filter by priority"),
+    sort_by: str = Query("created_at", regex="^(created_at|priority|status)$", description="Sort field"),
+    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
     db: Session = Depends(get_db),
 ):
-    """List tasks with pagination"""
+    """List tasks with advanced filtering, pagination, and sorting.
+    
+    Query Parameters:
+    - page: Page number (default 1)
+    - page_size: Items per page (1-100, default 20)
+    - status: Filter by task status (PENDING, RUNNING, COMPLETED, FAILED, etc.)
+    - priority: Filter by priority level (1-10)
+    - sort_by: Sort by created_at, priority, or status
+    - sort_order: asc or desc (default desc)
+    
+    Returns:
+    - items: Array of tasks
+    - total: Total count of matching tasks
+    - page: Current page number
+    - page_size: Items per page
+    - has_next: Whether there are more pages
+    - has_previous: Whether there are previous pages
+    """
     query = db.query(Task)
-
+    
+    # Apply filters
     if status:
         query = query.filter(Task.status == status)
-
+    
+    if priority is not None:
+        query = query.filter(Task.priority == priority)
+    
+    # Count total before pagination
     total = query.count()
-    tasks = query.offset((page - 1) * page_size).limit(page_size).all()
-
+    
+    # Apply sorting
+    sort_column = getattr(Task, sort_by)
+    if sort_order == "asc":
+        query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(sort_column.desc())
+    
+    # Apply pagination
+    offset = (page - 1) * page_size
+    tasks = query.offset(offset).limit(page_size).all()
+    
+    # Calculate pagination info
+    has_next = (offset + page_size) < total
+    has_previous = page > 1
+    total_pages = (total + page_size - 1) // page_size
+    
     return TaskListResponse(
         items=[TaskResponse.model_validate(t) for t in tasks],
         total=total,
         page=page,
         page_size=page_size,
+        has_next=has_next,
+        has_previous=has_previous,
+        total_pages=total_pages,
     )
 
 
