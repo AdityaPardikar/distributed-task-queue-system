@@ -130,6 +130,24 @@ class TaskDetailResponse(TaskResponse):
         from_attributes = True
 
 
+class TaskUpdate(BaseModel):
+    """Schema for updating a task"""
+    
+    priority: Optional[int] = Field(None, ge=1, le=10, description="Update priority (1-10)")
+    timeout_seconds: Optional[int] = Field(None, ge=1, le=3600, description="Update timeout in seconds")
+    max_retries: Optional[int] = Field(None, ge=0, le=10, description="Update max retries")
+    task_kwargs: Optional[Dict[str, Any]] = Field(None, description="Update task arguments")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "priority": 8,
+                "timeout_seconds": 120,
+                "task_kwargs": {"email": "new@example.com"}
+            }
+        }
+
+
 class WorkerResponse(BaseModel):
     """Schema for worker response"""
 

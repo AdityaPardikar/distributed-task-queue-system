@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from uuid import UUID
 
-from src.api.schemas import TaskCreate, TaskListResponse, TaskResponse, TaskDetailResponse
+from src.api.schemas import TaskCreate, TaskListResponse, TaskResponse, TaskDetailResponse, TaskUpdate
 from src.db.session import get_db
 from src.models import Task
 from src.core.broker import get_broker
@@ -257,6 +257,92 @@ async def cancel_task(task_id: UUID, db: Session = Depends(get_db)):
         )
 
 
+
+@router.patch("/{task_id}", response_model=TaskResponse, status_code=status.HTTP_200_OK)
+async def update_task(
+    task_id: UUID,
+    task_update: TaskUpdate,
+    db: Session = Depends(get_db)
+):
+    """Update task properties.
+    
+    Allows partial updates of task attributes:
+    - priority: Change task priority (1-10)
+    - timeout_seconds: Update timeout duration
+    - max_retries: Change max retry attempts
+    - task_kwargs: Update task arguments/payload
+    
+    Only PENDING and QUEUED tasks can be updated.
+    
+    Args:
+        task_id: Task UUID
+        task_update: Fields to update
+        
+    Returns:
+        Updated task
+        
+    Raises:
+        HTTPException: If task not found or cannot be updated
+    """
+    task = db.query(Task).filter(Task.task_id == task_id).first()
+    
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found"
+        )
+    
+    # Only allow updates on non-terminal tasks
+    if task.status in ["COMPLETED", "FAILED", "CANCELLED", "TIMEOUT"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot update task in '{task.status}' state"
+        )
+    
+    if task.status == "RUNNING":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot update running task. Wait for completion or cancellation."
+        )
+    
+    try:
+        # Apply updates
+        if task_update.priority is not None:
+            task.priority = task_update.priority
+        
+        if task_update.timeout_seconds is not None:
+            task.timeout_seconds = task_update.timeout_seconds
+        
+        if task_update.max_retries is not None:
+            task.max_retries = task_update.max_retries
+        
+        if task_update.task_kwargs is not None:
+            task.task_kwargs = task_update.task_kwargs
+        
+        task.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(task)
+        
+        # Update Redis metadata
+        broker = get_broker()
+        broker.update_task_status(
+            str(task_id),
+            "status",
+            priority=task.priority,
+            timeout_seconds=task.timeout_seconds,
+            max_retries=task.max_retries
+        )
+        
+        return TaskResponse.model_validate(task)
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update task: {str(e)}"
+        )
+
+
 @router.post("/{task_id}/retry")
 async def retry_task(task_id: UUID, db: Session = Depends(get_db)):
     """Retry a task"""
@@ -275,3 +361,4 @@ async def retry_task(task_id: UUID, db: Session = Depends(get_db)):
     broker.enqueue_task(str(task_id), "MEDIUM")
 
     return {"detail": "Task queued for retry", "task_id": task_id}
+
