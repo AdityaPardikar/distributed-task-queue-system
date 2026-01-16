@@ -189,19 +189,72 @@ async def get_task(task_id: UUID, db: Session = Depends(get_db)):
     return TaskDetailResponse.model_validate(task)
 
 
-@router.delete("/{task_id}")
+@router.delete("/{task_id}", status_code=status.HTTP_200_OK)
 async def cancel_task(task_id: UUID, db: Session = Depends(get_db)):
-    """Cancel a task"""
+    """Cancel a pending or queued task.
+    
+    Only tasks in PENDING or QUEUED status can be cancelled.
+    Running tasks cannot be cancelled (must complete or timeout).
+    
+    Args:
+        task_id: Task UUID to cancel
+        
+    Returns:
+        Updated task status or error
+        
+    Raises:
+        HTTPException: If task not found or cannot be cancelled
+    """
     task = db.query(Task).filter(Task.task_id == task_id).first()
-
+    
     if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-
-    # Update task status
-    task.status = TASK_STATUS_CANCELLED
-    db.commit()
-
-    return {"detail": MSG_TASK_CANCELLED, "task_id": task_id}
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found"
+        )
+    
+    # Only allow cancellation of non-terminal tasks
+    if task.status in ["COMPLETED", "FAILED", "CANCELLED", "TIMEOUT"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Cannot cancel task with status '{task.status}'. Task is in terminal state."
+        )
+    
+    if task.status == "RUNNING":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot cancel running task. Task must complete or timeout."
+        )
+    
+    try:
+        # Update task status in database
+        task.status = "CANCELLED"
+        task.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(task)
+        
+        # Remove from Redis queue if present
+        broker = get_broker()
+        broker.redis.lrem("queue:HIGH", 0, str(task_id))
+        broker.redis.lrem("queue:MEDIUM", 0, str(task_id))
+        broker.redis.lrem("queue:LOW", 0, str(task_id))
+        
+        # Update Redis metadata
+        broker.update_task_status(str(task_id), "CANCELLED")
+        
+        return {
+            "status": "success",
+            "task_id": str(task_id),
+            "message": "Task cancelled successfully",
+            "task": TaskResponse.model_validate(task)
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to cancel task: {str(e)}"
+        )
 
 
 @router.post("/{task_id}/retry")
