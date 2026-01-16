@@ -97,6 +97,39 @@ class TaskListResponse(BaseModel):
         }
 
 
+class TaskExecutionInfo(BaseModel):
+    """Schema for task execution information"""
+    
+    execution_id: UUID
+    attempt_number: int
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    duration_seconds: Optional[float] = None
+    status: str
+    error_message: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+
+class TaskDetailResponse(TaskResponse):
+    """Extended schema for detailed task response"""
+    
+    task_args: List[Any] = []
+    task_kwargs: Dict[str, Any] = {}
+    worker_id: Optional[UUID] = None
+    parent_task_id: Optional[UUID] = None
+    campaign_id: Optional[UUID] = None
+    retry_count: int = 0
+    executions: List[TaskExecutionInfo] = []
+    result: Optional[Dict[str, Any]] = None
+    error_message: Optional[str] = None
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
 class WorkerResponse(BaseModel):
     """Schema for worker response"""
 

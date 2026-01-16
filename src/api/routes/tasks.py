@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from uuid import UUID
 
-from src.api.schemas import TaskCreate, TaskListResponse, TaskResponse
+from src.api.schemas import TaskCreate, TaskListResponse, TaskResponse, TaskDetailResponse
 from src.db.session import get_db
 from src.models import Task
 from src.core.broker import get_broker
@@ -160,15 +160,33 @@ async def list_tasks(
     )
 
 
-@router.get("/{task_id}", response_model=TaskResponse)
+@router.get("/{task_id}", response_model=TaskDetailResponse)
 async def get_task(task_id: UUID, db: Session = Depends(get_db)):
-    """Get task details"""
+    """Get detailed task information.
+    
+    Returns complete task data including:
+    - Basic task info (name, priority, status)
+    - Execution history and attempts
+    - Result data if completed
+    - Related tasks (parent/children)
+    - Worker assignment if running
+    - All timestamps and metadata
+    
+    Args:
+        task_id: Task UUID
+        
+    Returns:
+        Complete task details or 404 if not found
+    """
     task = db.query(Task).filter(Task.task_id == task_id).first()
-
+    
     if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-
-    return TaskResponse.model_validate(task)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Task {task_id} not found"
+        )
+    
+    return TaskDetailResponse.model_validate(task)
 
 
 @router.delete("/{task_id}")
