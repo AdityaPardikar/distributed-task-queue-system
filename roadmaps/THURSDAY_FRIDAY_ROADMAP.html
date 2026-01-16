@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thursday & Friday - Task Management & Worker APIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-xl p-8 mb-8 text-white">
+            <h1 class="text-4xl font-bold mb-2">📅 Thursday Jan 16 & Friday Jan 17, 2026</h1>
+            <p class="text-xl opacity-90">Task Management APIs & Worker Implementation - Commits 11-17</p>
+            <div class="mt-4 flex gap-4">
+                <span class="bg-white/20 px-4 py-2 rounded-full">Week 1 - Days 3-4</span>
+                <span class="bg-white/20 px-4 py-2 rounded-full">7 Commits</span>
+                <span class="bg-white/20 px-4 py-2 rounded-full">~400 Lines Added</span>
+            </div>
+        </div>
+
+        <!-- Overview Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-bold text-indigo-900 mb-3">📋 Thursday Focus</h3>
+                <ul class="text-sm text-gray-700 space-y-2">
+                    <li>✓ GET /tasks (list + filter)</li>
+                    <li>✓ GET /tasks/{id}</li>
+                    <li>✓ DELETE /tasks/{id}</li>
+                    <li>✓ PATCH /tasks/{id}</li>
+                </ul>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-bold text-purple-900 mb-3">👷 Friday Focus</h3>
+                <ul class="text-sm text-gray-700 space-y-2">
+                    <li>✓ Worker registration</li>
+                    <li>✓ Heartbeat tracking</li>
+                    <li>✓ Worker status mgmt</li>
+                    <li>✓ Integration tests</li>
+                </ul>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-bold text-green-900 mb-3">🎯 Outcomes</h3>
+                <ul class="text-sm text-gray-700 space-y-2">
+                    <li>✓ Full CRUD for tasks</li>
+                    <li>✓ Worker lifecycle</li>
+                    <li>✓ Status filtering</li>
+                    <li>✓ 90%+ test coverage</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Thursday Section -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-indigo-900 mb-6">Thursday: Task Management APIs (Commits 11-14)</h2>
+
+            <!-- Commit 11 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-blue-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 11: GET /tasks List Endpoint</h3>
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">API - Listing</span>
+                </div>
+                <div class="bg-blue-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-blue-900 mb-3">📋 Implementation</h4>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <p>✓ Implement paginated list endpoint with query parameters</p>
+                        <p>✓ Support filtering by: status, priority, created_at range</p>
+                        <p>✓ Sort by: created_at (default), priority, status</p>
+                        <p>✓ Pagination: page, page_size (max 100)</p>
+                        <p>✓ Return count, total, has_next, has_previous</p>
+                        <p>✓ Full integration with database queries</p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files:</strong> src/api/routes/tasks.py | src/api/schemas.py
+                </div>
+            </div>
+
+            <!-- Commit 12 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-cyan-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 12: GET /tasks/{id} Detail Endpoint</h3>
+                    <span class="bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full text-sm">API - Detail</span>
+                </div>
+                <div class="bg-cyan-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-cyan-900 mb-3">📋 Implementation</h4>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <p>✓ Endpoint returns complete task with all metadata</p>
+                        <p>✓ Include execution history (attempts, errors)</p>
+                        <p>✓ Include result data if available</p>
+                        <p>✓ Include parent/child task relationships</p>
+                        <p>✓ Include worker assignment if running</p>
+                        <p>✓ Proper 404 error for non-existent tasks</p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files:</strong> src/api/routes/tasks.py | Update TaskResponse schema
+                </div>
+            </div>
+
+            <!-- Commit 13 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-red-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 13: DELETE /tasks/{id} Cancellation</h3>
+                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm">API - Delete</span>
+                </div>
+                <div class="bg-red-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-red-900 mb-3">📋 Implementation</h4>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <p>✓ Cancel PENDING/QUEUED tasks only</p>
+                        <p>✓ Prevent cancellation of RUNNING tasks</p>
+                        <p>✓ Remove from Redis queue if present</p>
+                        <p>✓ Update status to CANCELLED in DB</p>
+                        <p>✓ Log cancellation event</p>
+                        <p>✓ Return updated task status</p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files:</strong> src/api/routes/tasks.py | src/core/broker.py (add remove method)
+                </div>
+            </div>
+
+            <!-- Commit 14 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-amber-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 14: PATCH /tasks/{id} Status Update</h3>
+                    <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm">API - Update</span>
+                </div>
+                <div class="bg-amber-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-amber-900 mb-3">📋 Implementation</h4>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <p>✓ Support partial updates (priority, timeout)</p>
+                        <p>✓ Validate status transitions</p>
+                        <p>✓ Update task_kwargs if provided</p>
+                        <p>✓ Update execution metadata</p>
+                        <p>✓ Log all changes</p>
+                        <p>✓ Return updated task</p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files:</strong> src/api/routes/tasks.py | Create TaskUpdate schema
+                </div>
+            </div>
+        </div>
+
+        <!-- Friday Section -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-purple-900 mb-6">Friday: Worker APIs (Commits 15-17)</h2>
+
+            <!-- Commit 15 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-green-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 15: Worker Registration & Heartbeat</h3>
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">Worker API</span>
+                </div>
+                <div class="bg-green-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-green-900 mb-3">📋 Implementation</h4>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <p>✓ POST /api/v1/workers - Register worker</p>
+                        <p>✓ POST /api/v1/workers/{id}/heartbeat - Heartbeat update</p>
+                        <p>✓ GET /api/v1/workers - List all workers</p>
+                        <p>✓ GET /api/v1/workers/{id} - Worker details</p>
+                        <p>✓ Track capacity, current load, uptime</p>
+                        <p>✓ Auto-expire inactive workers (> 30s no heartbeat)</p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files:</strong> src/api/routes/workers.py (new) | Update broker
+                </div>
+            </div>
+
+            <!-- Commit 16 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-teal-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 16: Worker Status Management</h3>
+                    <span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm">Worker Mgmt</span>
+                </div>
+                <div class="bg-teal-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-teal-900 mb-3">📋 Implementation</h4>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <p>✓ DELETE /api/v1/workers/{id} - Unregister worker</p>
+                        <p>✓ PATCH /api/v1/workers/{id} - Update worker status/capacity</p>
+                        <p>✓ Drain tasks before shutdown</p>
+                        <p>✓ Reassign tasks on worker failure</p>
+                        <p>✓ Worker status: ACTIVE, DRAINING, OFFLINE</p>
+                        <p>✓ Cleanup Redis entries on deregistration</p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files:</strong> src/api/routes/workers.py | src/core/broker.py
+                </div>
+            </div>
+
+            <!-- Commit 17 -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-indigo-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 17: Integration Tests & Validation</h3>
+                    <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">Testing</span>
+                </div>
+                <div class="bg-indigo-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-indigo-900 mb-3">📋 Implementation</h4>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <p>✓ Integration tests for task list, filter, sort</p>
+                        <p>✓ Task detail retrieval tests</p>
+                        <p>✓ Task cancellation workflow tests</p>
+                        <p>✓ Worker registration/deregistration tests</p>
+                        <p>✓ Heartbeat tracking tests</p>
+                        <p>✓ Error handling and edge cases</p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files:</strong> tests/integration/test_task_apis.py (new) |
+                    tests/integration/test_worker_apis.py (new)
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg shadow-xl p-6 text-white">
+            <h2 class="text-2xl font-bold mb-4">✅ End of Thu+Fri Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white/20 p-4 rounded">
+                    <div class="text-3xl font-bold">7</div>
+                    <div class="text-sm">Commits</div>
+                </div>
+                <div class="bg-white/20 p-4 rounded">
+                    <div class="text-3xl font-bold">10</div>
+                    <div class="text-sm">API Endpoints</div>
+                </div>
+                <div class="bg-white/20 p-4 rounded">
+                    <div class="text-3xl font-bold">400+</div>
+                    <div class="text-sm">Lines Added</div>
+                </div>
+                <div class="bg-white/20 p-4 rounded">
+                    <div class="text-3xl font-bold">100%</div>
+                    <div class="text-sm">CRUD Ready</div>
+                </div>
+            </div>
+            <p class="mt-4 text-sm opacity-90">🎉 Complete task and worker management system ready! Weekend: Testing &
+                final integration.</p>
+        </div>
+    </div>
+</body>
+
+</html>
