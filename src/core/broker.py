@@ -80,6 +80,18 @@ class TaskBroker:
         
         return None
 
+    def get_queue_length(self, priority: str = "MEDIUM") -> int:
+        """Get the current length of a priority queue.
+        
+        Args:
+            priority: Queue priority level ("HIGH", "MEDIUM", or "LOW")
+            
+        Returns:
+            Number of tasks in the specified queue
+        """
+        key = CacheKeys.task_queue(priority)
+        return self.redis.llen(key)
+
     def get_task_metadata(self, task_id: str) -> Dict[str, Any]:
         """Get task metadata from Redis.
         
