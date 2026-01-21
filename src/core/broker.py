@@ -250,6 +250,71 @@ class TaskBroker:
         key = CacheKeys.task_dependencies(parent_id)
         return self.redis.srem(key, child_id) > 0
 
+    # Dead letter queue operations
+    def move_to_dlq(self, task_id: str, failure_reason: str, task_data: Optional[Dict[str, Any]] = None) -> bool:
+        """Move a task to the dead letter queue.
+
+        Args:
+            task_id: Task identifier
+            failure_reason: Reason for failure
+            task_data: Optional metadata to persist
+
+        Returns:
+            True if task added to DLQ successfully
+        """
+        timestamp = int(self.redis.time()[0]) if hasattr(self.redis, "time") else 0
+        zset_key = CacheKeys.dlq_zset()
+        meta_key = CacheKeys.dlq_meta(task_id)
+
+        payload = {"failure_reason": failure_reason, "task_id": task_id, "timestamp": str(timestamp)}
+        if task_data:
+            payload.update(task_data)
+
+        # Store metadata in hash
+        self.redis.hset(meta_key, {k: json.dumps(v) if isinstance(v, (dict, list)) else str(v) for k, v in payload.items()})
+
+        # Add to sorted set for ordering
+        added = self.redis.zadd(zset_key, {task_id: timestamp})
+        return added > 0
+
+    def list_dlq(self, start: int = 0, stop: int = -1) -> List[Dict[str, Any]]:
+        """List DLQ tasks with metadata."""
+        zset_key = CacheKeys.dlq_zset()
+        task_ids = self.redis.zrange(zset_key, start, stop)
+
+        items = []
+        for tid in task_ids:
+            meta_key = CacheKeys.dlq_meta(tid)
+            meta = self.redis.hgetall(meta_key)
+            if meta:
+                # Deserialize JSON fields
+                if "task_data" in meta:
+                    try:
+                        meta["task_data"] = json.loads(meta["task_data"])
+                    except (TypeError, json.JSONDecodeError):
+                        pass
+                items.append({"task_id": tid, **meta})
+        return items
+
+    def remove_from_dlq(self, task_id: str) -> bool:
+        """Remove a task from DLQ (both zset and metadata)."""
+        zset_key = CacheKeys.dlq_zset()
+        meta_key = CacheKeys.dlq_meta(task_id)
+        self.redis.delete(meta_key)
+        removed = self.redis.zrem(zset_key, task_id)
+        return removed > 0
+
+    def get_dlq_meta(self, task_id: str) -> Dict[str, Any]:
+        """Get DLQ metadata for a task."""
+        meta_key = CacheKeys.dlq_meta(task_id)
+        meta = self.redis.hgetall(meta_key)
+        if meta and "task_data" in meta:
+            try:
+                meta["task_data"] = json.loads(meta["task_data"])
+            except (TypeError, json.JSONDecodeError):
+                pass
+        return meta
+
     # Task completion events
     def publish_task_completion(self, task_id: str, status: str) -> bool:
         """Publish task completion event"""

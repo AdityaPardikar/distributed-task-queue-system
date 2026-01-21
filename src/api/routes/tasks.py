@@ -10,6 +10,7 @@ from src.api.schemas import TaskCreate, TaskListResponse, TaskResponse, TaskDeta
 from src.db.session import get_db
 from src.models import Task
 from src.core.broker import get_broker
+from src.core.scheduler import get_scheduler
 from src.config.constants import MSG_TASK_CREATED, MSG_TASK_CANCELLED, TASK_STATUS_CANCELLED, TASK_STATUS_PENDING
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -39,6 +40,8 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db)):
             max_retries=task.max_retries,
             timeout_seconds=task.timeout_seconds,
             scheduled_at=task.scheduled_at,
+            cron_expression=task.cron_expression,
+            is_recurring=task.is_recurring,
             parent_task_id=task.parent_task_id,
             campaign_id=task.campaign_id,
             status=TASK_STATUS_PENDING,
@@ -49,7 +52,19 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db)):
 
         # Enqueue in Redis if not scheduled
         broker = get_broker()
-        if not task.scheduled_at:
+        if task.cron_expression:
+            scheduler = get_scheduler()
+            next_run = scheduler.get_next_run_time(task.cron_expression)
+            if not next_run:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid cron expression"
+                )
+            db_task.scheduled_at = next_run
+            db.commit()
+            scheduled_timestamp = int(next_run.timestamp())
+            broker.schedule_task(str(db_task.task_id), scheduled_timestamp)
+        elif not task.scheduled_at:
             # Store task metadata in Redis
             task_metadata = {
                 "task_id": str(db_task.task_id),
@@ -354,11 +369,73 @@ async def retry_task(task_id: UUID, db: Session = Depends(get_db)):
     # Reset task status
     task.status = TASK_STATUS_PENDING
     task.retry_count = 0
+    task.next_retry_at = None
     db.commit()
 
-    # Enqueue again
+    # Enqueue again with original priority
     broker = get_broker()
-    broker.enqueue_task(str(task_id), "MEDIUM")
+    broker.enqueue_task(str(task_id), priority=task.priority)
 
     return {"detail": "Task queued for retry", "task_id": task_id}
+
+    @router.get("/dlq", status_code=status.HTTP_200_OK)
+    async def list_dead_letter_tasks():
+        """List tasks in the dead letter queue."""
+        broker = get_broker()
+        items = broker.list_dlq()
+        return {"total": len(items), "items": items}
+
+    @router.post("/dlq/{task_id}/retry", response_model=TaskResponse)
+    async def retry_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
+        """Retry a task from the dead letter queue."""
+        broker = get_broker()
+        task = db.query(Task).filter(Task.task_id == task_id).first()
+
+        if not task:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
+        dlq_meta = broker.get_dlq_meta(str(task_id))
+        if not dlq_meta:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found in DLQ")
+
+        try:
+            # Reset task for retry
+            task.status = TASK_STATUS_PENDING
+            task.retry_count = 0
+            task.next_retry_at = None
+            task.updated_at = datetime.utcnow()
+            db.commit()
+            db.refresh(task)
+
+            # Remove from DLQ and enqueue
+            broker.remove_from_dlq(str(task_id))
+            broker.enqueue_task(str(task.task_id), priority=task.priority)
+
+            return TaskResponse.model_validate(task)
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Retry from DLQ failed: {str(e)}")
+
+    @router.post("/dlq/{task_id}/discard", status_code=status.HTTP_204_NO_CONTENT)
+    async def discard_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
+        """Discard a task from the dead letter queue."""
+        broker = get_broker()
+        task = db.query(Task).filter(Task.task_id == task_id).first()
+
+        if not task:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
+        dlq_meta = broker.get_dlq_meta(str(task_id))
+        if not dlq_meta:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found in DLQ")
+
+        try:
+            task.status = "FAILED"
+            task.updated_at = datetime.utcnow()
+            db.commit()
+            broker.remove_from_dlq(str(task_id))
+            return None
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Discard from DLQ failed: {str(e)}")
 
