@@ -34,6 +34,7 @@ class Task(Base):
     max_backoff_seconds: Mapped[int] = mapped_column(Integer, default=3600)
     next_retry_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     timeout_seconds: Mapped[int] = mapped_column(Integer, default=300)
+    depends_on: Mapped[list] = mapped_column(JSON, default=list)
     parent_task_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("tasks.task_id"))
     campaign_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("campaigns.campaign_id"))
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)

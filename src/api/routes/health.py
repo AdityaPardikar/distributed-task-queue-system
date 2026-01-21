@@ -1,13 +1,16 @@
 """Health check routes"""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, status
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from src.api.schemas import HealthResponse
 from src.cache.client import get_redis_client
 from src.config import get_settings
-from src.db.session import engine
+from src.db.session import engine, get_db
+from src.models import Worker
 
 router = APIRouter(tags=["health"])
 settings = get_settings()
@@ -20,20 +23,35 @@ async def health_check():
 
 
 @router.get("/ready", response_model=HealthResponse)
-async def readiness_check():
+async def readiness_check(db: Session = Depends(get_db)):
     """Readiness check - verify all services"""
+    errors = []
+    
+    # Check database
     try:
-        # Check database
-        with engine.connect() as conn:
-            conn.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
+    except Exception as e:
+        errors.append(f"Database: {str(e)}")
 
-        # Check Redis
+    # Check Redis
+    try:
         redis = get_redis_client()
         redis.ping()
-
-        return HealthResponse(status="ready", version=settings.VERSION, timestamp=datetime.utcnow())
     except Exception as e:
-        return HealthResponse(status="not_ready", version=settings.VERSION, timestamp=datetime.utcnow())
+        errors.append(f"Redis: {str(e)}")
+
+    if errors:
+        return HealthResponse(
+            status="not_ready",
+            version=settings.VERSION,
+            timestamp=datetime.utcnow()
+        )
+    
+    return HealthResponse(
+        status="ready",
+        version=settings.VERSION,
+        timestamp=datetime.utcnow()
+    )
 
 
 @router.get("/info")
@@ -44,4 +62,32 @@ async def info():
         "version": settings.VERSION,
         "environment": settings.APP_ENV,
         "debug": settings.DEBUG,
+    }
+
+
+@router.get("/workers/status")
+async def worker_health_status(db: Session = Depends(get_db)):
+    """Check worker health based on heartbeat timestamps."""
+    threshold = datetime.utcnow() - timedelta(seconds=settings.WORKER_DEAD_TIMEOUT_SECONDS)
+    
+    active_workers = db.query(Worker).filter(
+        Worker.status == "ACTIVE",
+        Worker.last_heartbeat >= threshold
+    ).count()
+    
+    stale_workers = db.query(Worker).filter(
+        Worker.status == "ACTIVE",
+        Worker.last_heartbeat < threshold
+    ).count()
+    
+    total_workers = db.query(Worker).count()
+    
+    health_status = "healthy" if stale_workers == 0 else "degraded"
+    
+    return {
+        "status": health_status,
+        "total_workers": total_workers,
+        "active_workers": active_workers,
+        "stale_workers": stale_workers,
+        "heartbeat_threshold_seconds": settings.WORKER_DEAD_TIMEOUT_SECONDS,
     }

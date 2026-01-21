@@ -92,6 +92,7 @@ class Settings(BaseSettings):
 
     # Observability
     TRACING_ENABLED: bool = False
+    TRACING_ENDPOINT: Optional[str] = None
     METRICS_ENABLED: bool = True
 
     # Feature Flags

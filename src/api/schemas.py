@@ -19,6 +19,7 @@ class TaskCreate(BaseModel):
     scheduled_at: Optional[datetime] = Field(None, description="Scheduled execution time")
     cron_expression: Optional[str] = Field(None, description="Cron expression for recurring tasks (e.g., '0 */6 * * *')")
     is_recurring: bool = Field(default=False, description="Whether this is a recurring task")
+    depends_on: List[UUID] = Field(default_factory=list, description="List of task IDs that must complete before this task runs")
     parent_task_id: Optional[UUID] = Field(None, description="Parent task ID for dependencies")
     campaign_id: Optional[UUID] = Field(None, description="Campaign ID if part of campaign")
 

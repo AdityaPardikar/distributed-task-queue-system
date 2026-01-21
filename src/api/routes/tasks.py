@@ -12,6 +12,7 @@ from src.models import Task
 from src.core.broker import get_broker
 from src.core.scheduler import get_scheduler
 from src.config.constants import MSG_TASK_CREATED, MSG_TASK_CANCELLED, TASK_STATUS_CANCELLED, TASK_STATUS_PENDING
+from src.monitoring import metrics as monitoring_metrics
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -42,6 +43,7 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db)):
             scheduled_at=task.scheduled_at,
             cron_expression=task.cron_expression,
             is_recurring=task.is_recurring,
+            depends_on=[str(dep) for dep in task.depends_on],
             parent_task_id=task.parent_task_id,
             campaign_id=task.campaign_id,
             status=TASK_STATUS_PENDING,
@@ -50,9 +52,16 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_task)
 
+        monitoring_metrics.record_task_submitted(db_task.task_name, db_task.priority)
+
         # Enqueue in Redis if not scheduled
         broker = get_broker()
-        if task.cron_expression:
+        if task.depends_on:
+            # Register dependencies but do not enqueue until resolved
+            broker = get_broker()
+            for dep in task.depends_on:
+                broker.add_task_dependency(str(dep), str(db_task.task_id))
+        elif task.cron_expression:
             scheduler = get_scheduler()
             next_run = scheduler.get_next_run_time(task.cron_expression)
             if not next_run:
@@ -248,6 +257,9 @@ async def cancel_task(task_id: UUID, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(task)
         
+        # Record cancellation as failure
+        monitoring_metrics.record_task_failed(task.task_name)
+        
         # Remove from Redis queue if present
         broker = get_broker()
         broker.redis.lrem("queue:HIGH", 0, str(task_id))
@@ -378,64 +390,117 @@ async def retry_task(task_id: UUID, db: Session = Depends(get_db)):
 
     return {"detail": "Task queued for retry", "task_id": task_id}
 
-    @router.get("/dlq", status_code=status.HTTP_200_OK)
-    async def list_dead_letter_tasks():
-        """List tasks in the dead letter queue."""
-        broker = get_broker()
-        items = broker.list_dlq()
-        return {"total": len(items), "items": items}
 
-    @router.post("/dlq/{task_id}/retry", response_model=TaskResponse)
-    async def retry_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
-        """Retry a task from the dead letter queue."""
-        broker = get_broker()
-        task = db.query(Task).filter(Task.task_id == task_id).first()
+@router.get("/dlq", status_code=status.HTTP_200_OK)
+async def list_dead_letter_tasks():
+    """List tasks in the dead letter queue."""
+    broker = get_broker()
+    items = broker.list_dlq()
+    return {"total": len(items), "items": items}
 
-        if not task:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
 
-        dlq_meta = broker.get_dlq_meta(str(task_id))
-        if not dlq_meta:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found in DLQ")
+@router.post("/dlq/{task_id}/retry", response_model=TaskResponse)
+async def retry_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
+    """Retry a task from the dead letter queue."""
+    broker = get_broker()
+    task = db.query(Task).filter(Task.task_id == task_id).first()
 
-        try:
-            # Reset task for retry
-            task.status = TASK_STATUS_PENDING
-            task.retry_count = 0
-            task.next_retry_at = None
-            task.updated_at = datetime.utcnow()
-            db.commit()
-            db.refresh(task)
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
 
-            # Remove from DLQ and enqueue
-            broker.remove_from_dlq(str(task_id))
-            broker.enqueue_task(str(task.task_id), priority=task.priority)
+    dlq_meta = broker.get_dlq_meta(str(task_id))
+    if not dlq_meta:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found in DLQ")
 
-            return TaskResponse.model_validate(task)
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Retry from DLQ failed: {str(e)}")
+    try:
+        # Reset task for retry
+        task.status = TASK_STATUS_PENDING
+        task.retry_count = 0
+        task.next_retry_at = None
+        task.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(task)
 
-    @router.post("/dlq/{task_id}/discard", status_code=status.HTTP_204_NO_CONTENT)
-    async def discard_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
-        """Discard a task from the dead letter queue."""
-        broker = get_broker()
-        task = db.query(Task).filter(Task.task_id == task_id).first()
+        # Remove from DLQ and enqueue
+        broker.remove_from_dlq(str(task_id))
+        broker.enqueue_task(str(task.task_id), priority=task.priority)
+        
+        # Re-submit metric
+        monitoring_metrics.record_task_submitted(task.task_name, task.priority)
 
-        if not task:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+        return TaskResponse.model_validate(task)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Retry from DLQ failed: {str(e)}")
 
-        dlq_meta = broker.get_dlq_meta(str(task_id))
-        if not dlq_meta:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found in DLQ")
 
-        try:
-            task.status = "FAILED"
-            task.updated_at = datetime.utcnow()
-            db.commit()
-            broker.remove_from_dlq(str(task_id))
-            return None
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Discard from DLQ failed: {str(e)}")
+@router.post("/dlq/{task_id}/discard", status_code=status.HTTP_204_NO_CONTENT)
+async def discard_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
+    """Discard a task from the dead letter queue."""
+    broker = get_broker()
+    task = db.query(Task).filter(Task.task_id == task_id).first()
+
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
+    dlq_meta = broker.get_dlq_meta(str(task_id))
+    if not dlq_meta:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found in DLQ")
+
+    try:
+        task.status = "FAILED"
+        task.updated_at = datetime.utcnow()
+        db.commit()
+        broker.remove_from_dlq(str(task_id))
+        return None
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Discard from DLQ failed: {str(e)}")
+
+
+@router.get("/{task_id}/dependencies", status_code=status.HTTP_200_OK)
+async def get_task_dependencies(task_id: UUID, db: Session = Depends(get_db)):
+    """Return dependency list for a task with their statuses."""
+    task = db.query(Task).filter(Task.task_id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+
+    dependencies = []
+    for dep_id in task.depends_on or []:
+        dep_task = db.query(Task).filter(Task.task_id == dep_id).first()
+        if dep_task:
+            dependencies.append({"task_id": str(dep_id), "status": dep_task.status})
+        else:
+            dependencies.append({"task_id": str(dep_id), "status": "UNKNOWN"})
+
+    return {
+        "task_id": str(task_id),
+        "total": len(dependencies),
+        "dependencies": dependencies,
+    }
+
+
+@router.get("/{task_id}/children", status_code=status.HTTP_200_OK)
+async def get_task_children(task_id: UUID, db: Session = Depends(get_db)):
+    """Return tasks that depend on the given task."""
+    # Find tasks where depends_on contains this task_id
+    children = [
+        child
+        for child in db.query(Task).all()
+        if str(task_id) in (child.depends_on or [])
+    ]
+
+    return {
+        "task_id": str(task_id),
+        "total": len(children),
+        "children": [
+            {
+                "task_id": str(child.task_id),
+                "task_name": child.task_name,
+                "status": child.status,
+                "priority": child.priority,
+            }
+            for child in children
+        ],
+    }
 
