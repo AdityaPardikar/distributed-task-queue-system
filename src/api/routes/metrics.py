@@ -1,16 +1,41 @@
 """Metrics routes"""
 
 from datetime import datetime
+from typing import List
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from src.api.schemas import MetricsResponse
 from src.db.session import get_db
 from src.models import Task, Worker
 from src.monitoring import metrics as monitoring_metrics
+from src.monitoring.worker_metrics import get_worker_metrics_tracker
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
+
+
+class WorkerMetrics(BaseModel):
+    """Schema for worker metrics response."""
+    worker_id: str
+    total_tasks: int
+    total_errors: int
+    avg_duration_seconds: float
+    error_rate: float
+    task_rate_per_minute: float
+    uptime_seconds: int
+    restart_count: int
+    last_heartbeat: str | None
+    last_update: str | None
+
+
+class WorkerComparison(BaseModel):
+    """Schema for worker comparison response."""
+    total_workers: int
+    aggregate: dict
+    best_performer: dict
+    slowest_worker: dict
 
 
 def _update_gauges(tasks_pending: int, workers: list[Worker]) -> None:
@@ -81,3 +106,72 @@ async def get_stats(db: Session = Depends(get_db)):
             "dead": db.query(Worker).filter(Worker.status == "DEAD").count(),
         },
     }
+
+
+@router.get("/workers/{worker_id}", response_model=WorkerMetrics)
+async def get_worker_metrics(worker_id: str):
+    """Get performance metrics for a specific worker."""
+    tracker = get_worker_metrics_tracker()
+    metrics = tracker.get_worker_metrics(worker_id)
+    
+    if not metrics:
+        return {
+            "worker_id": worker_id,
+            "total_tasks": 0,
+            "total_errors": 0,
+            "avg_duration_seconds": 0.0,
+            "error_rate": 0.0,
+            "task_rate_per_minute": 0.0,
+            "uptime_seconds": 0,
+            "restart_count": 0,
+            "last_heartbeat": None,
+            "last_update": None,
+        }
+    
+    return metrics
+
+
+@router.get("/workers", response_model=List[WorkerMetrics])
+async def get_all_workers_metrics():
+    """Get performance metrics for all workers."""
+    tracker = get_worker_metrics_tracker()
+    return tracker.get_all_workers_metrics()
+
+
+@router.get("/workers/compare", response_model=WorkerComparison)
+async def compare_workers():
+    """Compare performance across all workers."""
+    tracker = get_worker_metrics_tracker()
+    comparison = tracker.compare_workers()
+    
+    if not comparison:
+        return {
+            "total_workers": 0,
+            "aggregate": {
+                "total_tasks": 0,
+                "total_errors": 0,
+                "avg_duration_seconds": 0.0,
+                "avg_task_rate_per_minute": 0.0,
+            },
+            "best_performer": {
+                "worker_id": "N/A",
+                "task_rate_per_minute": 0.0,
+            },
+            "slowest_worker": {
+                "worker_id": "N/A",
+                "avg_duration_seconds": 0.0,
+            },
+        }
+    
+    return comparison
+
+
+@router.get("/workers/{worker_id}/history")
+async def get_worker_task_history(worker_id: str, limit: int = 100):
+    """Get recent task execution history for a worker."""
+    tracker = get_worker_metrics_tracker()
+    return {
+        "worker_id": worker_id,
+        "history": tracker.get_worker_task_history(worker_id, limit)
+    }
+

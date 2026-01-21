@@ -1,10 +1,13 @@
 """Worker service layer for business logic"""
 
-from sqlalchemy.orm import Session
-from src.models import Worker
-from uuid import UUID
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+from uuid import UUID
+
+from sqlalchemy.orm import Session
+
+from src.models import Worker
+from src.monitoring.worker_metrics import get_worker_metrics_tracker
 
 
 def register_worker(
@@ -22,6 +25,11 @@ def register_worker(
     db.add(worker)
     db.commit()
     db.refresh(worker)
+    
+    # Record worker start in metrics
+    tracker = get_worker_metrics_tracker()
+    tracker.record_worker_start(str(worker.worker_id))
+    
     return worker
 
 
@@ -37,6 +45,11 @@ def update_worker_heartbeat(db: Session, worker_id: UUID) -> Optional[Worker]:
         worker.last_heartbeat = datetime.utcnow()
         db.commit()
         db.refresh(worker)
+        
+        # Record heartbeat in metrics
+        tracker = get_worker_metrics_tracker()
+        tracker.record_heartbeat(str(worker_id))
+    
     return worker
 
 

@@ -18,6 +18,16 @@ from .metrics import (
     set_queue_depth,
     set_worker_capacity_utilization,
 )
+from .worker_metrics import (
+    WORKER_AVG_DURATION,
+    WORKER_ERROR_RATE,
+    WORKER_RESTART_COUNT,
+    WORKER_TASK_DURATION_HISTOGRAM,
+    WORKER_TASK_RATE,
+    WORKER_UPTIME,
+    WorkerMetricsTracker,
+    get_worker_metrics_tracker,
+)
 
 __all__ = [
     "ACTIVE_WORKERS",
@@ -26,6 +36,14 @@ __all__ = [
     "TASKS_FAILED",
     "TASKS_SUBMITTED",
     "WORKER_CAPACITY_UTILIZATION",
+    "WORKER_AVG_DURATION",
+    "WORKER_ERROR_RATE",
+    "WORKER_RESTART_COUNT",
+    "WORKER_TASK_DURATION_HISTOGRAM",
+    "WORKER_TASK_RATE",
+    "WORKER_UPTIME",
+    "WorkerMetricsTracker",
+    "get_worker_metrics_tracker",
     "observe_http_request",
     "observe_task_duration",
     "observe_task_wait",
