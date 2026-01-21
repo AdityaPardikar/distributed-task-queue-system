@@ -215,3 +215,26 @@ class DeadLetterQueue(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (Index("idx_dlq_task_id", "task_id"),)
+
+
+class Alert(Base):
+    """System alerts for threshold violations."""
+
+    __tablename__ = "alerts"
+
+    alert_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    alert_type: Mapped[str] = mapped_column(String(100))
+    severity: Mapped[str] = mapped_column(String(50))
+    description: Mapped[str] = mapped_column(Text)
+    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    acknowledged: Mapped[bool] = mapped_column(Integer, default=False)
+    acknowledged_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    acknowledged_by: Mapped[Optional[str]] = mapped_column(String(255))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("idx_alert_type", "alert_type"),
+        Index("idx_alert_severity", "severity"),
+        Index("idx_alert_acknowledged", "acknowledged"),
+        Index("idx_alert_created_at", "created_at"),
+    )
