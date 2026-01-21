@@ -17,6 +17,8 @@ class TaskCreate(BaseModel):
     max_retries: int = Field(default=5, ge=0, le=10, description="Maximum retry attempts")
     timeout_seconds: int = Field(default=300, ge=1, le=3600, description="Task timeout in seconds")
     scheduled_at: Optional[datetime] = Field(None, description="Scheduled execution time")
+    cron_expression: Optional[str] = Field(None, description="Cron expression for recurring tasks (e.g., '0 */6 * * *')")
+    is_recurring: bool = Field(default=False, description="Whether this is a recurring task")
     parent_task_id: Optional[UUID] = Field(None, description="Parent task ID for dependencies")
     campaign_id: Optional[UUID] = Field(None, description="Campaign ID if part of campaign")
 
@@ -27,6 +29,18 @@ class TaskCreate(BaseModel):
         if not v or not v.strip():
             raise ValueError("Task name cannot be empty")
         return v.strip()
+    
+    @field_validator('cron_expression')
+    @classmethod
+    def validate_cron_expression(cls, v: Optional[str]) -> Optional[str]:
+        """Validate cron expression format"""
+        if v:
+            from croniter import croniter
+            try:
+                croniter(v)
+            except Exception:
+                raise ValueError(f"Invalid cron expression: {v}")
+        return v
 
     @field_validator('task_kwargs')
     @classmethod

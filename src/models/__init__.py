@@ -33,6 +33,8 @@ class Task(Base):
     parent_task_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("tasks.task_id"))
     campaign_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("campaigns.campaign_id"))
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    cron_expression: Mapped[Optional[str]] = mapped_column(String(100))
+    is_recurring: Mapped[bool] = mapped_column(Integer, default=False)
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     worker_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("workers.worker_id"))
