@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -9,6 +10,7 @@ from src.api.schemas import WorkerListResponse, WorkerResponse
 from src.db.session import get_db
 from src.models import Worker, Task
 from src.core.broker import get_broker
+from src.core.worker_controller import get_worker_controller, WorkerState
 
 router = APIRouter(prefix="/workers", tags=["workers"])
 
@@ -335,3 +337,276 @@ async def deregister_worker(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Deregistration failed: {str(e)}"
         )
+
+
+# Admin Control Endpoints
+
+class CapacityUpdateRequest(BaseModel):
+    """Request to update worker capacity."""
+    capacity: int
+
+class TimeoutUpdateRequest(BaseModel):
+    """Request to update worker timeout."""
+    timeout_seconds: int
+
+class WorkerStatusResponse(BaseModel):
+    """Worker status response."""
+    worker_id: str
+    hostname: str
+    status: str
+    capacity: int
+    current_load: int
+    current_tasks: int
+    last_heartbeat: str | None
+    created_at: str | None
+    is_draining: bool
+    config: dict
+
+
+@router.patch("/{worker_id}/pause", status_code=status.HTTP_200_OK)
+async def pause_worker(
+    worker_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """Pause a worker (no new tasks assigned).
+    
+    A paused worker will not accept new task assignments but may
+    continue processing tasks already in progress.
+    
+    Args:
+        worker_id: Worker ID
+        
+    Returns:
+        Success message
+    """
+    controller = get_worker_controller()
+    
+    if not controller.pause_worker(db, str(worker_id)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    return {"status": "paused", "worker_id": str(worker_id)}
+
+
+@router.patch("/{worker_id}/resume", status_code=status.HTTP_200_OK)
+async def resume_worker(
+    worker_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """Resume a paused worker.
+    
+    A resumed worker can accept new task assignments.
+    
+    Args:
+        worker_id: Worker ID
+        
+    Returns:
+        Success message
+    """
+    controller = get_worker_controller()
+    
+    if not controller.resume_worker(db, str(worker_id)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    return {"status": "resumed", "worker_id": str(worker_id)}
+
+
+@router.post("/{worker_id}/drain", status_code=status.HTTP_200_OK)
+async def drain_worker(
+    worker_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """Drain a worker: finish current tasks then shutdown.
+    
+    Initiates graceful shutdown. The worker stops accepting new tasks
+    but completes all work currently in progress before terminating.
+    
+    Args:
+        worker_id: Worker ID
+        
+    Returns:
+        Drain status
+    """
+    controller = get_worker_controller()
+    
+    if not controller.drain_worker(db, str(worker_id)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    return {"status": "draining", "worker_id": str(worker_id)}
+
+
+@router.patch("/{worker_id}/capacity", status_code=status.HTTP_200_OK)
+async def update_capacity(
+    worker_id: UUID,
+    request: CapacityUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    """Update worker task capacity.
+    
+    Changes the maximum number of concurrent tasks a worker can handle.
+    
+    Args:
+        worker_id: Worker ID
+        request: New capacity value
+        
+    Returns:
+        Updated capacity
+    """
+    if request.capacity < 1 or request.capacity > 100:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Capacity must be between 1 and 100"
+        )
+    
+    controller = get_worker_controller()
+    
+    if not controller.update_worker_capacity(db, str(worker_id), request.capacity):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    return {"worker_id": str(worker_id), "capacity": request.capacity}
+
+
+@router.patch("/{worker_id}/timeout", status_code=status.HTTP_200_OK)
+async def update_timeout(
+    worker_id: UUID,
+    request: TimeoutUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    """Update worker task timeout.
+    
+    Sets the maximum execution time for tasks on this worker.
+    
+    Args:
+        worker_id: Worker ID
+        request: New timeout in seconds
+        
+    Returns:
+        Updated timeout
+    """
+    if request.timeout_seconds < 1:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Timeout must be at least 1 second"
+        )
+    
+    controller = get_worker_controller()
+    
+    if not controller.update_worker_timeout(db, str(worker_id), request.timeout_seconds):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    return {"worker_id": str(worker_id), "timeout_seconds": request.timeout_seconds}
+
+
+@router.get("/{worker_id}/status", response_model=WorkerStatusResponse, status_code=status.HTTP_200_OK)
+async def get_status(
+    worker_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """Get detailed worker status.
+    
+    Returns comprehensive status including current tasks, configuration,
+    and operational state.
+    
+    Args:
+        worker_id: Worker ID
+        
+    Returns:
+        Detailed worker status
+    """
+    controller = get_worker_controller()
+    status_data = controller.get_worker_status(db, str(worker_id))
+    
+    if not status_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    return status_data
+
+
+@router.get("/status/all", response_model=list[WorkerStatusResponse], status_code=status.HTTP_200_OK)
+async def get_all_status(
+    db: Session = Depends(get_db),
+):
+    """Get status for all workers.
+    
+    Returns a list of detailed status for all registered workers.
+    
+    Returns:
+        List of worker statuses
+    """
+    controller = get_worker_controller()
+    return controller.get_all_workers_status(db)
+
+
+@router.get("/{worker_id}/history", status_code=status.HTTP_200_OK)
+async def get_task_history(
+    worker_id: UUID,
+    limit: int = Query(100, ge=1, le=1000),
+    db: Session = Depends(get_db),
+):
+    """Get task execution history for a worker.
+    
+    Returns recent tasks executed by this worker.
+    
+    Args:
+        worker_id: Worker ID
+        limit: Maximum number of task records
+        
+    Returns:
+        List of recent task executions
+    """
+    controller = get_worker_controller()
+    
+    worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
+    if not worker:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    history = controller.get_worker_task_history(db, str(worker_id), limit)
+    
+    return {"worker_id": str(worker_id), "task_count": len(history), "tasks": history}
+
+
+@router.delete("/{worker_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def terminate_worker(
+    worker_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """Terminate a worker (administrative).
+    
+    Marks worker as DEAD. This is an administrative action that
+    should be used when a worker is unrecoverable.
+    
+    Args:
+        worker_id: Worker ID
+        
+    Returns:
+        No content
+    """
+    controller = get_worker_controller()
+    
+    if not controller.terminate_worker(db, str(worker_id)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Worker {worker_id} not found"
+        )
+    
+    return None
