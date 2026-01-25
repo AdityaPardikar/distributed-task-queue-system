@@ -1,46 +1,23 @@
-"""Docker Compose for local development - PostgreSQL + Redis"""
+# Docker Compose - Local Development Configuration
+# This is a reference to the actual file in deployment/docker/
+# Use: docker-compose -f deployment/docker/docker-compose.dev.yml up
 
-version: '3.9'
+# For local development setup with just PostgreSQL + Redis:
+# docker-compose -f deployment/docker/docker-compose.dev.yml up -d
+
+# For full stack with monitoring:
+# docker-compose -f deployment/docker/docker-compose.prod.yml up -d
+
+# Or use the Makefile:
+# make docker-up-dev    (starts development stack)
+# make docker-up-prod   (starts production stack)
+# make docker-down      (stops all containers)
+
+version: "3.9"
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: taskflow_postgres
-    environment:
-      POSTGRES_USER: taskflow
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: taskflow
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U taskflow"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - taskflow-network
-
-  redis:
-    image: redis:7-alpine
-    container_name: taskflow_redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - taskflow-network
-
-volumes:
-  postgres_data:
-  redis_data:
-
-networks:
-  taskflow-network:
-    driver: bridge
+  # Redirect to development compose file
+  # See: deployment/docker/docker-compose.dev.yml
+  note:
+    image: alpine:latest
+    command: echo "Please use deployment/docker/docker-compose.dev.yml for local development"
