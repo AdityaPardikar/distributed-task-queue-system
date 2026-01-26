@@ -177,6 +177,8 @@ class Campaign(Base):
     # Relationships
     tasks: Mapped[list["Task"]] = relationship("Task", back_populates="campaign")
     recipients: Mapped[list["EmailRecipient"]] = relationship("EmailRecipient", back_populates="campaign")
+    campaign_tasks: Mapped[list["CampaignTask"]] = relationship("CampaignTask", back_populates="campaign")
+    email_templates: Mapped[list["EmailTemplate"]] = relationship("EmailTemplate", back_populates="campaign")
 
 
 class EmailRecipient(Base):
@@ -199,6 +201,48 @@ class EmailRecipient(Base):
 
     # Relationships
     campaign: Mapped["Campaign"] = relationship("Campaign", back_populates="recipients")
+
+
+class EmailTemplate(Base):
+    """Reusable email template for campaigns."""
+
+    __tablename__ = "email_templates"
+
+    email_template_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    name: Mapped[str] = mapped_column(String(255))
+    subject: Mapped[str] = mapped_column(String(255))
+    body: Mapped[str] = mapped_column(Text)
+    variables: Mapped[dict] = mapped_column(JSON, default=dict)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    campaign_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("campaigns.campaign_id"))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("idx_email_templates_campaign", "campaign_id"),
+        Index("idx_email_templates_name", "name"),
+    )
+
+    campaign: Mapped[Optional["Campaign"]] = relationship("Campaign", back_populates="email_templates")
+
+
+class CampaignTask(Base):
+    """Links campaigns to tasks for tracking."""
+
+    __tablename__ = "campaign_tasks"
+
+    campaign_task_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    campaign_id: Mapped[str] = mapped_column(UUID, ForeignKey("campaigns.campaign_id"))
+    task_id: Mapped[str] = mapped_column(UUID, ForeignKey("tasks.task_id"))
+    status: Mapped[str] = mapped_column(String(50), default="PENDING")
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("idx_campaign_task_campaign", "campaign_id"),
+        Index("idx_campaign_task_task", "task_id"),
+    )
+
+    campaign: Mapped["Campaign"] = relationship("Campaign", back_populates="campaign_tasks")
+    task: Mapped["Task"] = relationship("Task")
 
 
 class DeadLetterQueue(Base):

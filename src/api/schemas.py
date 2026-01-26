@@ -191,7 +191,7 @@ class CampaignCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     template_subject: str = Field(..., min_length=1, max_length=255)
     template_body: str = Field(...)
-    template_variables: Dict[str, Any] = Field(default={})
+    template_variables: Dict[str, Any] = Field(default_factory=dict)
     rate_limit_per_minute: int = Field(default=100, ge=1, le=1000)
     scheduled_at: Optional[datetime] = None
 
@@ -201,7 +201,29 @@ class CampaignCreate(BaseModel):
                 "name": "Welcome Campaign",
                 "template_subject": "Welcome {{name}}!",
                 "template_body": "Hello {{name}}, welcome to our service.",
-                "template_variables": ["name"],
+                "template_variables": {"name": "John"},
+            }
+        }
+
+
+class CampaignUpdate(BaseModel):
+    """Schema for updating a campaign"""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    template_subject: Optional[str] = Field(None, min_length=1, max_length=255)
+    template_body: Optional[str] = None
+    template_variables: Optional[Dict[str, Any]] = None
+    status: Optional[str] = Field(None, description="Campaign status")
+    rate_limit_per_minute: Optional[int] = Field(None, ge=1, le=1000)
+    scheduled_at: Optional[datetime] = None
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "Welcome Campaign v2",
+                "template_subject": "Updated subject",
+                "status": "SCHEDULED",
+                "rate_limit_per_minute": 200,
             }
         }
 
@@ -212,6 +234,10 @@ class CampaignResponse(BaseModel):
     campaign_id: UUID
     name: str
     status: str
+    template_subject: Optional[str] = None
+    template_body: Optional[str] = None
+    template_variables: Dict[str, Any] = Field(default_factory=dict)
+    rate_limit_per_minute: Optional[int] = None
     total_recipients: int
     sent_count: int
     failed_count: int

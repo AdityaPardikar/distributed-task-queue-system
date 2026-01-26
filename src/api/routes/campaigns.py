@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from uuid import UUID
 
-from src.api.schemas import CampaignCreate, CampaignListResponse, CampaignResponse
+from src.api.schemas import CampaignCreate, CampaignListResponse, CampaignResponse, CampaignUpdate
 from src.db.session import get_db
 from src.models import Campaign
 
@@ -19,7 +19,7 @@ async def create_campaign(campaign: CampaignCreate, db: Session = Depends(get_db
             name=campaign.name,
             template_subject=campaign.template_subject,
             template_body=campaign.template_body,
-            template_variables=campaign.template_variables,
+            template_variables=campaign.template_variables or {},
             rate_limit_per_minute=campaign.rate_limit_per_minute,
             scheduled_at=campaign.scheduled_at,
             created_by=None,  # Will be set from JWT in production
@@ -65,6 +65,34 @@ async def get_campaign(campaign_id: UUID, db: Session = Depends(get_db)):
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
+    return CampaignResponse.model_validate(campaign)
+
+
+@router.patch("/{campaign_id}", response_model=CampaignResponse)
+async def update_campaign(campaign_id: UUID, payload: CampaignUpdate, db: Session = Depends(get_db)):
+    """Update an existing campaign"""
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if payload.name is not None:
+        campaign.name = payload.name
+    if payload.template_subject is not None:
+        campaign.template_subject = payload.template_subject
+    if payload.template_body is not None:
+        campaign.template_body = payload.template_body
+    if payload.template_variables is not None:
+        campaign.template_variables = payload.template_variables
+    if payload.status is not None:
+        campaign.status = payload.status
+    if payload.rate_limit_per_minute is not None:
+        campaign.rate_limit_per_minute = payload.rate_limit_per_minute
+    if payload.scheduled_at is not None:
+        campaign.scheduled_at = payload.scheduled_at
+
+    db.commit()
+    db.refresh(campaign)
     return CampaignResponse.model_validate(campaign)
 
 

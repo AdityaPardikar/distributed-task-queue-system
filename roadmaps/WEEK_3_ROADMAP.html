@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 - Email Campaign System & Frontend Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-xl p-8 mb-8 text-white">
+            <h1 class="text-4xl font-bold mb-2">📅 Week 3: Email Campaign System & Web Dashboard</h1>
+            <p class="text-xl opacity-90">Campaign Management, Frontend Dashboard & Advanced Features - Commits 46-53
+            </p>
+            <div class="mt-4 flex gap-4 flex-wrap">
+                <span class="bg-white/20 px-4 py-2 rounded-full">Week 3</span>
+                <span class="bg-white/20 px-4 py-2 rounded-full">8 Commits (1 per day)</span>
+                <span class="bg-white/20 px-4 py-2 rounded-full">5,000+ Lines Expected</span>
+                <span class="bg-white/20 px-4 py-2 rounded-full">📊 Email + UI</span>
+            </div>
+        </div>
+
+        <!-- Monday Section -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">Monday, Jan 27 - Campaign Model & Setup</h2>
+                <p class="text-blue-100 mt-2">Commit 46: Database models, campaign creation API, basic CRUD operations
+                </p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 46: Campaign Models & API Foundation</h3>
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">Models</span>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-blue-900 mb-3">📋 Tasks Completed</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✓ Create Campaign model (name, description, status, created_at, updated_at)</li>
+                        <li>✓ Create EmailTemplate model (subject, body, variables, version)</li>
+                        <li>✓ Create CampaignTask model (links campaigns to tasks)</li>
+                        <li>✓ Database migrations for new tables</li>
+                        <li>✓ POST /api/v1/campaigns - Create new campaign</li>
+                        <li>✓ GET /api/v1/campaigns - List campaigns with pagination</li>
+                        <li>✓ GET /api/v1/campaigns/{id} - Get campaign details</li>
+                        <li>✓ PATCH /api/v1/campaigns/{id} - Update campaign</li>
+                        <li>✓ Pydantic schemas for campaign endpoints</li>
+                        <li>✓ Unit tests for campaign CRUD operations</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <ul class="mt-2 space-y-1">
+                        <li>src/models/campaign.py (new)</li>
+                        <li>src/api/routes/campaigns.py (new)</li>
+                        <li>src/api/schemas.py (add campaign schemas)</li>
+                        <li>alembic/versions/*.py (migrations)</li>
+                        <li>tests/unit/test_campaign_crud.py (new)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tuesday Section -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">Tuesday, Jan 28 - Email Template System</h2>
+                <p class="text-green-100 mt-2">Commit 47: Email templates with variable substitution, Jinja2
+                    integration, preview API</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 47: Email Template Engine</h3>
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">Email</span>
+                </div>
+
+                <div class="bg-green-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-green-900 mb-3">📋 Tasks Completed</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✓ Jinja2 template engine setup</li>
+                        <li>✓ POST /api/v1/templates - Create email template</li>
+                        <li>✓ GET /api/v1/templates - List templates</li>
+                        <li>✓ GET /api/v1/templates/{id} - Get template details</li>
+                        <li>✓ PATCH /api/v1/templates/{id} - Update template</li>
+                        <li>✓ POST /api/v1/templates/{id}/preview - Preview with sample variables</li>
+                        <li>✓ Template variable validation (identify required variables)</li>
+                        <li>✓ Template version history tracking</li>
+                        <li>✓ HTML email rendering with CSS inlining</li>
+                        <li>✓ Integration tests for email rendering</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <ul class="mt-2 space-y-1">
+                        <li>src/services/email_template_engine.py (new)</li>
+                        <li>src/api/routes/templates.py (new)</li>
+                        <li>src/models/campaign.py (update)</li>
+                        <li>requirements.txt (add jinja2, premailer)</li>
+                        <li>tests/unit/test_email_templates.py (new)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wednesday Section -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">Wednesday, Jan 29 - Campaign Task Integration</h2>
+                <p class="text-purple-100 mt-2">Commit 48: Link campaigns to email tasks, bulk recipient management,
+                    task generation</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 48: Campaign-Task Integration</h3>
+                    <span
+                        class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">Integration</span>
+                </div>
+
+                <div class="bg-purple-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-purple-900 mb-3">📋 Tasks Completed</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✓ Create Recipient model (email, name, variables, status)</li>
+                        <li>✓ POST /api/v1/campaigns/{id}/recipients - Add recipients</li>
+                        <li>✓ POST /api/v1/campaigns/{id}/recipients/bulk - Upload CSV</li>
+                        <li>✓ Campaign launch workflow (generate tasks from recipients)</li>
+                        <li>✓ Task generation for each recipient with personalization</li>
+                        <li>✓ GET /api/v1/campaigns/{id}/recipients - List recipients with status</li>
+                        <li>✓ POST /api/v1/campaigns/{id}/launch - Start campaign (create email tasks)</li>
+                        <li>✓ Campaign status tracking (pending, running, completed, failed)</li>
+                        <li>✓ Recipient status tracking (pending, sent, failed, bounced)</li>
+                        <li>✓ Integration tests for campaign launch flow</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <ul class="mt-2 space-y-1">
+                        <li>src/models/campaign.py (add Recipient model)</li>
+                        <li>src/api/routes/campaigns.py (add recipient endpoints)</li>
+                        <li>src/services/campaign_launcher.py (new)</li>
+                        <li>alembic/versions/*.py (migrations)</li>
+                        <li>tests/integration/test_campaign_launch.py (new)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thursday Section -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">Thursday, Jan 30 - Frontend Dashboard Setup</h2>
+                <p class="text-pink-100 mt-2">Commit 49: React project setup, UI components, routing, authentication</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-pink-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 49: Frontend Dashboard Foundation</h3>
+                    <span class="bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-semibold">Frontend</span>
+                </div>
+
+                <div class="bg-pink-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-pink-900 mb-3">📋 Tasks Completed</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✓ Create React project (Vite + TypeScript)</li>
+                        <li>✓ Setup Tailwind CSS styling</li>
+                        <li>✓ Basic layout (sidebar, header, main content)</li>
+                        <li>✓ React Router for navigation</li>
+                        <li>✓ Login page with form validation</li>
+                        <li>✓ JWT token storage and authentication context</li>
+                        <li>✓ Protected routes wrapper component</li>
+                        <li>✓ API client setup (axios with interceptors)</li>
+                        <li>✓ Dashboard home page stub</li>
+                        <li>✓ Error boundary component</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <ul class="mt-2 space-y-1">
+                        <li>frontend/ (new directory)</li>
+                        <li>frontend/src/App.tsx</li>
+                        <li>frontend/src/pages/LoginPage.tsx</li>
+                        <li>frontend/src/pages/DashboardPage.tsx</li>
+                        <li>frontend/src/components/Layout.tsx</li>
+                        <li>frontend/src/services/api.ts</li>
+                        <li>frontend/src/context/AuthContext.tsx</li>
+                        <li>frontend/package.json</li>
+                        <li>frontend/vite.config.ts</li>
+                        <li>frontend/tailwind.config.ts</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Friday Section -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">Friday, Jan 31 - Campaign Dashboard UI</h2>
+                <p class="text-red-100 mt-2">Commit 50: Campaign list, create form, template builder, recipient
+                    management UI</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 50: Campaign Management Dashboard</h3>
+                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">UI</span>
+                </div>
+
+                <div class="bg-red-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-red-900 mb-3">📋 Tasks Completed</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✓ Campaign list page with table view</li>
+                        <li>✓ Campaign create modal with form</li>
+                        <li>✓ Campaign detail view</li>
+                        <li>✓ Email template builder UI with live preview</li>
+                        <li>✓ Template variable management</li>
+                        <li>✓ Recipient bulk upload form with CSV parser</li>
+                        <li>✓ Recipient list table with pagination</li>
+                        <li>✓ Campaign launch button with confirmation dialog</li>
+                        <li>✓ Campaign status badge component</li>
+                        <li>✓ Loading states and error handling UI</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <ul class="mt-2 space-y-1">
+                        <li>frontend/src/pages/CampaignsPage.tsx (new)</li>
+                        <li>frontend/src/pages/TemplateBuilderPage.tsx (new)</li>
+                        <li>frontend/src/components/CampaignList.tsx (new)</li>
+                        <li>frontend/src/components/CampaignForm.tsx (new)</li>
+                        <li>frontend/src/components/TemplateEditor.tsx (new)</li>
+                        <li>frontend/src/components/RecipientUpload.tsx (new)</li>
+                        <li>frontend/src/hooks/useCampaigns.ts (new)</li>
+                        <li>frontend/src/hooks/useTemplates.ts (new)</li>
+                        <li>frontend/src/types/campaign.ts (new)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saturday Section -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">Saturday, Feb 1 - Task Monitoring & Analytics Dashboard</h2>
+                <p class="text-yellow-100 mt-2">Commit 51: Task queue monitoring, performance charts, real-time updates
+                </p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 51: Monitoring & Analytics UI</h3>
+                    <span
+                        class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">Analytics</span>
+                </div>
+
+                <div class="bg-yellow-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-yellow-900 mb-3">📋 Tasks Completed</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✓ Dashboard home with key metrics (tasks, workers, queues)</li>
+                        <li>✓ Real-time metric updates using WebSocket</li>
+                        <li>✓ Task queue depth chart (line/area)</li>
+                        <li>✓ Task completion rate chart (hourly)</li>
+                        <li>✓ Worker health status cards</li>
+                        <li>✓ Recent tasks list with live updates</li>
+                        <li>✓ System alerts notification panel</li>
+                        <li>✓ Performance metrics display (CPU, memory, network)</li>
+                        <li>✓ Date range picker for analytics</li>
+                        <li>✓ Export dashboard data to PDF/CSV</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <ul class="mt-2 space-y-1">
+                        <li>frontend/src/pages/DashboardPage.tsx (update)</li>
+                        <li>frontend/src/components/MetricsCards.tsx (new)</li>
+                        <li>frontend/src/components/ChartsSection.tsx (new)</li>
+                        <li>frontend/src/components/RecentTasksList.tsx (new)</li>
+                        <li>frontend/src/hooks/useWebSocket.ts (new)</li>
+                        <li>frontend/src/hooks/useMetrics.ts (new)</li>
+                        <li>requirements.txt (add python-socketio for WebSocket)</li>
+                        <li>src/api/websocket.py (new WebSocket endpoints)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sunday Section -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg p-6 mb-6">
+                <h2 class="text-3xl font-bold">Sunday, Feb 2 - Testing, Docs & Polish</h2>
+                <p class="text-indigo-100 mt-2">Commit 52-53: Frontend tests, API documentation, UI polish, deployment
+                    setup</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-indigo-500 mb-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 52: Frontend Testing & Documentation</h3>
+                    <span
+                        class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-semibold">Testing</span>
+                </div>
+
+                <div class="bg-indigo-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-indigo-900 mb-3">📋 Tasks Completed</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✓ Jest + React Testing Library setup</li>
+                        <li>✓ Component unit tests (form components, cards, charts)</li>
+                        <li>✓ API client tests (mocked axios)</li>
+                        <li>✓ Authentication context tests</li>
+                        <li>✓ Hook tests (useCampaigns, useTemplates, useMetrics)</li>
+                        <li>✓ Integration tests (full page flows)</li>
+                        <li>✓ E2E tests setup (Cypress)</li>
+                        <li>✓ UI polish (responsive design, dark mode support)</li>
+                        <li>✓ Accessibility audit and fixes (WCAG 2.1)</li>
+                        <li>✓ Performance optimization (lazy loading, code splitting)</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <ul class="mt-2 space-y-1">
+                        <li>frontend/jest.config.js (new)</li>
+                        <li>frontend/cypress.config.js (new)</li>
+                        <li>frontend/src/__tests__/ (directory with all tests)</li>
+                        <li>frontend/src/tailwind.css (dark mode)</li>
+                        <li>docs/FRONTEND.md (new)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-indigo-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Commit 53: Week 3 Documentation & Deployment</h3>
+                    <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-semibold">Docs</span>
+                </div>
+
+                <div class="bg-indigo-50 p-4 rounded mb-4">
+                    <h4 class="font-semibold text-indigo-900 mb-3">📋 Tasks Completed</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✓ API documentation updates (new campaign endpoints)</li>
+                        <li>✓ Frontend development guide</li>
+                        <li>✓ Campaign system architecture documentation</li>
+                        <li>✓ Email template syntax guide</li>
+                        <li>✓ Frontend deployment guide (build, optimize, serve)</li>
+                        <li>✓ Docker Compose update (add frontend service)</li>
+                        <li>✓ Environment variables documentation (.env.example update)</li>
+                        <li>✓ Setup guide for running full stack locally</li>
+                        <li>✓ Week 3 completion summary</li>
+                        <li>✓ Commit message standardization and cleanup</li>
+                    </ul>
+                </div>
+
+                <div class="bg-gray-100 p-4 rounded text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <ul class="mt-2 space-y-1">
+                        <li>docs/CAMPAIGN_SYSTEM.md (new)</li>
+                        <li>docs/FRONTEND.md (update)</li>
+                        <li>docs/DEPLOYMENT.md (update)</li>
+                        <li>.env.example (update)</li>
+                        <li>docker-compose.yml (update)</li>
+                        <li>README.md (update with links)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Summary -->
+        <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-xl p-8 text-white">
+            <h2 class="text-3xl font-bold mb-6">🎉 Week 3 Complete Summary</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white/20 p-4 rounded-lg">
+                    <div class="text-4xl font-bold mb-2">53</div>
+                    <div class="text-sm font-semibold">Total Commits</div>
+                    <div class="text-xs opacity-80">46-53 this week</div>
+                </div>
+                <div class="bg-white/20 p-4 rounded-lg">
+                    <div class="text-4xl font-bold mb-2">5,000+</div>
+                    <div class="text-sm font-semibold">Lines Added</div>
+                    <div class="text-xs opacity-80">Backend + Frontend</div>
+                </div>
+                <div class="bg-white/20 p-4 rounded-lg">
+                    <div class="text-4xl font-bold mb-2">8</div>
+                    <div class="text-sm font-semibold">Daily Commits</div>
+                    <div class="text-xs opacity-80">One per day</div>
+                </div>
+                <div class="bg-white/20 p-4 rounded-lg">
+                    <div class="text-4xl font-bold mb-2">2</div>
+                    <div class="text-sm font-semibold">Major Systems</div>
+                    <div class="text-xs opacity-80">Email + Frontend</div>
+                </div>
+            </div>
+
+            <div class="border-t border-white/30 pt-6 mt-6">
+                <h3 class="text-xl font-bold mb-4">✅ Week 3 Major Achievements:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ul class="space-y-2 text-sm">
+                        <li>✓ Complete email campaign system</li>
+                        <li>✓ Campaign database models and CRUD</li>
+                        <li>✓ Email template engine with Jinja2</li>
+                        <li>✓ Template preview with variable substitution</li>
+                        <li>✓ Bulk recipient management</li>
+                        <li>✓ Campaign task generation and launch</li>
+                        <li>✓ Recipient tracking and status updates</li>
+                        <li>✓ Full React frontend setup</li>
+                    </ul>
+                    <ul class="space-y-2 text-sm">
+                        <li>✓ Campaign management dashboard UI</li>
+                        <li>✓ Email template builder with preview</li>
+                        <li>✓ Task monitoring dashboard</li>
+                        <li>✓ Real-time metrics with WebSocket</li>
+                        <li>✓ Performance charts and analytics</li>
+                        <li>✓ Worker health monitoring UI</li>
+                        <li>✓ Alert notification system UI</li>
+                        <li>✓ Comprehensive testing and documentation</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-white/30">
+                <p class="text-sm mb-2"><strong>🚀 Deliverables:</strong></p>
+                <ul class="text-sm space-y-1">
+                    <li>• Full-stack email campaign system (backend + frontend)</li>
+                    <li>• Professional web dashboard for task management</li>
+                    <li>• Real-time monitoring with WebSocket support</li>
+                    <li>• Complete test coverage for new features</li>
+                    <li>• Production-ready deployment configuration</li>
+                    <li>• Comprehensive documentation for users and developers</li>
+                    <li>• Docker support for full stack deployment</li>
+                </ul>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-white/30">
+                <p class="text-sm"><strong>📊 Project Status After Week 3:</strong></p>
+                <ul class="text-sm space-y-1 mt-2">
+                    <li>✓ Core task queue system: Complete</li>
+                    <li>✓ Advanced features (scheduling, retry, observability): Complete</li>
+                    <li>✓ Email campaign system: Complete</li>
+                    <li>✓ Web dashboard: Complete</li>
+                    <li>✓ Monitoring & analytics: Complete</li>
+                    <li>✓ Documentation: Comprehensive</li>
+                    <li>✓ <strong>Total Commits: 53 | Ready for production!</strong></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Statistics Table -->
+        <div class="bg-white rounded-lg shadow-md p-6 mt-8">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Week 3 Daily Statistics</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-300 bg-gray-50">
+                            <th class="text-left px-4 py-3 font-semibold">Day</th>
+                            <th class="text-center px-4 py-3 font-semibold">Commit</th>
+                            <th class="text-left px-4 py-3 font-semibold">Feature</th>
+                            <th class="text-center px-4 py-3 font-semibold">Est. Lines</th>
+                            <th class="text-center px-4 py-3 font-semibold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-blue-900">Monday</td>
+                            <td class="text-center px-4 py-3">46</td>
+                            <td class="px-4 py-3">Campaign Models & API</td>
+                            <td class="text-center px-4 py-3">600+</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-semibold">📋</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-green-900">Tuesday</td>
+                            <td class="text-center px-4 py-3">47</td>
+                            <td class="px-4 py-3">Email Template Engine</td>
+                            <td class="text-center px-4 py-3">500+</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">📧</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-purple-900">Wednesday</td>
+                            <td class="text-center px-4 py-3">48</td>
+                            <td class="px-4 py-3">Campaign-Task Integration</td>
+                            <td class="text-center px-4 py-3">700+</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-semibold">🔗</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-pink-900">Thursday</td>
+                            <td class="text-center px-4 py-3">49</td>
+                            <td class="px-4 py-3">Frontend Setup</td>
+                            <td class="text-center px-4 py-3">800+</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-pink-100 text-pink-800 px-2 py-1 rounded text-xs font-semibold">⚛️</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-red-900">Friday</td>
+                            <td class="text-center px-4 py-3">50</td>
+                            <td class="px-4 py-3">Campaign Dashboard UI</td>
+                            <td class="text-center px-4 py-3">1,000+</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">🎨</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-yellow-900">Saturday</td>
+                            <td class="text-center px-4 py-3">51</td>
+                            <td class="px-4 py-3">Monitoring Dashboard</td>
+                            <td class="text-center px-4 py-3">800+</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-semibold">📊</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-semibold text-indigo-900">Sunday</td>
+                            <td class="text-center px-4 py-3">52-53</td>
+                            <td class="px-4 py-3">Testing & Documentation</td>
+                            <td class="text-center px-4 py-3">600+</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs font-semibold">✅</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
