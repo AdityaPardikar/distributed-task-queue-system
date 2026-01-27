@@ -8,7 +8,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api.middleware import add_request_id, rate_limit_middleware, request_timing_middleware
-from src.api.routes import alerts, analytics, campaigns, dashboard, debug, health, metrics, resilience, search, tasks, workers, workflows
+from src.api.routes import alerts, analytics, campaigns, dashboard, debug, health, metrics, resilience, search, tasks, templates, workers, workflows
 from src.config import get_settings
 from src.monitoring.metrics import prometheus_response
 from src.observability.logging_config import configure_logging
@@ -61,6 +61,7 @@ def create_app() -> FastAPI:
     app.include_router(tasks.router, prefix="/api/v1")
     app.include_router(workers.router, prefix="/api/v1")
     app.include_router(campaigns.router, prefix="/api/v1")
+    app.include_router(templates.router)
     app.include_router(metrics.router, prefix="/api/v1")
     app.include_router(workflows.router, prefix="/api/v1")
     app.include_router(dashboard.router, prefix="/api/v1")

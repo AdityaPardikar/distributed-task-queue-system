@@ -96,7 +96,7 @@ class TaskLog(Base):
     task_id: Mapped[str] = mapped_column(UUID, ForeignKey("tasks.task_id"))
     level: Mapped[str] = mapped_column(String(20), default="INFO")
     message: Mapped[str] = mapped_column(Text)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    log_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (Index("idx_task_logs_task_id", "task_id", "created_at"),)
@@ -141,7 +141,7 @@ class Worker(Base):
     capacity: Mapped[int] = mapped_column(Integer, default=5)
     current_load: Mapped[int] = mapped_column(Integer, default=0)
     last_heartbeat: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    worker_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (Index("idx_workers_heartbeat", "last_heartbeat"),)
@@ -270,7 +270,7 @@ class Alert(Base):
     alert_type: Mapped[str] = mapped_column(String(100))
     severity: Mapped[str] = mapped_column(String(50))
     description: Mapped[str] = mapped_column(Text)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    alert_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
     acknowledged: Mapped[bool] = mapped_column(Integer, default=False)
     acknowledged_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     acknowledged_by: Mapped[Optional[str]] = mapped_column(String(255))

@@ -16,7 +16,6 @@ hiredis==2.2.3
 
 # Task Queue & Async
 celery==5.3.4
-python-rpc==0.5.0
 croniter==2.0.1
 
 # Email & Templates
@@ -28,7 +27,7 @@ email-validator==2.1.0
 python-jose==3.3.0
 passlib==1.7.4
 bcrypt==4.1.1
-pyjwt==2.8.1
+pyjwt==2.10.1
 
 # Monitoring & Metrics
 prometheus-client==0.19.0

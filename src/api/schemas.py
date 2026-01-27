@@ -285,3 +285,130 @@ class ErrorResponse(BaseModel):
     detail: str
     error_code: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class TemplateVariableSchema(BaseModel):
+    """Schema for template variable information"""
+
+    name: str = Field(..., description="Variable name")
+    required: bool = Field(default=True, description="Whether variable is required")
+    default: Optional[str] = Field(None, description="Default value if not provided")
+
+
+class TemplateCreate(BaseModel):
+    """Schema for creating an email template"""
+
+    name: str = Field(..., min_length=1, max_length=255, description="Template name")
+    subject: str = Field(..., min_length=1, max_length=255, description="Email subject template")
+    body: str = Field(..., min_length=1, description="Email body template (HTML or plain text)")
+    campaign_id: Optional[UUID] = Field(None, description="Associated campaign ID")
+
+    @field_validator('subject', 'body')
+    @classmethod
+    def validate_template_syntax(cls, v: str) -> str:
+        """Validate Jinja2 syntax"""
+        from jinja2 import Template, TemplateSyntaxError
+        try:
+            Template(v)
+        except TemplateSyntaxError as e:
+            raise ValueError(f"Invalid template syntax: {e.message}")
+        return v
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "Welcome Email",
+                "subject": "Welcome {{ first_name }}!",
+                "body": "<p>Hello {{ first_name }} {{ last_name }},</p><p>Thanks for joining!</p>",
+                "campaign_id": None
+            }
+        }
+
+
+class TemplateUpdate(BaseModel):
+    """Schema for updating an email template"""
+
+    name: Optional[str] = Field(None, min_length=1, max_length=255, description="Template name")
+    subject: Optional[str] = Field(None, min_length=1, max_length=255, description="Email subject template")
+    body: Optional[str] = Field(None, min_length=1, description="Email body template")
+
+    @field_validator('subject', 'body')
+    @classmethod
+    def validate_template_syntax(cls, v: Optional[str]) -> Optional[str]:
+        """Validate Jinja2 syntax"""
+        if v is None:
+            return v
+        from jinja2 import Template, TemplateSyntaxError
+        try:
+            Template(v)
+        except TemplateSyntaxError as e:
+            raise ValueError(f"Invalid template syntax: {e.message}")
+        return v
+
+
+class TemplateResponse(BaseModel):
+    """Schema for email template response"""
+
+    template_id: UUID
+    name: str
+    subject: str
+    body: str
+    variables: List[TemplateVariableSchema]
+    version: int
+    campaign_id: Optional[UUID]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "template_id": "550e8400-e29b-41d4-a716-446655440000",
+                "name": "Welcome Email",
+                "subject": "Welcome {{ first_name }}!",
+                "body": "<p>Hello {{ first_name }},</p>",
+                "variables": [
+                    {"name": "first_name", "required": True, "default": None}
+                ],
+                "version": 1,
+                "campaign_id": None,
+                "created_at": "2026-01-27T12:00:00",
+                "updated_at": "2026-01-27T12:00:00"
+            }
+        }
+
+
+class TemplatePreviewRequest(BaseModel):
+    """Schema for template preview request"""
+
+    variables: Dict[str, Any] = Field(..., description="Template variables for rendering")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "variables": {
+                    "first_name": "John",
+                    "last_name": "Doe"
+                }
+            }
+        }
+
+
+class TemplatePreviewResponse(BaseModel):
+    """Schema for template preview response"""
+
+    subject: str
+    body: str
+    variables: List[TemplateVariableSchema]
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "subject": "Welcome John!",
+                "body": "<p>Hello John Doe,</p>",
+                "variables": [
+                    {"name": "first_name", "required": True},
+                    {"name": "last_name", "required": True}
+                ]
+            }
+        }
