@@ -412,3 +412,145 @@ class TemplatePreviewResponse(BaseModel):
                 ]
             }
         }
+
+
+# Recipient Schemas
+
+class RecipientCreate(BaseModel):
+    """Schema for creating a single recipient"""
+
+    email: str = Field(..., description="Recipient email address")
+    name: Optional[str] = Field(None, description="Recipient name")
+    personalization: Dict[str, Any] = Field(default_factory=dict, description="Template variables for this recipient")
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        """Basic email validation"""
+        if not v or '@' not in v:
+            raise ValueError("Invalid email address")
+        return v.lower().strip()
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "john.doe@example.com",
+                "name": "John Doe",
+                "personalization": {
+                    "first_name": "John",
+                    "last_name": "Doe",
+                    "company": "Acme Corp"
+                }
+            }
+        }
+
+
+class RecipientBulkCreate(BaseModel):
+    """Schema for bulk recipient upload"""
+
+    recipients: List[RecipientCreate] = Field(..., min_length=1, description="List of recipients to add")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "recipients": [
+                    {
+                        "email": "user1@example.com",
+                        "name": "User One",
+                        "personalization": {"first_name": "User", "last_name": "One"}
+                    },
+                    {
+                        "email": "user2@example.com",
+                        "name": "User Two",
+                        "personalization": {"first_name": "User", "last_name": "Two"}
+                    }
+                ]
+            }
+        }
+
+
+class RecipientResponse(BaseModel):
+    """Schema for recipient response"""
+
+    recipient_id: UUID
+    campaign_id: UUID
+    email: str
+    status: str
+    personalization: Dict[str, Any]
+    sent_at: Optional[datetime]
+    task_id: Optional[UUID]
+    error_message: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class RecipientListResponse(BaseModel):
+    """Schema for recipient list response"""
+
+    items: List[RecipientResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+class CampaignLaunchRequest(BaseModel):
+    """Schema for launching a campaign"""
+
+    template_id: Optional[UUID] = Field(None, description="Optional template ID to use instead of campaign template")
+    send_immediately: bool = Field(default=True, description="Send immediately or schedule for later")
+    scheduled_at: Optional[datetime] = Field(None, description="Schedule time if not sending immediately")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "template_id": "550e8400-e29b-41d4-a716-446655440000",
+                "send_immediately": True,
+                "scheduled_at": None
+            }
+        }
+
+
+class CampaignLaunchResponse(BaseModel):
+    """Schema for campaign launch response"""
+
+    campaign_id: UUID
+    status: str
+    total_recipients: int
+    tasks_created: int
+    scheduled_at: Optional[datetime]
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "campaign_id": "550e8400-e29b-41d4-a716-446655440000",
+                "status": "RUNNING",
+                "total_recipients": 150,
+                "tasks_created": 150,
+                "scheduled_at": None
+            }
+        }
+
+
+class BulkUploadResult(BaseModel):
+    """Schema for bulk upload result"""
+
+    total_uploaded: int
+    successful: int
+    failed: int
+    errors: List[Dict[str, Any]] = Field(default_factory=list)
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "total_uploaded": 100,
+                "successful": 95,
+                "failed": 5,
+                "errors": [
+                    {"row": 3, "email": "invalid", "error": "Invalid email address"},
+                    {"row": 7, "email": "duplicate@example.com", "error": "Duplicate email"}
+                ]
+            }
+        }
