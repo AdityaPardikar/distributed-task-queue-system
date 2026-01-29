@@ -87,7 +87,7 @@ class Settings(BaseSettings):
     LOG_FORMAT: str = "json"
 
     # Security
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8000"
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://localhost:8000"
     ALLOWED_HOSTS: str = "localhost,127.0.0.1"
 
     # Observability

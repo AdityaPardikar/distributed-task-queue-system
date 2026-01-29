@@ -1,4 +1,4 @@
-"""Dockerfile for Worker nodes"""
+""" Dockerfile for Worker nodes"""
 
 FROM python:3.11-slim
 
