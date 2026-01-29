@@ -19,9 +19,10 @@ const LoginPage: React.FC = () => {
     try {
       await login(username, password);
       navigate("/dashboard");
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { response?: { data?: { detail?: string } } };
       setError(
-        err.response?.data?.detail ||
+        error.response?.data?.detail ||
           "Login failed. Please check your credentials.",
       );
     } finally {

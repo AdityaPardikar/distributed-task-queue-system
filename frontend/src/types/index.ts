@@ -19,7 +19,7 @@ export interface LoginResponse {
 export interface Task {
   id: number;
   task_type: string;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
   status: "pending" | "running" | "completed" | "failed" | "cancelled";
   priority: number;
   created_at: string;

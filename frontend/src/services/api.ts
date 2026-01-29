@@ -1,8 +1,5 @@
-import axios, {
-  AxiosInstance,
-  AxiosError,
-  InternalAxiosRequestConfig,
-} from "axios";
+import axios, { type AxiosInstance, type AxiosError } from "axios";
+import type { InternalAxiosRequestConfig } from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -64,7 +61,7 @@ class ApiClient {
   }
 
   // Task endpoints
-  async getTasks(params?: Record<string, any>) {
+  async getTasks(params?: Record<string, unknown>) {
     const response = await this.client.get("/api/v1/tasks", { params });
     return response.data;
   }
@@ -74,13 +71,13 @@ class ApiClient {
     return response.data;
   }
 
-  async createTask(data: Record<string, any>) {
+  async createTask(data: Record<string, unknown>) {
     const response = await this.client.post("/api/v1/tasks", data);
     return response.data;
   }
 
   // Campaign endpoints
-  async getCampaigns(params?: Record<string, any>) {
+  async getCampaigns(params?: Record<string, unknown>) {
     const response = await this.client.get("/api/v1/campaigns", { params });
     return response.data;
   }
@@ -90,12 +87,12 @@ class ApiClient {
     return response.data;
   }
 
-  async createCampaign(data: Record<string, any>) {
+  async createCampaign(data: Record<string, unknown>) {
     const response = await this.client.post("/api/v1/campaigns", data);
     return response.data;
   }
 
-  async updateCampaign(id: number, data: Record<string, any>) {
+  async updateCampaign(id: number, data: Record<string, unknown>) {
     const response = await this.client.patch(`/api/v1/campaigns/${id}`, data);
     return response.data;
   }
@@ -106,7 +103,7 @@ class ApiClient {
   }
 
   // Template endpoints
-  async getTemplates(params?: Record<string, any>) {
+  async getTemplates(params?: Record<string, unknown>) {
     const response = await this.client.get("/api/v1/templates", { params });
     return response.data;
   }
@@ -116,7 +113,7 @@ class ApiClient {
     return response.data;
   }
 
-  async createTemplate(data: Record<string, any>) {
+  async createTemplate(data: Record<string, unknown>) {
     const response = await this.client.post("/api/v1/templates", data);
     return response.data;
   }

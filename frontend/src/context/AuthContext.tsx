@@ -1,11 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { User, LoginResponse } from "../types";
+import { createContext, useContext, useState, useEffect, type ReactNode, type FC } from "react";
+import type { User, LoginResponse } from "../types";
 import apiClient from "../services/api";
 
 interface AuthContextType {
@@ -18,7 +12,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+export const AuthProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,19 +20,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     // Check if user is already logged in
-    const token = localStorage.getItem("access_token");
-    const savedUser = localStorage.getItem("user");
+    const initializeAuth = () => {
+      const token = localStorage.getItem("access_token");
+      const savedUser = localStorage.getItem("user");
 
-    if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error("Failed to parse saved user:", error);
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("user");
+      if (token && savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (error) {
+          console.error("Failed to parse saved user:", error);
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("user");
+        }
       }
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+    initializeAuth();
   }, []);
 
   const login = async (username: string, password: string) => {
