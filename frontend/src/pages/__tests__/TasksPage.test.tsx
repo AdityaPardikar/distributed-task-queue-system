@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import TasksPage from "../TasksPage";
 
 // Mock the api service BEFORE defining mockTasks (hoisting issue fix)

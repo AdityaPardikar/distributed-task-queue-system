@@ -28,7 +28,7 @@ class MockWebSocket {
     this.url = url;
   }
 
-  send(data: string) {
+  send(_data: string) {
     // Mock implementation
   }
 
@@ -38,7 +38,8 @@ class MockWebSocket {
   }
 }
 
-global.WebSocket = MockWebSocket as any;
+(globalThis as typeof globalThis & { WebSocket: typeof WebSocket }).WebSocket =
+  MockWebSocket as unknown as typeof WebSocket;
 
 describe("useMetrics Hook", () => {
   beforeEach(() => {

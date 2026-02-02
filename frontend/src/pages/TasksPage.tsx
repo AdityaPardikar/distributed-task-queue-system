@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Search, Download, RefreshCw } from "lucide-react";
 import api from "../services/api";
 
@@ -22,11 +22,7 @@ const TasksPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    fetchTasks();
-  }, [page, statusFilter, priorityFilter]);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
       const params: Record<string, unknown> = {
@@ -45,7 +41,11 @@ const TasksPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, statusFilter, priorityFilter, searchQuery]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const handleSearch = () => {
     setPage(1);

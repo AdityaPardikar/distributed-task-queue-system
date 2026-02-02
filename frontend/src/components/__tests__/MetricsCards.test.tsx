@@ -43,7 +43,7 @@ describe("MetricsCards Component", () => {
     const { rerender } = render(<MetricsCards metrics={mockMetrics} />);
 
     // Success rate > 90 should be green
-    let successElement = screen.getByText("96.4%");
+    const successElement = screen.getByText("96.4%");
     expect(successElement).toBeInTheDocument();
 
     // Change to lower success rate

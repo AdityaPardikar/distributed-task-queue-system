@@ -76,8 +76,8 @@ export const useWebSocket = ({
           console.log(
             `Reconnecting... Attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts}`,
           );
-          reconnectTimeoutRef.current = setTimeout(
-            () => connect(),
+          reconnectTimeoutRef.current = window.setTimeout(
+            connect,
             reconnectInterval,
           );
         } else {
