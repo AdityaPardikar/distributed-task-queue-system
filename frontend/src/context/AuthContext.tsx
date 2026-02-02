@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect, type ReactNode, type FC } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+  type FC,
+} from "react";
 import type { User, LoginResponse } from "../types";
 import apiClient from "../services/api";
 
@@ -12,9 +19,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 

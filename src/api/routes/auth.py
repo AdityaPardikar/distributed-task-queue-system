@@ -2,11 +2,11 @@
 
 from datetime import datetime, timedelta
 from typing import Optional
+import hashlib
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -16,7 +16,6 @@ SECRET_KEY = "your-secret-key-change-in-production"  # Change this in production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
@@ -34,13 +33,18 @@ class User(BaseModel):
     is_active: bool = True
 
 
+def hash_password(password: str) -> str:
+    """Hash password with SHA256"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
 # Mock user database (replace with real database in production)
 fake_users_db = {
     "admin": {
         "id": 1,
         "username": "admin",
         "email": "admin@taskflow.com",
-        "hashed_password": pwd_context.hash("admin123"),
+        "hashed_password": hash_password("admin123"),
         "is_active": True,
     }
 }
@@ -48,7 +52,7 @@ fake_users_db = {
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    return hash_password(plain_password) == hashed_password
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     API_BASE_URL: str = "http://localhost:8000"
 
     # Database
-    DATABASE_URL: str = "postgresql://taskflow:password@localhost:5432/taskflow"
+    DATABASE_URL: str = "sqlite:///./taskflow.db"
     DATABASE_ECHO: bool = False
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 40

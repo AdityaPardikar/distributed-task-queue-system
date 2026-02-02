@@ -5,6 +5,11 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
+import { CampaignListPage } from "./pages/CampaignListPage";
+import { CreateCampaignPage } from "./pages/CreateCampaignPage";
+import { CampaignDetailPage } from "./pages/CampaignDetailPage";
+import { TemplateListPage } from "./pages/TemplateListPage";
+import { CreateTemplatePage } from "./pages/CreateTemplatePage";
 import "./index.css";
 
 function App() {
@@ -30,18 +35,17 @@ function App() {
                   <div className="text-2xl">Tasks Page - Coming Soon</div>
                 }
               />
-              <Route
-                path="campaigns"
-                element={
-                  <div className="text-2xl">Campaigns Page - Coming Soon</div>
-                }
-              />
-              <Route
-                path="templates"
-                element={
-                  <div className="text-2xl">Templates Page - Coming Soon</div>
-                }
-              />
+
+              {/* Campaign Routes */}
+              <Route path="campaigns" element={<CampaignListPage />} />
+              <Route path="campaigns/new" element={<CreateCampaignPage />} />
+              <Route path="campaigns/:id" element={<CampaignDetailPage />} />
+
+              {/* Template Routes */}
+              <Route path="templates" element={<TemplateListPage />} />
+              <Route path="templates/new" element={<CreateTemplatePage />} />
+              <Route path="templates/:id" element={<CreateTemplatePage />} />
+
               <Route
                 path="workers"
                 element={
