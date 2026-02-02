@@ -2,7 +2,7 @@
  * Campaign Detail Page
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { campaignAPI, recipientAPI } from "../services/campaignAPI";
 import type {
@@ -27,13 +27,7 @@ export const CampaignDetailPage: React.FC = () => {
 
   const campaignId = id ? parseInt(id) : null;
 
-  useEffect(() => {
-    if (campaignId) {
-      fetchData();
-    }
-  }, [campaignId]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!campaignId) return;
     try {
       setLoading(true);
@@ -53,7 +47,13 @@ export const CampaignDetailPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [campaignId]);
+
+  useEffect(() => {
+    if (campaignId) {
+      fetchData();
+    }
+  }, [campaignId, fetchData]);
 
   const handleAddRecipient = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -5,6 +5,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
+import TasksPage from "./pages/TasksPage";
 import { CampaignListPage } from "./pages/CampaignListPage";
 import { CreateCampaignPage } from "./pages/CreateCampaignPage";
 import { CampaignDetailPage } from "./pages/CampaignDetailPage";
@@ -29,12 +30,7 @@ function App() {
               }
             >
               <Route path="dashboard" element={<DashboardPage />} />
-              <Route
-                path="tasks"
-                element={
-                  <div className="text-2xl">Tasks Page - Coming Soon</div>
-                }
-              />
+              <Route path="tasks" element={<TasksPage />} />
 
               {/* Campaign Routes */}
               <Route path="campaigns" element={<CampaignListPage />} />

@@ -30,7 +30,7 @@ export const CampaignListPage: React.FC = () => {
         try {
           const status = await campaignAPI.getStatus(campaign.id);
           newStatuses[campaign.id] = status.data;
-        } catch (err) {
+        } catch {
           console.error(`Failed to fetch status for campaign ${campaign.id}`);
         }
       }
