@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Search, Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 import api from "../services/api";
+import AdvancedFilters, { FilterCriteria } from "../components/AdvancedFilters";
+import { FilterService, useFilterPresets } from "../services/FilterService";
 
 interface Task {
   id: number | string;
@@ -16,11 +18,19 @@ interface Task {
 const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [filters, setFilters] = useState<FilterCriteria>({
+    searchQuery: "",
+    statuses: [],
+    priorities: [],
+    startDate: "",
+    endDate: "",
+    workerId: "",
+    sortBy: "date",
+    sortOrder: "desc",
+  });
+  const { presets, addPreset } = useFilterPresets();
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -29,9 +39,15 @@ const TasksPage: React.FC = () => {
         page,
         per_page: 20,
       };
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (priorityFilter !== "all") params.priority = priorityFilter;
-      if (searchQuery) params.search = searchQuery;
+
+      if (filters.searchQuery) params.search = filters.searchQuery;
+      if (filters.statuses.length > 0) params.status = filters.statuses;
+      if (filters.priorities.length > 0) params.priority = filters.priorities;
+      if (filters.startDate) params.start_date = filters.startDate;
+      if (filters.endDate) params.end_date = filters.endDate;
+      if (filters.workerId) params.worker_id = filters.workerId;
+      params.sort_by = filters.sortBy;
+      params.sort_order = filters.sortOrder;
 
       const response = await api.getTasks(params);
       setTasks(response.data || []);
@@ -41,16 +57,11 @@ const TasksPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, priorityFilter, searchQuery]);
+  }, [page, filters]);
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
-
-  const handleSearch = () => {
-    setPage(1);
-    fetchTasks();
-  };
 
   const getStatusBadge = (status: Task["status"]) => {
     const classes = {
@@ -113,63 +124,17 @@ const TasksPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Search Tasks
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Search by task name or ID..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-              <Search
-                size={20}
-                className="absolute left-3 top-2.5 text-gray-400"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="running">Running</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Priority
-            </label>
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="all">All Priorities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <AdvancedFilters
+        onFilterChange={(newFilters) => {
+          setFilters(newFilters);
+          setPage(1);
+        }}
+        onSavePreset={(name, filters) => {
+          addPreset(name, filters);
+        }}
+        savedPresets={presets}
+        loading={loading}
+      />
 
       {/* Tasks Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">

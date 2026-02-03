@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import TasksPage from "../TasksPage";
 
-// Mock the api service BEFORE defining mockTasks (hoisting issue fix)
+// Mock the api service
 jest.mock("../../services/api", () => ({
   __esModule: true,
   default: {
@@ -9,7 +9,21 @@ jest.mock("../../services/api", () => ({
   },
 }));
 
-import * as apiModule from "../../services/api";
+// Mock the AdvancedFilters component
+jest.mock("../../components/AdvancedFilters", () => ({
+  __esModule: true,
+  default: ({ onFilterChange }: any) => (
+    <div data-testid="advanced-filters">Advanced Filters Mock</div>
+  ),
+}));
+
+// Mock the FilterService
+jest.mock("../../services/FilterService", () => ({
+  useFilterPresets: () => ({
+    presets: [],
+    addPreset: jest.fn(),
+  }),
+}));
 
 const mockTasks = [
   {
@@ -32,7 +46,11 @@ const mockTasks = [
 
 describe("TasksPage", () => {
   beforeEach(() => {
-    (apiModule.default.getTasks as jest.Mock).mockResolvedValue(mockTasks);
+    const api = require("../../services/api").default;
+    api.getTasks.mockResolvedValue({
+      data: mockTasks,
+      total: mockTasks.length,
+    });
   });
 
   it("renders tasks page title", () => {
@@ -44,8 +62,8 @@ describe("TasksPage", () => {
 
   it("displays search bar", () => {
     render(<TasksPage />);
-    const searchInput = screen.getByPlaceholderText(/search/i);
-    expect(searchInput).toBeInTheDocument();
+    const advancedFilters = screen.getByTestId("advanced-filters");
+    expect(advancedFilters).toBeInTheDocument();
   });
 
   it("renders pagination controls", () => {
