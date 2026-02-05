@@ -1,0 +1,381 @@
+/* Live Metrics Panel Styles */
+.live-metrics-panel {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+}
+
+/* Connection Status */
+.connection-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-indicator.connected {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status-indicator.connected svg {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.status-indicator.disconnected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.last-update {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card.throughput {
+  border-color: #3b82f6;
+}
+
+.metric-card.throughput .metric-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.metric-card.queue {
+  border-color: #8b5cf6;
+}
+
+.metric-card.queue .metric-icon {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+}
+
+.metric-card.running {
+  border-color: #10b981;
+}
+
+.metric-card.running .metric-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.metric-card.error-rate {
+  border-color: #f59e0b;
+}
+
+.metric-card.error-rate .metric-icon {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.metric-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Worker Health Section */
+.worker-health-section {
+  margin-bottom: 20px;
+}
+
+.worker-health-section h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.workers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.worker-card {
+  padding: 12px;
+  border-radius: 8px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.worker-card.healthy {
+  border-left: 3px solid #10b981;
+}
+
+.worker-card.degraded {
+  border-left: 3px solid #f59e0b;
+  background: #fffbeb;
+}
+
+.worker-card.offline {
+  border-left: 3px solid #ef4444;
+  background: #fef2f2;
+  opacity: 0.8;
+}
+
+.worker-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.status-icon.healthy {
+  color: #10b981;
+}
+
+.status-icon.degraded {
+  color: #f59e0b;
+}
+
+.status-icon.offline {
+  color: #ef4444;
+}
+
+.worker-id {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.worker-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.worker-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.worker-uptime {
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+/* Alerts Section */
+.alerts-section {
+  margin-top: 16px;
+}
+
+.alerts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.alerts-header h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.clear-alerts-btn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-alerts-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.alert-item.alert-info {
+  background: #eff6ff;
+  border-left: 3px solid #3b82f6;
+}
+
+.alert-item.alert-warning {
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+}
+
+.alert-item.alert-critical {
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
+}
+
+.alert-time {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.alert-message {
+  color: #374151;
+  flex: 1;
+}
+
+/* No Data State */
+.no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.no-data-icon {
+  margin-bottom: 12px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.no-data p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .metric-card {
+    padding: 12px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .metric-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .metric-value {
+    font-size: 1.2rem;
+  }
+
+  .workers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .connection-status {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}
