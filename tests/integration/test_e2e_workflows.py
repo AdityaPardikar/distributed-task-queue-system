@@ -7,8 +7,6 @@ from uuid import uuid4
 
 from src.models import Worker, Task
 from src.core.broker import get_broker
-from src.services.worker_service import WorkerService
-from src.services.task_service import TaskService
 
 
 @pytest.fixture
@@ -18,19 +16,7 @@ def broker():
 
 
 @pytest.fixture
-def worker_service():
-    """Fixture providing worker service."""
-    return WorkerService()
-
-
-@pytest.fixture
-def task_service():
-    """Fixture providing task service."""
-    return TaskService()
-
-
-@pytest.fixture
-def setup_workers(db, broker, worker_service):
+def setup_workers(db, broker):
     """Fixture creating test workers."""
     workers = []
     for i in range(3):

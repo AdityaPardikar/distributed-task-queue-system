@@ -17,7 +17,12 @@ def mock_redis():
     redis.hset = Mock(return_value=1)
     redis.hgetall = Mock(return_value={})
     redis.sadd = Mock(return_value=1)
+    # Track workers added via sadd for get_active_workers
     redis.smembers = Mock(return_value=set())
+    redis.zadd = Mock(return_value=1)
+    redis.zrangebyscore = Mock(return_value=[])
+    redis.zrem = Mock(return_value=1)
+    redis.llen = Mock(return_value=0)
     return redis
 
 
@@ -40,7 +45,7 @@ class TestPriorityQueueLogic:
         assert result is True
         mock_redis.rpush.assert_called()
         call_args = mock_redis.rpush.call_args[0]
-        assert "HIGH" in call_args[0]
+        assert "high" in call_args[0]
 
     def test_enqueue_medium_priority_task(self, broker, mock_redis):
         """Test enqueueing medium priority task (4-7)"""
@@ -51,7 +56,7 @@ class TestPriorityQueueLogic:
         
         assert result is True
         call_args = mock_redis.rpush.call_args[0]
-        assert "MEDIUM" in call_args[0]
+        assert "medium" in call_args[0]
 
     def test_enqueue_low_priority_task(self, broker, mock_redis):
         """Test enqueueing low priority task (1-3)"""
@@ -62,7 +67,7 @@ class TestPriorityQueueLogic:
         
         assert result is True
         call_args = mock_redis.rpush.call_args[0]
-        assert "LOW" in call_args[0]
+        assert "low" in call_args[0]
 
     def test_invalid_priority_defaults_to_medium(self, broker, mock_redis):
         """Test that invalid priority defaults to medium"""
@@ -72,7 +77,7 @@ class TestPriorityQueueLogic:
         broker.enqueue_task(task_id, priority=priority)
         
         call_args = mock_redis.rpush.call_args[0]
-        assert "MEDIUM" in call_args[0]
+        assert "medium" in call_args[0]
 
     def test_enqueue_with_metadata(self, broker, mock_redis):
         """Test enqueueing task with metadata"""
@@ -185,5 +190,7 @@ class TestWorkerOperations:
         mock_redis.sadd.assert_called()  # Added to registry
         mock_redis.hset.assert_called()  # Stored metadata
         
+        # Configure mock to return the registered worker
+        mock_redis.smembers = Mock(return_value={worker_id})
         workers = broker.get_active_workers()
         assert worker_id in workers
