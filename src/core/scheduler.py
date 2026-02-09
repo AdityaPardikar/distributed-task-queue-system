@@ -138,6 +138,10 @@ class TaskScheduler:
             True if valid, False otherwise
         """
         try:
+            # Standard cron uses 5 fields, reject 6-field expressions
+            fields = cron_expression.strip().split()
+            if len(fields) != 5:
+                return False
             croniter(cron_expression)
             return True
         except Exception:

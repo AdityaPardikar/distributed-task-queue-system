@@ -1,5 +1,6 @@
 """Task serialization module for handling complex Python objects."""
 
+import base64
 import json
 import pickle
 from datetime import datetime
@@ -147,7 +148,7 @@ class CustomJSONEncoder(json.JSONEncoder):
         elif isinstance(obj, bytes):
             return {
                 "__type__": "bytes",
-                "value": obj.decode('utf-8', errors='replace')
+                "value": base64.b64encode(obj).decode('ascii')
             }
         elif hasattr(obj, '__dict__'):
             # Handle custom objects with __dict__
@@ -178,7 +179,7 @@ def custom_json_decoder(dct: Dict[str, Any]) -> Any:
     elif obj_type == "uuid":
         return UUID(dct["value"])
     elif obj_type == "bytes":
-        return dct["value"].encode('utf-8')
+        return base64.b64decode(dct["value"].encode('ascii'))
     elif obj_type == "enum":
         # Note: Enum reconstruction requires importing the class
         # For now, just return the value

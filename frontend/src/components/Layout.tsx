@@ -152,9 +152,22 @@ const Layout: React.FC = () => {
                 {user?.username.charAt(0).toUpperCase()}
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.username}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.username}
+                  </p>
+                  <span
+                    className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                      user?.role === "admin"
+                        ? "bg-purple-100 text-purple-800"
+                        : user?.role === "operator"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {user?.role}
+                  </span>
+                </div>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
             </div>

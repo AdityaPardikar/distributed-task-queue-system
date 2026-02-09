@@ -1,35 +1,21 @@
 """Unit tests for email template functionality"""
 
+import os
 import pytest
 from uuid import uuid4
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
-from fastapi.testclient import TestClient
+# Set test environment before importing app
+os.environ["APP_ENV"] = "test"
 
-from src.api.main import create_app
 from src.api.schemas import TemplateCreate, TemplatePreviewRequest
-from src.db.session import get_db
 from src.models import EmailTemplate as EmailTemplateModel
 from src.services.email_template_engine import EmailTemplate, TemplateVariableInfo
 
 
 # Mocked datetime import for tests
 datetime = datetime
-
-
-def override_get_db():
-    """Mock get_db for testing"""
-    db = MagicMock()
-    yield db
-
-
-@pytest.fixture
-def test_client():
-    """Create test client with mocked database"""
-    app = create_app()
-    app.dependency_overrides[get_db] = override_get_db
-    return TestClient(app)
 
 
 class TestEmailTemplateEngine:
@@ -129,18 +115,18 @@ class TestEmailTemplateEngine:
 class TestTemplateAPI:
     """Tests for template API endpoints (integration tests)"""
 
-    def test_invalid_template_syntax(self, test_client):
+    def test_invalid_template_syntax(self, client):
         """Test API rejects templates with invalid Jinja2 syntax"""
         payload = {
             "name": "Invalid",
             "subject": "Hello {{ name",  # Missing closing braces
             "body": "Body"
         }
-        response = test_client.post("/api/v1/templates", json=payload)
+        response = client.post("/api/v1/templates", json=payload)
         # Should return 400 for invalid syntax
         assert response.status_code in [400, 422]  # 422 for validation error
 
-    def test_create_template_endpoint_available(self, test_client):
+    def test_create_template_endpoint_available(self, client):
         """Test that create template endpoint is available"""
         # Valid payload with all required fields
         payload = {
@@ -148,19 +134,19 @@ class TestTemplateAPI:
             "subject": "Hello {{ name }}!",
             "body": "Welcome {{ name }}!"
         }
-        response = test_client.post("/api/v1/templates", json=payload)
+        response = client.post("/api/v1/templates", json=payload)
         # Should succeed (200-299) or fail with database error (500+) due to mocking
         # But should not fail validation
         assert response.status_code not in [404]  # Endpoint exists
 
-    def test_list_templates_endpoint_available(self, test_client):
+    def test_list_templates_endpoint_available(self, client):
         """Test that list templates endpoint is available"""
-        response = test_client.get("/api/v1/templates")
+        response = client.get("/api/v1/templates")
         # Endpoint should exist (not 404)
         assert response.status_code in [200, 400, 422]  # OK or validation/param error
 
-    def test_template_id_parameter_validation(self, test_client):
+    def test_template_id_parameter_validation(self, client):
         """Test that template endpoints validate UUID parameter"""
         # Invalid UUID should return 400 or 422
-        response = test_client.get("/api/v1/templates/not-a-uuid")
+        response = client.get("/api/v1/templates/not-a-uuid")
         assert response.status_code in [400, 422]

@@ -11,6 +11,7 @@ import "./index.css";
 
 // Lazy-loaded pages for code splitting and better performance
 const LoginPage = lazy(() => import("./pages/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const TasksPage = lazy(() => import("./pages/TasksPage"));
 const AnalyticsDashboard = lazy(() => import("./pages/AnalyticsDashboard"));
@@ -19,29 +20,29 @@ const AnalyticsDashboard = lazy(() => import("./pages/AnalyticsDashboard"));
 const CampaignListPage = lazy(() =>
   import("./pages/CampaignListPage").then((module) => ({
     default: module.CampaignListPage,
-  }))
+  })),
 );
 const CreateCampaignPage = lazy(() =>
   import("./pages/CreateCampaignPage").then((module) => ({
     default: module.CreateCampaignPage,
-  }))
+  })),
 );
 const CampaignDetailPage = lazy(() =>
   import("./pages/CampaignDetailPage").then((module) => ({
     default: module.CampaignDetailPage,
-  }))
+  })),
 );
 
 // Template pages - lazy loaded
 const TemplateListPage = lazy(() =>
   import("./pages/TemplateListPage").then((module) => ({
     default: module.TemplateListPage,
-  }))
+  })),
 );
 const CreateTemplatePage = lazy(() =>
   import("./pages/CreateTemplatePage").then((module) => ({
     default: module.CreateTemplatePage,
-  }))
+  })),
 );
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
             <Suspense fallback={<LoadingFallback message="Loading..." />}>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
 
                 <Route
                   path="/*"
@@ -68,13 +70,25 @@ function App() {
 
                   {/* Campaign Routes */}
                   <Route path="campaigns" element={<CampaignListPage />} />
-                  <Route path="campaigns/new" element={<CreateCampaignPage />} />
-                  <Route path="campaigns/:id" element={<CampaignDetailPage />} />
+                  <Route
+                    path="campaigns/new"
+                    element={<CreateCampaignPage />}
+                  />
+                  <Route
+                    path="campaigns/:id"
+                    element={<CampaignDetailPage />}
+                  />
 
                   {/* Template Routes */}
                   <Route path="templates" element={<TemplateListPage />} />
-                  <Route path="templates/new" element={<CreateTemplatePage />} />
-                  <Route path="templates/:id" element={<CreateTemplatePage />} />
+                  <Route
+                    path="templates/new"
+                    element={<CreateTemplatePage />}
+                  />
+                  <Route
+                    path="templates/:id"
+                    element={<CreateTemplatePage />}
+                  />
 
                   <Route
                     path="workers"
@@ -90,10 +104,16 @@ function App() {
                       </div>
                     }
                   />
-                  <Route path="" element={<Navigate to="/dashboard" replace />} />
+                  <Route
+                    path=""
+                    element={<Navigate to="/dashboard" replace />}
+                  />
                 </Route>
 
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                <Route
+                  path="*"
+                  element={<Navigate to="/dashboard" replace />}
+                />
               </Routes>
             </Suspense>
           </BrowserRouter>

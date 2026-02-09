@@ -33,10 +33,12 @@ def create_app() -> FastAPI:
     )
 
     # Middleware - Order matters!
-    try:
-        app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts_list)
-    except:
-        pass
+    # Skip TrustedHostMiddleware in test environment
+    if settings.APP_ENV != "test":
+        try:
+            app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts_list)
+        except:
+            pass
 
     app.add_middleware(
         CORSMiddleware,
@@ -52,11 +54,35 @@ def create_app() -> FastAPI:
     # app.middleware("http")(request_timing_middleware)
 
     # Include routers
+    app.include_router(health.router)
+    
     try:
-        app.include_router(health.router)
-        app.include_router(auth.router, prefix="/api/v1")
+        app.include_router(tasks.router, prefix="/api/v1", tags=["tasks"])
+        app.include_router(workers.router, prefix="/api/v1", tags=["workers"])
+        app.include_router(campaigns.router, prefix="/api/v1", tags=["campaigns"])
+        app.include_router(templates.router, prefix="/api/v1", tags=["templates"])
+        app.include_router(analytics.router, prefix="/api/v1", tags=["analytics"])
+        app.include_router(dashboard.router, prefix="/api/v1", tags=["dashboard"])
+        app.include_router(search.router, prefix="/api/v1", tags=["search"])
+        app.include_router(workflows.router, prefix="/api/v1", tags=["workflows"])
+        app.include_router(alerts.router, prefix="/api/v1", tags=["alerts"])
+        app.include_router(metrics.router, prefix="/api/v1", tags=["metrics"])
+        app.include_router(resilience.router, prefix="/api/v1", tags=["resilience"])
+        app.include_router(debug.router, prefix="/api/v1", tags=["debug"])
+        app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
     except Exception as e:
-        print(f"Warning: Could not load auth routers: {e}")
+        print(f"Warning: Could not load some routers: {e}")
+    
+    # Root endpoint
+    @app.get("/")
+    async def root():
+        """Root endpoint"""
+        return {
+            "status": "online",
+            "name": settings.APP_NAME,
+            "version": settings.VERSION,
+            "docs": f"{settings.API_BASE_URL}/docs"
+        }
 
     return app
 

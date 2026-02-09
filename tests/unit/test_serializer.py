@@ -75,8 +75,9 @@ class TestTaskSerializer:
         serialized = serializer.serialize(data)
         deserialized = serializer.deserialize(serialized)
         
-        # Bytes are converted to string
-        assert isinstance(deserialized["binary"], str)
+        # Bytes are correctly preserved (base64 encoded/decoded)
+        assert isinstance(deserialized["binary"], bytes)
+        assert deserialized["binary"] == b"hello world"
 
     def test_pickle_serialization_basic(self):
         """Test pickle serialization of basic types."""
@@ -94,34 +95,26 @@ class TestTaskSerializer:
         """Test pickle serialization of complex Python objects."""
         serializer = TaskSerializer(format=SerializationFormat.PICKLE)
         
-        class CustomClass:
-            def __init__(self, value):
-                self.value = value
-            
-            def __eq__(self, other):
-                return isinstance(other, CustomClass) and self.value == other.value
+        # Use module-level class (datetime) or built-in types
+        from datetime import datetime
         
-        obj = CustomClass(42)
-        data = {"object": obj}
+        obj = datetime(2024, 1, 1, 12, 0, 0)
+        data = {"datetime": obj, "nested": {"list": [1, 2, 3], "dict": {"key": "value"}}}
         
         serialized = serializer.serialize(data)
         deserialized = serializer.deserialize(serialized)
         
-        assert deserialized["object"] == obj
-        assert deserialized["object"].value == 42
+        assert deserialized["datetime"] == obj
+        assert deserialized["nested"]["list"] == [1, 2, 3]
 
     def test_serialization_error_handling(self):
         """Test error handling for invalid serialization."""
         serializer = TaskSerializer(format=SerializationFormat.JSON)
         
-        # Create non-serializable object
-        class NonSerializable:
-            def __repr__(self):
-                raise Exception("Cannot serialize")
-        
-        # Should raise ValueError
+        # Create object that will fail JSON serialization
+        # Sets are not JSON serializable
         with pytest.raises(ValueError, match="Serialization failed"):
-            serializer.serialize({"obj": NonSerializable()})
+            serializer.serialize({"obj": {1, 2, 3}})
 
     def test_deserialization_error_handling(self):
         """Test error handling for invalid deserialization."""

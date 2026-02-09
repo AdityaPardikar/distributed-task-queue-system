@@ -1,51 +1,13 @@
 """Unit tests for campaign API endpoints."""
 
+import os
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from src.api.main import app
+# Set test environment before importing app
+os.environ["APP_ENV"] = "test"
+
 from src.api.schemas import CampaignCreate
-from src.db.session import get_db
 from src.models import Base
-
-
-TEST_DATABASE_URL = "sqlite:///:memory:"
-
-test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
-TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-
-
-def _override_get_db(test_db):
-    def _override():
-        try:
-            yield test_db
-        finally:
-            pass
-
-    return _override
-
-
-@pytest.fixture
-def test_db():
-    """Create test database."""
-    Base.metadata.create_all(bind=test_engine)
-    db = TestSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        Base.metadata.drop_all(bind=test_engine)
-
-
-@pytest.fixture
-def client(test_db):
-    """Create test client with DB override."""
-    app.dependency_overrides[get_db] = _override_get_db(test_db)
-    client = TestClient(app)
-    yield client
-    app.dependency_overrides.clear()
 
 
 def test_create_campaign_success(client):

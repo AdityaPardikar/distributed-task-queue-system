@@ -19,7 +19,7 @@ from src.db.session import get_db
 from src.models import EmailTemplate as EmailTemplateModel
 from src.services.email_template_engine import EmailTemplate
 
-router = APIRouter(prefix="/api/v1/templates", tags=["templates"])
+router = APIRouter(prefix="/templates", tags=["templates"])
 
 
 @router.post("", response_model=TemplateResponse, status_code=201)

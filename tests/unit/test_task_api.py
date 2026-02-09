@@ -1,51 +1,17 @@
 """Unit tests for task API endpoints."""
 
 import json
+import os
 from datetime import datetime
 from uuid import uuid4
 
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from unittest.mock import Mock, patch
 
-from src.api.main import app
+# Set test environment before importing app
+os.environ["APP_ENV"] ="test"
+
 from src.models import Base, Task
-from src.db.session import get_db
-
-
-# Test database setup
-TEST_DATABASE_URL = "sqlite:///:memory:"
-test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
-TestSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-
-
-@pytest.fixture
-def test_db():
-    """Create test database"""
-    Base.metadata.create_all(bind=test_engine)
-    db = TestSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        Base.metadata.drop_all(bind=test_engine)
-
-
-@pytest.fixture
-def client(test_db):
-    """Create test client with database override"""
-    def override_get_db():
-        try:
-            yield test_db
-        finally:
-            pass
-    
-    app.dependency_overrides[get_db] = override_get_db
-    client = TestClient(app)
-    yield client
-    app.dependency_overrides.clear()
 
 
 class TestCreateTaskEndpoint:
@@ -203,7 +169,7 @@ class TestCreateTaskEndpoint:
         assert "enqueue" in response.text.lower()
 
     @patch('src.api.routes.tasks.get_broker')
-    def test_create_task_with_parent_task_id(self, mock_get_broker, client, test_db):
+    def test_create_task_with_parent_task_id(self, mock_get_broker, client, db):
         """Test creating child task with parent dependency"""
         # Create parent task first
         parent_task = Task(
@@ -211,8 +177,8 @@ class TestCreateTaskEndpoint:
             priority=5,
             status="PENDING"
         )
-        test_db.add(parent_task)
-        test_db.commit()
+        db.add(parent_task)
+        db.commit()
         
         mock_broker = Mock()
         mock_broker.enqueue_task = Mock(return_value=True)

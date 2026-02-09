@@ -63,10 +63,14 @@ class Task(Base):
     executions: Mapped[list["TaskExecution"]] = relationship("TaskExecution", back_populates="task")
     children: Mapped[list["Task"]] = relationship(
         "Task",
-        remote_side=[parent_task_id],
         back_populates="parent",
+        foreign_keys=[parent_task_id]
     )
-    parent: Mapped[Optional["Task"]] = relationship("Task", remote_side=[parent_task_id], back_populates="children")
+    parent: Mapped[Optional["Task"]] = relationship(
+        "Task", 
+        back_populates="children",
+        remote_side=[task_id]
+    )
 
 
 class TaskResult(Base):
@@ -168,7 +172,7 @@ class Campaign(Base):
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    created_by: Mapped[str] = mapped_column(UUID)
+    created_by: Mapped[Optional[str]] = mapped_column(UUID)
     rate_limit_per_minute: Mapped[int] = mapped_column(Integer, default=100)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -281,4 +285,28 @@ class Alert(Base):
         Index("idx_alert_severity", "severity"),
         Index("idx_alert_acknowledged", "acknowledged"),
         Index("idx_alert_created_at", "created_at"),
+    )
+
+
+class User(Base):
+    """User model for authentication and authorization."""
+
+    __tablename__ = "users"
+
+    user_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    username: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    full_name: Mapped[Optional[str]] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(50), default="viewer")  # admin, operator, viewer
+    is_active: Mapped[bool] = mapped_column(Integer, default=True)
+    is_superuser: Mapped[bool] = mapped_column(Integer, default=False)
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("idx_user_username", "username"),
+        Index("idx_user_email", "email"),
+        Index("idx_user_role", "role"),
+        CheckConstraint("role IN ('admin', 'operator', 'viewer')", name="check_user_role"),
     )
