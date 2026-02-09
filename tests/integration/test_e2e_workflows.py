@@ -5,7 +5,7 @@ import asyncio
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from src.models import Worker, Task, Queue
+from src.models import Worker, Task
 from src.core.broker import get_broker
 from src.services.worker_service import WorkerService
 from src.services.task_service import TaskService

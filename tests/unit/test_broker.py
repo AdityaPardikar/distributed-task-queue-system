@@ -184,6 +184,6 @@ class TestWorkerOperations:
         assert result is True
         mock_redis.sadd.assert_called()  # Added to registry
         mock_redis.hset.assert_called()  # Stored metadata
-    
-    workers = broker.get_active_workers()
-    assert worker_id in workers
+        
+        workers = broker.get_active_workers()
+        assert worker_id in workers
