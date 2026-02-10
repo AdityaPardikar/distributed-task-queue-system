@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { AdvancedFiltersProps, FilterCriteria } from "../AdvancedFilters";
+import { useCallback, useState } from "react";
+import type { FilterCriteria } from "../components/AdvancedFilters";
 
 /**
  * Filter service for managing filter presets
@@ -91,7 +91,7 @@ export class FilterService {
  * Hook to manage filter presets
  */
 export const useFilterPresets = () => {
-  const [presets, setPresets] = React.useState(FilterService.getAllPresets());
+  const [presets, setPresets] = useState(FilterService.getAllPresets());
 
   const savePreset = useCallback((name: string, filters: FilterCriteria) => {
     if (FilterService.savePreset(name, filters)) {

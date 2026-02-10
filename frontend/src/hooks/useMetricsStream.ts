@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 // WebSocket URL configuration
 const getMetricsWebSocketUrl = (): string => {
-  const wsUrl = process.env.REACT_APP_WS_URL || process.env.VITE_WS_URL;
+  const wsUrl = import.meta.env.VITE_WS_URL as string | undefined;
   if (wsUrl) return `${wsUrl}/metrics`;
 
   // Construct from current location
@@ -71,7 +71,7 @@ export interface UseMetricsStreamReturn {
  * Provides live metrics updates, worker health status, and system alerts
  */
 export const useMetricsStream = (
-  options: UseMetricsStreamOptions = {}
+  options: UseMetricsStreamOptions = {},
 ): UseMetricsStreamReturn => {
   const {
     enabled = true,
@@ -101,7 +101,7 @@ export const useMetricsStream = (
       setLastUpdate(Date.now());
       onMetricsUpdate?.(data);
     },
-    [onMetricsUpdate]
+    [onMetricsUpdate],
   );
 
   // Handle incoming worker health update
@@ -114,7 +114,7 @@ export const useMetricsStream = (
       });
       onWorkerHealthUpdate?.(health);
     },
-    [onWorkerHealthUpdate]
+    [onWorkerHealthUpdate],
   );
 
   // Handle incoming alert
@@ -123,7 +123,7 @@ export const useMetricsStream = (
       setAlerts((prev) => [...prev.slice(-99), alert]); // Keep last 100 alerts
       onAlert?.(alert);
     },
-    [onAlert]
+    [onAlert],
   );
 
   // Connect to WebSocket
@@ -150,7 +150,7 @@ export const useMetricsStream = (
           JSON.stringify({
             action: "subscribe",
             channels: ["metrics", "worker_health", "alerts"],
-          })
+          }),
         );
       };
 
@@ -188,11 +188,11 @@ export const useMetricsStream = (
         if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current += 1;
           console.log(
-            `Reconnecting metrics stream... Attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts}`
+            `Reconnecting metrics stream... Attempt ${reconnectAttemptsRef.current}/${maxReconnectAttempts}`,
           );
           reconnectTimeoutRef.current = window.setTimeout(
             connect,
-            reconnectInterval
+            reconnectInterval,
           );
         } else {
           console.error("Max reconnection attempts reached for metrics stream");

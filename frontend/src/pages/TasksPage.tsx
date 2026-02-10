@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Download, RefreshCw } from "lucide-react";
 import api from "../services/api";
-import AdvancedFilters, { FilterCriteria } from "../components/AdvancedFilters";
-import { FilterService, useFilterPresets } from "../services/FilterService";
+import AdvancedFilters from "../components/AdvancedFilters";
+import type { FilterCriteria } from "../components/AdvancedFilters";
+import { useFilterPresets } from "../services/FilterService";
 
 interface Task {
   id: number | string;
@@ -30,7 +31,7 @@ const TasksPage: React.FC = () => {
     sortBy: "date",
     sortOrder: "desc",
   });
-  const { presets, addPreset } = useFilterPresets();
+  const { presets, savePreset } = useFilterPresets();
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -130,7 +131,7 @@ const TasksPage: React.FC = () => {
           setPage(1);
         }}
         onSavePreset={(name, filters) => {
-          addPreset(name, filters);
+          savePreset(name, filters);
         }}
         savedPresets={presets}
         loading={loading}

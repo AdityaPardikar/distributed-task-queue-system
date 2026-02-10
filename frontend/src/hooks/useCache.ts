@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import CacheService, { CacheOptions } from "../services/CacheService";
+import CacheService from "../services/CacheService";
+import type { CacheOptions } from "../services/CacheService";
 
 export interface UseCacheOptions<T> extends CacheOptions {
   /** Enable/disable caching */
@@ -37,7 +38,7 @@ export interface UseCacheReturn<T> {
 export function useCache<T>(
   key: string,
   fetcher: () => Promise<T>,
-  options: UseCacheOptions<T> = {}
+  options: UseCacheOptions<T> = {},
 ): UseCacheReturn<T> {
   const {
     enabled = true,
@@ -108,7 +109,7 @@ export function useCache<T>(
         }
       }
     },
-    [enabled, key, cacheOptions, onSuccess, onError]
+    [enabled, key, cacheOptions, onSuccess, onError],
   );
 
   // Refetch function exposed to consumers
@@ -130,7 +131,7 @@ export function useCache<T>(
       lastFetchTimeRef.current = Date.now();
       setIsStale(false);
     },
-    [key, cacheOptions]
+    [key, cacheOptions],
   );
 
   // Initial fetch on mount
@@ -220,7 +221,7 @@ export function useCacheMultiple<T extends Record<string, unknown>>(
     key: string;
     fetcher: () => Promise<unknown>;
     options?: UseCacheOptions<unknown>;
-  }[]
+  }[],
 ): {
   data: Partial<T>;
   isLoading: boolean;
@@ -246,7 +247,7 @@ export function useCacheMultiple<T extends Record<string, unknown>>(
           const result = await fetcher();
           CacheService.set(key, result, options);
           return { key, data: result };
-        })
+        }),
       );
 
       const dataMap = results.reduce(
@@ -254,7 +255,7 @@ export function useCacheMultiple<T extends Record<string, unknown>>(
           acc[key] = data;
           return acc;
         },
-        {} as Record<string, unknown>
+        {} as Record<string, unknown>,
       );
 
       setData(dataMap as Partial<T>);

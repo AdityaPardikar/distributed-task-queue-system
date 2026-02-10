@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useNotification } from "../context/NotificationContext";
 // WebSocket URL configuration
 const getWebSocketUrl = (): string => {
-  const wsUrl = process.env.REACT_APP_WS_URL || process.env.VITE_WS_URL;
+  const wsUrl = import.meta.env.VITE_WS_URL as string | undefined;
   if (wsUrl) return wsUrl;
 
   // Construct from current location

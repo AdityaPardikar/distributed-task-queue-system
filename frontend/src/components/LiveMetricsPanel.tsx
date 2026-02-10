@@ -10,8 +10,8 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
-import {
-  useMetricsStream,
+import { useMetricsStream } from "../hooks/useMetricsStream";
+import type {
   MetricsData,
   WorkerHealth,
   AlertData,
@@ -42,7 +42,7 @@ const LiveMetricsPanel: React.FC<LiveMetricsPanelProps> = ({
   // Convert worker health map to array
   const workers = useMemo(
     () => Array.from(workerHealthMap.values()),
-    [workerHealthMap]
+    [workerHealthMap],
   );
 
   // Get status icon
@@ -86,7 +86,9 @@ const LiveMetricsPanel: React.FC<LiveMetricsPanelProps> = ({
     <div className={`live-metrics-panel ${className}`}>
       {/* Connection Status */}
       <div className="connection-status">
-        <div className={`status-indicator ${isConnected ? "connected" : "disconnected"}`}>
+        <div
+          className={`status-indicator ${isConnected ? "connected" : "disconnected"}`}
+        >
           <Activity size={14} />
           <span>{isConnected ? "Live" : "Disconnected"}</span>
         </div>
@@ -192,15 +194,20 @@ const LiveMetricsPanel: React.FC<LiveMetricsPanelProps> = ({
             </button>
           </div>
           <div className="alerts-list">
-            {alerts.slice(-5).reverse().map((alert) => (
-              <div
-                key={alert.id}
-                className={`alert-item ${getAlertClass(alert.severity)}`}
-              >
-                <span className="alert-time">{formatTime(alert.timestamp)}</span>
-                <span className="alert-message">{alert.message}</span>
-              </div>
-            ))}
+            {alerts
+              .slice(-5)
+              .reverse()
+              .map((alert) => (
+                <div
+                  key={alert.id}
+                  className={`alert-item ${getAlertClass(alert.severity)}`}
+                >
+                  <span className="alert-time">
+                    {formatTime(alert.timestamp)}
+                  </span>
+                  <span className="alert-message">{alert.message}</span>
+                </div>
+              ))}
           </div>
         </div>
       )}

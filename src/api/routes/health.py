@@ -11,6 +11,7 @@ from src.cache.client import get_redis_client
 from src.config import get_settings
 from src.db.session import engine, get_db
 from src.models import Worker
+from src.monitoring.system_status import SystemStatusMonitor
 
 router = APIRouter(tags=["health"])
 settings = get_settings()
@@ -91,3 +92,25 @@ async def worker_health_status(db: Session = Depends(get_db)):
         "stale_workers": stale_workers,
         "heartbeat_threshold_seconds": settings.WORKER_DEAD_TIMEOUT_SECONDS,
     }
+
+
+@router.get("/system/status")
+async def system_status(db: Session = Depends(get_db)):
+    """Get comprehensive system status with health score."""
+    return SystemStatusMonitor.get_full_status(db)
+
+
+@router.get("/system/resources")
+async def system_resources():
+    """Get current system resource usage."""
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        **SystemStatusMonitor.get_resource_usage(),
+        "system": SystemStatusMonitor.get_system_info(),
+    }
+
+
+@router.get("/live")
+async def liveness_probe():
+    """Kubernetes liveness probe - minimal check that service is running."""
+    return {"status": "alive", "timestamp": datetime.utcnow().isoformat()}

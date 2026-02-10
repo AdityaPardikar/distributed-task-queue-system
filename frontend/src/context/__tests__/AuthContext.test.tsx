@@ -3,13 +3,12 @@
  */
 
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { AuthProvider, useAuth } from "../context/AuthContext";
-import React from "react";
+import { AuthProvider, useAuth } from "../AuthContext";
 
 // Mock fetch
-global.fetch = jest.fn();
+(globalThis as { fetch?: typeof fetch }).fetch = jest.fn();
 
-const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+const mockFetch = globalThis.fetch as jest.MockedFunction<typeof fetch>;
 
 describe("AuthContext", () => {
   beforeEach(() => {

@@ -67,7 +67,7 @@ class AnalyticsServiceClass {
         params.end_date = dateRange.endDate;
       }
       const response = await api.get("/analytics", { params });
-      return response.data;
+      return response.data as AnalyticsData;
     } catch (error) {
       console.error("Failed to fetch analytics:", error);
       throw error;
@@ -77,7 +77,7 @@ class AnalyticsServiceClass {
   async getTaskTrends(days: number = 30): Promise<TrendDataPoint[]> {
     try {
       const response = await api.get("/analytics/trends", { params: { days } });
-      return response.data;
+      return response.data as TrendDataPoint[];
     } catch (error) {
       console.error("Failed to fetch task trends:", error);
       throw error;
@@ -87,7 +87,7 @@ class AnalyticsServiceClass {
   async getWorkerStats(): Promise<WorkerStat[]> {
     try {
       const response = await api.get("/analytics/workers");
-      return response.data;
+      return response.data as WorkerStat[];
     } catch (error) {
       console.error("Failed to fetch worker stats:", error);
       throw error;
@@ -97,7 +97,7 @@ class AnalyticsServiceClass {
   async getErrorRates(days: number = 30): Promise<ErrorRateData[]> {
     try {
       const response = await api.get("/analytics/errors", { params: { days } });
-      return response.data;
+      return response.data as ErrorRateData[];
     } catch (error) {
       console.error("Failed to fetch error rates:", error);
       throw error;
@@ -109,7 +109,7 @@ class AnalyticsServiceClass {
       const response = await api.get("/analytics/queue-depth", {
         params: { hours },
       });
-      return response.data;
+      return response.data as QueueDepthPoint[];
     } catch (error) {
       console.error("Failed to fetch queue depth history:", error);
       throw error;
@@ -119,7 +119,7 @@ class AnalyticsServiceClass {
   async generateReport(config: ReportConfig): Promise<string> {
     try {
       const response = await api.post("/reports/generate", config);
-      return response.data.reportId;
+      return (response.data as { reportId: string }).reportId;
     } catch (error) {
       console.error("Failed to generate report:", error);
       throw error;
@@ -141,7 +141,12 @@ class AnalyticsServiceClass {
   > {
     try {
       const response = await api.get("/reports");
-      return response.data;
+      return response.data as Array<{
+        id: string;
+        name: string;
+        type: string;
+        createdAt: string;
+      }>;
     } catch (error) {
       console.error("Failed to list reports:", error);
       throw error;

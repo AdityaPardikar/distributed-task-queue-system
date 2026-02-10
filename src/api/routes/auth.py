@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
-from src.api.middleware import get_auth_service, get_current_user, require_admin
+from src.api.auth_deps import get_auth_service, get_current_user, require_admin
 from src.db.session import get_db
 from src.models import User
 from src.services.auth_service import AuthService

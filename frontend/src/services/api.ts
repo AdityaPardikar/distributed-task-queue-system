@@ -196,6 +196,23 @@ class ApiClient {
       }
     },
   };
+
+  // Generic HTTP methods for direct API access
+  async get<T>(url: string, config?: { params?: Record<string, unknown> }) {
+    return this.client.get<T>(url, config);
+  }
+
+  async post<T>(url: string, data?: unknown) {
+    return this.client.post<T>(url, data);
+  }
+
+  async delete<T>(url: string) {
+    return this.client.delete<T>(url);
+  }
+
+  async put<T>(url: string, data?: unknown) {
+    return this.client.put<T>(url, data);
+  }
 }
 
 export const apiClient = new ApiClient();

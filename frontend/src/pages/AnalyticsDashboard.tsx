@@ -7,7 +7,8 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import AnalyticsService, {
+import AnalyticsService from "../services/AnalyticsService";
+import type {
   AnalyticsData,
   TrendDataPoint,
   WorkerStat,

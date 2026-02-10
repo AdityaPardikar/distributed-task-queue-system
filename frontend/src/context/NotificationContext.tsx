@@ -1,10 +1,5 @@
-import React, {
-  createContext,
-  useContext,
-  useCallback,
-  useState,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useCallback, useState } from "react";
+import type { ReactNode } from "react";
 
 export type NotificationType = "success" | "error" | "warning" | "info";
 

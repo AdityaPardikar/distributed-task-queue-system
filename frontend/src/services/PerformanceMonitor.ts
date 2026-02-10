@@ -56,7 +56,7 @@ class PerformanceMonitorClass {
   trackApiCall<T>(
     name: string,
     request: () => Promise<T>,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<T> {
     return this.track(name, "api", request, metadata);
   }
@@ -67,7 +67,7 @@ class PerformanceMonitorClass {
   trackRender(
     componentName: string,
     duration: number,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): void {
     if (!this.isEnabled) return;
 
@@ -88,7 +88,7 @@ class PerformanceMonitorClass {
   trackCustom(
     name: string,
     duration: number,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): void {
     if (!this.isEnabled) return;
 
@@ -110,7 +110,7 @@ class PerformanceMonitorClass {
     name: string,
     type: PerformanceMetric["type"],
     operation: () => Promise<T>,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ): Promise<T> {
     if (!this.isEnabled) {
       return operation();
@@ -160,7 +160,7 @@ class PerformanceMonitorClass {
    */
   startTimer(
     name: string,
-    type: PerformanceMetric["type"] = "custom"
+    type: PerformanceMetric["type"] = "custom",
   ): () => void {
     const startTime = performance.now();
 
@@ -219,7 +219,7 @@ class PerformanceMonitorClass {
    */
   getMetricsInRange(startTime: number, endTime: number): PerformanceMetric[] {
     return this.metrics.filter(
-      (m) => m.timestamp >= startTime && m.timestamp <= endTime
+      (m) => m.timestamp >= startTime && m.timestamp <= endTime,
     );
   }
 
@@ -267,10 +267,7 @@ class PerformanceMonitorClass {
   /**
    * Generate a performance report
    */
-  generateReport(
-    startTime?: number,
-    endTime?: number
-  ): PerformanceReport {
+  generateReport(startTime?: number, endTime?: number): PerformanceReport {
     const now = Date.now();
     const start = startTime ?? now - 3600000; // Default: last hour
     const end = endTime ?? now;
@@ -296,13 +293,13 @@ class PerformanceMonitorClass {
       endTime: end,
       metrics: metricStats,
       apiMetrics: this.calculateStats(
-        metricsInRange.filter((m) => m.type === "api")
+        metricsInRange.filter((m) => m.type === "api"),
       ),
       renderMetrics: this.calculateStats(
-        metricsInRange.filter((m) => m.type === "render")
+        metricsInRange.filter((m) => m.type === "render"),
       ),
       customMetrics: this.calculateStats(
-        metricsInRange.filter((m) => m.type === "custom")
+        metricsInRange.filter((m) => m.type === "custom"),
       ),
       totalMetrics: metricsInRange.length,
     };
@@ -335,7 +332,7 @@ class PerformanceMonitorClass {
         report: this.generateReport(),
       },
       null,
-      2
+      2,
     );
   }
 
@@ -375,9 +372,9 @@ class PerformanceMonitorClass {
       return {};
     }
 
-    const navigation = performance.getEntriesByType(
-      "navigation"
-    )[0] as PerformanceNavigationTiming | undefined;
+    const navigation = performance.getEntriesByType("navigation")[0] as
+      | PerformanceNavigationTiming
+      | undefined;
     const paint = performance.getEntriesByType("paint");
 
     const fcp = paint.find((entry) => entry.name === "first-contentful-paint");
@@ -410,10 +407,9 @@ export { PerformanceMonitorClass };
 /**
  * Higher-order function to wrap API calls with performance tracking
  */
-export function withPerformanceTracking<T extends (...args: unknown[]) => Promise<unknown>>(
-  name: string,
-  fn: T
-): T {
+export function withPerformanceTracking<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(name: string, fn: T): T {
   return (async (...args: Parameters<T>) => {
     return PerformanceMonitor.trackApiCall(name, () => fn(...args));
   }) as T;
@@ -424,16 +420,16 @@ export function withPerformanceTracking<T extends (...args: unknown[]) => Promis
  */
 export function trackPerformance(name?: string) {
   return function (
-    target: unknown,
+    _target: unknown,
     propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const originalMethod = descriptor.value;
     const metricName = name || propertyKey;
 
     descriptor.value = async function (...args: unknown[]) {
       return PerformanceMonitor.track(metricName, "custom", () =>
-        originalMethod.apply(this, args)
+        originalMethod.apply(this, args),
       );
     };
 

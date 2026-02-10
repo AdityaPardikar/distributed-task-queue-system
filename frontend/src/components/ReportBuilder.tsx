@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Save, Trash2, Plus, Download, Calendar } from "lucide-react";
-import AnalyticsService, { ReportConfig } from "../services/AnalyticsService";
+import { Trash2, Plus, Download, Calendar } from "lucide-react";
+import AnalyticsService from "../services/AnalyticsService";
+import type { ReportConfig } from "../services/AnalyticsService";
 import "../styles/report-builder.css";
 
 interface SavedReport {
@@ -46,7 +47,7 @@ const ReportBuilder: React.FC = () => {
   const loadReports = async () => {
     try {
       const reports = await AnalyticsService.listReports();
-      setSavedReports(reports);
+      setSavedReports(reports as SavedReport[]);
     } catch (error) {
       console.error("Failed to load reports:", error);
     }

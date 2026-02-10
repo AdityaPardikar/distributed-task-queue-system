@@ -19,8 +19,9 @@ const LoginForm: React.FC = () => {
     try {
       await login(username, password);
       navigate("/"); // Redirect to dashboard
-    } catch (err: any) {
-      setError(err.message || "Login failed. Please check your credentials.");
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
