@@ -9,6 +9,14 @@ from .auto_recovery import (
     get_auto_recovery_engine,
     get_health_checker,
 )
+from .chaos_engineering import (
+    ChaosEngineering,
+    ChaosType,
+    ChaosConfig,
+    chaos_monkey,
+    RetryWithBackoff,
+    DeadLetterQueue,
+)
 
 __all__ = [
     "CircuitBreaker",
@@ -22,4 +30,10 @@ __all__ = [
     "HealthChecker",
     "get_auto_recovery_engine",
     "get_health_checker",
+    "ChaosEngineering",
+    "ChaosType",
+    "ChaosConfig",
+    "chaos_monkey",
+    "RetryWithBackoff",
+    "DeadLetterQueue",
 ]
