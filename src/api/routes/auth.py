@@ -114,8 +114,8 @@ async def login(
     auth_service.update_last_login(db, user.user_id)
 
     # Create tokens
-    access_token = auth_service.create_access_token(data={"sub": user.user_id, "username": user.username, "role": user.role})
-    refresh_token = auth_service.create_refresh_token(data={"sub": user.user_id})
+    access_token = auth_service.create_access_token(data={"sub": str(user.user_id), "username": user.username, "role": user.role})
+    refresh_token = auth_service.create_refresh_token(data={"sub": str(user.user_id)})
 
     return Token(access_token=access_token, refresh_token=refresh_token)
 
@@ -153,9 +153,9 @@ async def refresh_token(
 
         # Create new tokens
         access_token = auth_service.create_access_token(
-            data={"sub": user.user_id, "username": user.username, "role": user.role}
+            data={"sub": str(user.user_id), "username": user.username, "role": user.role}
         )
-        refresh_token = auth_service.create_refresh_token(data={"sub": user.user_id})
+        refresh_token = auth_service.create_refresh_token(data={"sub": str(user.user_id)})
 
         return Token(access_token=access_token, refresh_token=refresh_token)
 

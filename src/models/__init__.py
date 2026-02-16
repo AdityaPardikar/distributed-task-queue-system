@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import JSON, UUID, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, create_engine
+from sqlalchemy import Boolean, JSON, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
 from .task_status import TaskStatus, is_valid_transition, is_terminal_status, get_valid_next_statuses
@@ -21,7 +21,7 @@ class Task(Base):
 
     __tablename__ = "tasks"
 
-    task_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    task_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     task_name: Mapped[str] = mapped_column(String(255), nullable=False)
     task_args: Mapped[dict] = mapped_column(JSON, default=dict)
     task_kwargs: Mapped[dict] = mapped_column(JSON, default=dict)
@@ -35,15 +35,15 @@ class Task(Base):
     next_retry_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     timeout_seconds: Mapped[int] = mapped_column(Integer, default=300)
     depends_on: Mapped[list] = mapped_column(JSON, default=list)
-    parent_task_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("tasks.task_id"))
-    campaign_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("campaigns.campaign_id"))
+    parent_task_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("tasks.task_id"))
+    campaign_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("campaigns.campaign_id"))
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     cron_expression: Mapped[Optional[str]] = mapped_column(String(100))
     is_recurring: Mapped[bool] = mapped_column(Integer, default=False)
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    worker_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("workers.worker_id"))
-    created_by: Mapped[Optional[str]] = mapped_column(UUID)
+    worker_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("workers.worker_id"))
+    created_by: Mapped[Optional[str]] = mapped_column(String(36))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (
@@ -78,8 +78,8 @@ class TaskResult(Base):
 
     __tablename__ = "task_results"
 
-    result_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
-    task_id: Mapped[str] = mapped_column(UUID, ForeignKey("tasks.task_id"), unique=True)
+    result_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    task_id: Mapped[str] = mapped_column(String(36), ForeignKey("tasks.task_id"), unique=True)
     result_data: Mapped[dict] = mapped_column(JSON, default=dict)
     error_message: Mapped[Optional[str]] = mapped_column(Text)
     stack_trace: Mapped[Optional[str]] = mapped_column(Text)
@@ -96,8 +96,8 @@ class TaskLog(Base):
 
     __tablename__ = "task_logs"
 
-    log_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
-    task_id: Mapped[str] = mapped_column(UUID, ForeignKey("tasks.task_id"))
+    log_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    task_id: Mapped[str] = mapped_column(String(36), ForeignKey("tasks.task_id"))
     level: Mapped[str] = mapped_column(String(20), default="INFO")
     message: Mapped[str] = mapped_column(Text)
     log_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
@@ -114,9 +114,9 @@ class TaskExecution(Base):
 
     __tablename__ = "task_executions"
 
-    execution_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
-    task_id: Mapped[str] = mapped_column(UUID, ForeignKey("tasks.task_id"))
-    worker_id: Mapped[str] = mapped_column(UUID, ForeignKey("workers.worker_id"))
+    execution_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    task_id: Mapped[str] = mapped_column(String(36), ForeignKey("tasks.task_id"))
+    worker_id: Mapped[str] = mapped_column(String(36), ForeignKey("workers.worker_id"))
     attempt_number: Mapped[int] = mapped_column(Integer)
     started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
@@ -139,7 +139,7 @@ class Worker(Base):
 
     __tablename__ = "workers"
 
-    worker_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    worker_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     hostname: Mapped[str] = mapped_column(String(255))
     status: Mapped[str] = mapped_column(String(50), default="ACTIVE")
     capacity: Mapped[int] = mapped_column(Integer, default=5)
@@ -160,7 +160,7 @@ class Campaign(Base):
 
     __tablename__ = "campaigns"
 
-    campaign_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    campaign_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     name: Mapped[str] = mapped_column(String(255))
     status: Mapped[str] = mapped_column(String(50), default="DRAFT")
     template_subject: Mapped[str] = mapped_column(String(255))
@@ -172,7 +172,7 @@ class Campaign(Base):
     scheduled_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    created_by: Mapped[Optional[str]] = mapped_column(UUID)
+    created_by: Mapped[Optional[str]] = mapped_column(String(36))
     rate_limit_per_minute: Mapped[int] = mapped_column(Integer, default=100)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -190,13 +190,13 @@ class EmailRecipient(Base):
 
     __tablename__ = "email_recipients"
 
-    recipient_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
-    campaign_id: Mapped[str] = mapped_column(UUID, ForeignKey("campaigns.campaign_id"))
+    recipient_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.campaign_id"))
     email: Mapped[str] = mapped_column(String(255))
     status: Mapped[str] = mapped_column(String(50), default="PENDING")
     personalization: Mapped[dict] = mapped_column(JSON, default=dict)
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    task_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("tasks.task_id"))
+    task_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("tasks.task_id"))
     error_message: Mapped[Optional[str]] = mapped_column(Text)
     bounce_reason: Mapped[Optional[str]] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -212,13 +212,13 @@ class EmailTemplate(Base):
 
     __tablename__ = "email_templates"
 
-    email_template_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    email_template_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     name: Mapped[str] = mapped_column(String(255))
     subject: Mapped[str] = mapped_column(String(255))
     body: Mapped[str] = mapped_column(Text)
     variables: Mapped[dict] = mapped_column(JSON, default=dict)
     version: Mapped[int] = mapped_column(Integer, default=1)
-    campaign_id: Mapped[Optional[str]] = mapped_column(UUID, ForeignKey("campaigns.campaign_id"))
+    campaign_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("campaigns.campaign_id"))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     __table_args__ = (
@@ -234,9 +234,9 @@ class CampaignTask(Base):
 
     __tablename__ = "campaign_tasks"
 
-    campaign_task_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
-    campaign_id: Mapped[str] = mapped_column(UUID, ForeignKey("campaigns.campaign_id"))
-    task_id: Mapped[str] = mapped_column(UUID, ForeignKey("tasks.task_id"))
+    campaign_task_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.campaign_id"))
+    task_id: Mapped[str] = mapped_column(String(36), ForeignKey("tasks.task_id"))
     status: Mapped[str] = mapped_column(String(50), default="PENDING")
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -254,8 +254,8 @@ class DeadLetterQueue(Base):
 
     __tablename__ = "dead_letter_queue"
 
-    dlq_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
-    task_id: Mapped[str] = mapped_column(UUID, ForeignKey("tasks.task_id"))
+    dlq_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    task_id: Mapped[str] = mapped_column(String(36), ForeignKey("tasks.task_id"))
     task_data: Mapped[dict] = mapped_column(JSON)
     failure_reason: Mapped[str] = mapped_column(Text)
     total_attempts: Mapped[int] = mapped_column(Integer)
@@ -270,7 +270,7 @@ class Alert(Base):
 
     __tablename__ = "alerts"
 
-    alert_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    alert_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     alert_type: Mapped[str] = mapped_column(String(100))
     severity: Mapped[str] = mapped_column(String(50))
     description: Mapped[str] = mapped_column(Text)
@@ -293,14 +293,14 @@ class User(Base):
 
     __tablename__ = "users"
 
-    user_id: Mapped[str] = mapped_column(UUID, primary_key=True, default=uuid4)
+    user_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
     username: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[Optional[str]] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(50), default="viewer")  # admin, operator, viewer
-    is_active: Mapped[bool] = mapped_column(Integer, default=True)
-    is_superuser: Mapped[bool] = mapped_column(Integer, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
