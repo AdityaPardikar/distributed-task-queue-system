@@ -2,7 +2,7 @@
 
 import pytest
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.models import Task
 from src.services.task_debugger import get_task_debugger
@@ -45,7 +45,7 @@ def failed_task(db):
         retry_count=2,
         max_retries=3,
         error_message="Task execution timeout",
-        failed_at=datetime.utcnow(),
+        failed_at=datetime.now(timezone.utc),
     )
     db.add(task)
     db.commit()
@@ -401,11 +401,11 @@ class TestFunctionMetrics:
 
     def test_get_function_metrics(self, db, task_debugger):
         """Test getting metrics for a function."""
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
 
         # Create tasks
         for i in range(5):
-            start = datetime.utcnow()
+            start = datetime.now(timezone.utc)
             completed = start + timedelta(seconds=10)
 
             task = Task(

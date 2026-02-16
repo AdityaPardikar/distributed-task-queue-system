@@ -86,7 +86,7 @@ async def list_templates(
     query = db.query(EmailTemplateModel)
     
     if campaign_id:
-        query = query.filter(EmailTemplateModel.campaign_id == campaign_id)
+        query = query.filter(EmailTemplateModel.campaign_id == str(campaign_id))
     
     templates = query.offset(skip).limit(limit).all()
     

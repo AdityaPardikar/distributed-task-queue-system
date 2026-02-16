@@ -202,7 +202,7 @@ async def get_task(task_id: UUID, db: Session = Depends(get_db)):
     Returns:
         Complete task details or 404 if not found
     """
-    task = db.query(Task).filter(Task.task_id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == str(task_id)).first()
     
     if not task:
         raise HTTPException(
@@ -229,7 +229,7 @@ async def cancel_task(task_id: UUID, db: Session = Depends(get_db)):
     Raises:
         HTTPException: If task not found or cannot be cancelled
     """
-    task = db.query(Task).filter(Task.task_id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == str(task_id)).first()
     
     if not task:
         raise HTTPException(
@@ -311,7 +311,7 @@ async def update_task(
     Raises:
         HTTPException: If task not found or cannot be updated
     """
-    task = db.query(Task).filter(Task.task_id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == str(task_id)).first()
     
     if not task:
         raise HTTPException(
@@ -373,7 +373,7 @@ async def update_task(
 @router.post("/{task_id}/retry")
 async def retry_task(task_id: UUID, db: Session = Depends(get_db)):
     """Retry a task"""
-    task = db.query(Task).filter(Task.task_id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == str(task_id)).first()
 
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -403,7 +403,7 @@ async def list_dead_letter_tasks():
 async def retry_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
     """Retry a task from the dead letter queue."""
     broker = get_broker()
-    task = db.query(Task).filter(Task.task_id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == str(task_id)).first()
 
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
@@ -438,7 +438,7 @@ async def retry_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
 async def discard_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
     """Discard a task from the dead letter queue."""
     broker = get_broker()
-    task = db.query(Task).filter(Task.task_id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == str(task_id)).first()
 
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
@@ -461,7 +461,7 @@ async def discard_dead_letter_task(task_id: UUID, db: Session = Depends(get_db))
 @router.get("/{task_id}/dependencies", status_code=status.HTTP_200_OK)
 async def get_task_dependencies(task_id: UUID, db: Session = Depends(get_db)):
     """Return dependency list for a task with their statuses."""
-    task = db.query(Task).filter(Task.task_id == task_id).first()
+    task = db.query(Task).filter(Task.task_id == str(task_id)).first()
     if not task:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
 

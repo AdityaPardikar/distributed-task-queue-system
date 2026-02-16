@@ -2,7 +2,7 @@
 
 import pytest
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from src.models import Worker, Task
@@ -25,7 +25,7 @@ def setup_workers(db, broker):
             capacity=5,
             current_load=0,
             status="ACTIVE",
-            last_heartbeat=datetime.utcnow(),
+            last_heartbeat=datetime.now(timezone.utc),
         )
         db.add(worker)
     db.commit()
@@ -77,7 +77,7 @@ class TestBasicTaskFlow:
         # 2. Simulate assignment
         task.worker_id = uuid4()
         task.status = "RUNNING"
-        task.started_at = datetime.utcnow()
+        task.started_at = datetime.now(timezone.utc)
         db.commit()
 
         assert task.status == "RUNNING"
@@ -85,7 +85,7 @@ class TestBasicTaskFlow:
 
         # 3. Simulate completion
         task.status = "COMPLETED"
-        task.completed_at = datetime.utcnow()
+        task.completed_at = datetime.now(timezone.utc)
         db.commit()
 
         assert task.status == "COMPLETED"
@@ -108,7 +108,7 @@ class TestBasicTaskFlow:
         # Simulate failure
         task.status = "FAILED"
         task.error_message = "Connection timeout"
-        task.failed_at = datetime.utcnow()
+        task.failed_at = datetime.now(timezone.utc)
         db.commit()
 
         assert task.status == "FAILED"
@@ -128,14 +128,14 @@ class TestBasicTaskFlow:
             task_args=[],
             task_kwargs={},
             status="RUNNING",
-            started_at=datetime.utcnow() - timedelta(minutes=10),
+            started_at=datetime.now(timezone.utc) - timedelta(minutes=10),
             timeout_seconds=300,  # 5 minute timeout
         )
         db.add(task)
         db.commit()
 
         # Check if timed out
-        elapsed = (datetime.utcnow() - task.started_at).total_seconds()
+        elapsed = (datetime.now(timezone.utc) - task.started_at).total_seconds()
         is_timed_out = elapsed > task.timeout_seconds
 
         assert is_timed_out is True
@@ -156,7 +156,7 @@ class TestWorkerManagement:
             capacity=10,
             current_load=0,
             status="ACTIVE",
-            last_heartbeat=datetime.utcnow(),
+            last_heartbeat=datetime.now(timezone.utc),
         )
         db.add(worker)
         db.commit()
@@ -177,7 +177,7 @@ class TestWorkerManagement:
             capacity=5,
             current_load=0,
             status="ACTIVE",
-            last_heartbeat=datetime.utcnow() - timedelta(minutes=1),
+            last_heartbeat=datetime.now(timezone.utc) - timedelta(minutes=1),
         )
         db.add(worker)
         db.commit()
@@ -185,7 +185,7 @@ class TestWorkerManagement:
         initial_heartbeat = worker.last_heartbeat
 
         # Update heartbeat
-        worker.last_heartbeat = datetime.utcnow()
+        worker.last_heartbeat = datetime.now(timezone.utc)
         db.commit()
 
         assert worker.last_heartbeat > initial_heartbeat
@@ -197,7 +197,7 @@ class TestWorkerManagement:
             capacity=5,
             current_load=3,
             status="ACTIVE",
-            last_heartbeat=datetime.utcnow(),
+            last_heartbeat=datetime.now(timezone.utc),
         )
         db.add(worker)
         db.commit()
@@ -231,16 +231,16 @@ class TestWorkerManagement:
             capacity=5,
             current_load=2,
             status="ACTIVE",
-            last_heartbeat=datetime.utcnow(),
+            last_heartbeat=datetime.now(timezone.utc),
         )
         db.add(worker)
         db.commit()
 
         # Simulate no heartbeat for long time
-        worker.last_heartbeat = datetime.utcnow() - timedelta(minutes=10)
+        worker.last_heartbeat = datetime.now(timezone.utc) - timedelta(minutes=10)
 
         # Check if unhealthy
-        time_since_heartbeat = (datetime.utcnow() - worker.last_heartbeat).total_seconds()
+        time_since_heartbeat = (datetime.now(timezone.utc) - worker.last_heartbeat).total_seconds()
         is_unhealthy = time_since_heartbeat > 300  # 5 minute threshold
 
         assert is_unhealthy is True
@@ -377,7 +377,7 @@ class TestSchedulingAndDependencies:
 
     def test_scheduled_task_execution(self, db):
         """Test scheduled task creation and timing."""
-        scheduled_time = datetime.utcnow() + timedelta(hours=1)
+        scheduled_time = datetime.now(timezone.utc) + timedelta(hours=1)
 
         task = Task(
             task_name="scheduled",
@@ -390,7 +390,7 @@ class TestSchedulingAndDependencies:
         db.commit()
 
         # Check if should execute
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         should_execute = now >= task.scheduled_at
 
         assert should_execute is False
@@ -453,7 +453,7 @@ class TestEndToEndWorkflow:
         task = db.query(Task).filter(Task.task_id == task_id).first()
         task.worker_id = workers[0].worker_id
         task.status = "RUNNING"
-        task.started_at = datetime.utcnow()
+        task.started_at = datetime.now(timezone.utc)
         workers[0].current_load += 1
         db.commit()
 
@@ -462,7 +462,7 @@ class TestEndToEndWorkflow:
 
         # 3. Complete task
         task.status = "COMPLETED"
-        task.completed_at = datetime.utcnow()
+        task.completed_at = datetime.now(timezone.utc)
         workers[0].current_load -= 1
         db.commit()
 
@@ -494,7 +494,7 @@ class TestEndToEndWorkflow:
             worker = workers[i % len(workers)]
             task.worker_id = worker.worker_id
             task.status = "RUNNING"
-            task.started_at = datetime.utcnow()
+            task.started_at = datetime.now(timezone.utc)
             worker.current_load += 1
 
         db.commit()
@@ -507,7 +507,7 @@ class TestEndToEndWorkflow:
         # Complete all
         for task in db.query(Task).all():
             task.status = "COMPLETED"
-            task.completed_at = datetime.utcnow()
+            task.completed_at = datetime.now(timezone.utc)
             worker = db.query(Worker).filter(
                 Worker.worker_id == task.worker_id
             ).first()
@@ -538,7 +538,7 @@ class TestEndToEndWorkflow:
         # Simulate failure
         task.status = "FAILED"
         task.error_message = "Network timeout"
-        task.failed_at = datetime.utcnow()
+        task.failed_at = datetime.now(timezone.utc)
         db.commit()
 
         assert task.status == "FAILED"
@@ -552,7 +552,7 @@ class TestEndToEndWorkflow:
 
         # Succeed on retry
         task.status = "COMPLETED"
-        task.completed_at = datetime.utcnow()
+        task.completed_at = datetime.now(timezone.utc)
         db.commit()
 
         assert task.status == "COMPLETED"

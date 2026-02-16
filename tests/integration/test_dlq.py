@@ -2,7 +2,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -32,7 +32,7 @@ class FakeBroker:
             "failure_reason": failure_reason,
             "task_id": task_id,
             "task_data": task_data or {},
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         return True
 

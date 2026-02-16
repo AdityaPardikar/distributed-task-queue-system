@@ -80,7 +80,7 @@ async def send_heartbeat(
     Workers should send heartbeat every 15-30 seconds.
     Workers without heartbeat for > 30s are considered offline.
     """
-    worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
+    worker = db.query(Worker).filter(Worker.worker_id == str(worker_id)).first()
     
     if not worker:
         raise HTTPException(
@@ -145,7 +145,7 @@ async def list_workers(
 @router.get("/{worker_id}", response_model=WorkerResponse)
 async def get_worker(worker_id: UUID, db: Session = Depends(get_db)):
     """Get worker details"""
-    worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
+    worker = db.query(Worker).filter(Worker.worker_id == str(worker_id)).first()
 
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
@@ -159,7 +159,7 @@ async def get_worker_tasks(
     db: Session = Depends(get_db)
 ):
     """Get tasks assigned to a worker."""
-    worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
+    worker = db.query(Worker).filter(Worker.worker_id == str(worker_id)).first()
     
     if not worker:
         raise HTTPException(
@@ -169,7 +169,7 @@ async def get_worker_tasks(
     
     # Get tasks assigned to this worker
     tasks = db.query(Task).filter(
-        Task.worker_id == worker_id,
+        Task.worker_id == str(worker_id),
         Task.status.in_(["RUNNING", "QUEUED"])
     ).all()
     
@@ -201,7 +201,7 @@ async def update_worker_status(
     - DRAINING: Worker stops accepting new tasks but finishes existing ones
     - OFFLINE: Worker is offline and all tasks should be reassigned
     """
-    worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
+    worker = db.query(Worker).filter(Worker.worker_id == str(worker_id)).first()
     
     if not worker:
         raise HTTPException(
@@ -229,7 +229,7 @@ async def update_worker_status(
         if new_status == "OFFLINE":
             # Get all running/queued tasks for this worker
             tasks = db.query(Task).filter(
-                Task.worker_id == worker_id,
+                Task.worker_id == str(worker_id),
                 Task.status.in_(["RUNNING", "QUEUED"])
             ).all()
             
@@ -291,7 +291,7 @@ async def deregister_worker(
     
     This gracefully removes a worker, optionally reassigning its tasks.
     """
-    worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
+    worker = db.query(Worker).filter(Worker.worker_id == str(worker_id)).first()
     
     if not worker:
         raise HTTPException(
@@ -305,7 +305,7 @@ async def deregister_worker(
         # Reassign tasks if requested
         if reassign_tasks:
             tasks = db.query(Task).filter(
-                Task.worker_id == worker_id,
+                Task.worker_id == str(worker_id),
                 Task.status.in_(["RUNNING", "QUEUED"])
             ).all()
             
@@ -573,7 +573,7 @@ async def get_task_history(
     """
     controller = get_worker_controller()
     
-    worker = db.query(Worker).filter(Worker.worker_id == worker_id).first()
+    worker = db.query(Worker).filter(Worker.worker_id == str(worker_id)).first()
     if not worker:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

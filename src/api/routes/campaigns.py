@@ -74,7 +74,7 @@ async def list_campaigns(
 @router.get("/{campaign_id}", response_model=CampaignResponse)
 async def get_campaign(campaign_id: UUID, db: Session = Depends(get_db)):
     """Get campaign details"""
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
 
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
@@ -113,7 +113,7 @@ async def update_campaign(campaign_id: UUID, payload: CampaignUpdate, db: Sessio
 @router.post("/{campaign_id}/start")
 async def start_campaign(campaign_id: UUID, db: Session = Depends(get_db)):
     """Start a campaign"""
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
 
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
@@ -127,7 +127,7 @@ async def start_campaign(campaign_id: UUID, db: Session = Depends(get_db)):
 @router.post("/{campaign_id}/pause")
 async def pause_campaign(campaign_id: UUID, db: Session = Depends(get_db)):
     """Pause a campaign"""
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
 
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
@@ -148,7 +148,7 @@ async def add_recipient(
 ):
     """Add a single recipient to a campaign"""
     # Verify campaign exists
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
@@ -167,7 +167,7 @@ async def add_recipient(
         new_recipient = (
             db.query(EmailRecipient)
             .filter(
-                EmailRecipient.campaign_id == campaign_id,
+                EmailRecipient.campaign_id == str(campaign_id),
                 EmailRecipient.email == recipient.email
             )
             .first()
@@ -186,7 +186,7 @@ async def bulk_add_recipients(
 ):
     """Bulk add recipients to a campaign"""
     # Verify campaign exists
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
@@ -224,12 +224,12 @@ async def list_recipients(
 ):
     """List recipients for a campaign"""
     # Verify campaign exists
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
     # Build query
-    query = db.query(EmailRecipient).filter(EmailRecipient.campaign_id == campaign_id)
+    query = db.query(EmailRecipient).filter(EmailRecipient.campaign_id == str(campaign_id))
 
     if status:
         query = query.filter(EmailRecipient.status == status.upper())
@@ -254,7 +254,7 @@ async def launch_campaign(
 ):
     """Launch a campaign - creates email tasks for all recipients"""
     # Verify campaign exists
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
@@ -293,7 +293,7 @@ async def launch_campaign(
 async def get_campaign_status(campaign_id: UUID, db: Session = Depends(get_db)):
     """Get detailed campaign status with recipient counts"""
     # Verify campaign exists
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
 

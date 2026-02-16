@@ -1,7 +1,7 @@
 """Integration tests for worker admin controls."""
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 from src.models import Worker, Task
@@ -22,7 +22,7 @@ def test_worker(db):
         capacity=5,
         current_load=0,
         status="ACTIVE",
-        last_heartbeat=datetime.utcnow(),
+        last_heartbeat=datetime.now(timezone.utc),
     )
     db.add(worker)
     db.commit()
@@ -182,7 +182,7 @@ class TestWorkerStatus:
                 capacity=5,
                 current_load=0,
                 status="ACTIVE",
-                last_heartbeat=datetime.utcnow(),
+                last_heartbeat=datetime.now(timezone.utc),
             )
             db.add(worker)
         db.commit()
@@ -233,8 +233,8 @@ class TestWorkerTaskHistory:
                 status="COMPLETED",
                 priority=1,
                 worker_id=test_worker.worker_id,
-                started_at=datetime.utcnow(),
-                completed_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(timezone.utc),
                 retry_count=0,
             )
             db.add(task)
@@ -260,8 +260,8 @@ class TestWorkerTaskHistory:
                 status="COMPLETED",
                 priority=1,
                 worker_id=test_worker.worker_id,
-                started_at=datetime.utcnow(),
-                completed_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(timezone.utc),
                 retry_count=0,
             )
             db.add(task)
@@ -276,7 +276,7 @@ class TestWorkerTaskHistory:
         """Test that task history includes duration calculation."""
         from datetime import timedelta
 
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         end_time = start_time + timedelta(seconds=30)
 
         task = Task(

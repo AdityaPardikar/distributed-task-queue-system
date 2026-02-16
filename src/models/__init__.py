@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import Boolean, JSON, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
+from sqlalchemy import Boolean, JSON, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from .task_status import TaskStatus, is_valid_transition, is_terminal_status, get_valid_next_statuses
 

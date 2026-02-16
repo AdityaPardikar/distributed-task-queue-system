@@ -2,7 +2,7 @@
 
 import pytest
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 from src.models import Worker, Task
@@ -18,7 +18,7 @@ def chaos_workers(db):
             capacity=10,
             current_load=0,
             status="ACTIVE",
-            last_heartbeat=datetime.utcnow(),
+            last_heartbeat=datetime.now(timezone.utc),
         )
         db.add(worker)
     db.commit()
@@ -102,7 +102,7 @@ class TestHighLoadConditions:
             worker = workers[i % len(workers)]
             task.worker_id = worker.worker_id
             task.status = "RUNNING"
-            task.started_at = datetime.utcnow()
+            task.started_at = datetime.now(timezone.utc)
             worker.current_load += 1
 
         db.commit()
@@ -131,7 +131,7 @@ class TestWorkerFailures:
                 task_kwargs={},
                 status="RUNNING",
                 worker_id=worker.worker_id,
-                started_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
             )
             db.add(task)
         db.commit()
@@ -162,7 +162,7 @@ class TestWorkerFailures:
                     task_kwargs={},
                     status="RUNNING",
                     worker_id=worker.worker_id,
-                    started_at=datetime.utcnow(),
+                    started_at=datetime.now(timezone.utc),
                 )
                 db.add(task)
                 task_count += 1
@@ -193,7 +193,7 @@ class TestWorkerFailures:
                 task_kwargs={},
                 status="RUNNING",
                 worker_id=slow_worker.worker_id,
-                started_at=datetime.utcnow() - timedelta(minutes=5),
+                started_at=datetime.now(timezone.utc) - timedelta(minutes=5),
             )
             db.add(task)
         db.commit()
@@ -206,7 +206,7 @@ class TestWorkerFailures:
 
         timed_out = []
         for task in tasks:
-            elapsed = (datetime.utcnow() - task.started_at).total_seconds()
+            elapsed = (datetime.now(timezone.utc) - task.started_at).total_seconds()
             if elapsed > 300:  # 5 minute timeout
                 timed_out.append(task)
 
@@ -234,7 +234,7 @@ class TestWorkerFailures:
                 task_kwargs={},
                 status="COMPLETED" if random.random() > 0.5 else "FAILED",
                 worker_id=worker.worker_id,
-                completed_at=datetime.utcnow(),
+                completed_at=datetime.now(timezone.utc),
             )
             db.add(task)
 
@@ -271,8 +271,8 @@ class TestTaskFailurePatterns:
                 task_args=[],
                 task_kwargs={},
                 status="FAILED",
-                started_at=datetime.utcnow() - timedelta(minutes=10),
-                failed_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc) - timedelta(minutes=10),
+                failed_at=datetime.now(timezone.utc),
                 error_message="Task timeout",
             )
             db.add(task)
@@ -291,7 +291,7 @@ class TestTaskFailurePatterns:
                 task_args=[],
                 task_kwargs={},
                 status="FAILED",
-                failed_at=datetime.utcnow(),
+                failed_at=datetime.now(timezone.utc),
                 error_message="Out of memory" if i % 2 == 0 else "Disk space exceeded",
             )
             db.add(task)
@@ -344,7 +344,7 @@ class TestResourceConstraints:
                 task_kwargs={},
                 status="RUNNING",
                 worker_id=chaos_workers[i % len(chaos_workers)].worker_id,
-                started_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
             )
             db.add(task)
 
@@ -381,7 +381,7 @@ class TestResourceConstraints:
                 task_args=[],
                 task_kwargs={"file_size_mb": 100},
                 status="RUNNING" if i % 2 == 0 else "QUEUED",
-                started_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
             )
             db.add(task)
 
@@ -412,7 +412,7 @@ class TestRecoveryAndResilience:
                 task_kwargs={},
                 status="RUNNING",
                 worker_id=workers[i % len(workers)].worker_id,
-                started_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
             )
             db.add(task)
 
@@ -474,7 +474,7 @@ class TestRecoveryAndResilience:
                 task_kwargs={},
                 status="RUNNING",
                 worker_id=workers[i % len(workers)].worker_id,
-                started_at=datetime.utcnow(),
+                started_at=datetime.now(timezone.utc),
             )
             db.add(task)
 

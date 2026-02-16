@@ -3,7 +3,7 @@
 import asyncio
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -39,7 +39,7 @@ async def process_task(db: Session, task_id: str, worker_id: str) -> None:
     try:
         # Update task status to RUNNING
         task.status = "RUNNING"
-        task.started_at = datetime.utcnow()
+        task.started_at = datetime.now(timezone.utc)
         db.commit()
         
         # Simulate task execution
@@ -48,7 +48,7 @@ async def process_task(db: Session, task_id: str, worker_id: str) -> None:
         
         # Mark task as completed
         task.status = "COMPLETED"
-        task.completed_at = datetime.utcnow()
+        task.completed_at = datetime.now(timezone.utc)
         db.commit()
         print(f"[{worker_id}] Completed task {task_id}")
         

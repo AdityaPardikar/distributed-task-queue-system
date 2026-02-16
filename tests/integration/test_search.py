@@ -1,7 +1,7 @@
 """Integration tests for task search and filtering."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -52,7 +52,7 @@ class TestTaskSearch:
 
     def test_search_with_date_range(self):
         """Test search with date range filters."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         before = (now - timedelta(days=7)).isoformat()
         after = now.isoformat()
         
