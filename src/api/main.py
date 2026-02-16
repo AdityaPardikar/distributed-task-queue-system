@@ -9,7 +9,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api.middleware import add_request_id, rate_limit_middleware, request_timing_middleware
-from src.api.routes import alerts, analytics, auth, campaigns, dashboard, debug, health, metrics, performance, resilience, search, tasks, templates, workers, workflows, advanced_workflows, chaos
+from src.api.routes import alerts, analytics, auth, campaigns, dashboard, debug, health, metrics, operations, performance, resilience, search, tasks, templates, workers, workflows, advanced_workflows, chaos
 from src.config import get_settings
 from src.performance.profiler import get_profiler
 
@@ -86,6 +86,7 @@ def create_app() -> FastAPI:
         app.include_router(advanced_workflows.router, prefix="/api/v1", tags=["advanced-workflows"])
         app.include_router(chaos.router, prefix="/api/v1", tags=["chaos-engineering"])
         app.include_router(performance.router, prefix="/api/v1", tags=["performance"])
+        app.include_router(operations.router, prefix="/api/v1", tags=["operations"])
     except Exception as e:
         print(f"Warning: Could not load some routers: {e}")
     

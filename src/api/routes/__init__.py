@@ -18,6 +18,7 @@ from . import (
     workflows,
     advanced_workflows,
     chaos,
+    operations,
 )
 
 __all__ = [
@@ -29,6 +30,7 @@ __all__ = [
     "debug",
     "health",
     "metrics",
+    "operations",
     "performance",
     "resilience",
     "search",
