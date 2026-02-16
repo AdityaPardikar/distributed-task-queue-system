@@ -23,6 +23,7 @@ from src.models import (
     CampaignTask,
     DeadLetterQueue,
     Alert,
+    User,
 )
 
 
@@ -55,6 +56,12 @@ def db(TestSessionLocal):
     finally:
         session.rollback()
         session.close()
+
+
+@pytest.fixture(scope="function")
+def db_session(db):
+    """Alias for db fixture (used by auth tests)."""
+    yield db
 
 
 @pytest.fixture

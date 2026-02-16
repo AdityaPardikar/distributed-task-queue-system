@@ -1,6 +1,6 @@
 """Retry strategy implementations for failed tasks."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Optional
 
@@ -79,7 +79,7 @@ class RetryCalculator:
             Timestamp for next retry attempt
         """
         if current_time is None:
-            current_time = datetime.utcnow()
+            current_time = datetime.now(timezone.utc)
         
         delay_seconds = RetryCalculator.calculate_delay(
             retry_count,

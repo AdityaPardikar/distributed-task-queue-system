@@ -1,6 +1,6 @@
 """Task replay and debugging tools."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 
 from sqlalchemy.orm import Session
@@ -64,7 +64,7 @@ class TaskDebugger:
             details: Event details dictionary
         """
         event = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "event_type": event_type,
             "details": details,
         }

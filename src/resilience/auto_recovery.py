@@ -1,6 +1,6 @@
 """Auto-recovery mechanisms for resilience."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Callable, Optional, Dict, Any
 
 from src.cache.client import RedisClient, get_redis_client
@@ -97,7 +97,7 @@ class AutoRecoveryEngine:
             "success": False,
             "attempt": 0,
             "error": None,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         attempt = 0
@@ -145,7 +145,7 @@ class AutoRecoveryEngine:
             "action": action_name,
             "success": success,
             "attempt": attempt,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
         
         self.redis.rpush(
@@ -265,7 +265,7 @@ class HealthChecker:
             "component": component,
             "healthy": healthy,
             "error": error,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         self.redis.rpush(

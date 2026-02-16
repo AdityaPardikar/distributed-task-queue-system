@@ -1,6 +1,6 @@
 """Task search and filtering service."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
@@ -246,7 +246,7 @@ class TaskFilter:
         Returns:
             Dictionary of preset names and their filter configurations
         """
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         
         return {
             "failed_today": {

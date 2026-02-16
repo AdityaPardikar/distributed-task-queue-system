@@ -1,7 +1,7 @@
 """Task routes"""
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -44,8 +44,8 @@ async def create_task(task: TaskCreate, db: Session = Depends(get_db)):
             cron_expression=task.cron_expression,
             is_recurring=task.is_recurring,
             depends_on=[str(dep) for dep in task.depends_on],
-            parent_task_id=task.parent_task_id,
-            campaign_id=task.campaign_id,
+            parent_task_id=str(task.parent_task_id) if task.parent_task_id else None,
+            campaign_id=str(task.campaign_id) if task.campaign_id else None,
             status=TASK_STATUS_PENDING,
         )
         db.add(db_task)
@@ -123,8 +123,8 @@ async def list_tasks(
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     status: str = Query(None, description="Filter by status"),
     priority: int = Query(None, ge=1, le=10, description="Filter by priority"),
-    sort_by: str = Query("created_at", regex="^(created_at|priority|status)$", description="Sort field"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+    sort_by: str = Query("created_at", pattern="^(created_at|priority|status)$", description="Sort field"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     db: Session = Depends(get_db),
 ):
     """List tasks with advanced filtering, pagination, and sorting.
@@ -253,7 +253,7 @@ async def cancel_task(task_id: UUID, db: Session = Depends(get_db)):
     try:
         # Update task status in database
         task.status = "CANCELLED"
-        task.updated_at = datetime.utcnow()
+        task.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(task)
         
@@ -346,7 +346,7 @@ async def update_task(
         if task_update.task_kwargs is not None:
             task.task_kwargs = task_update.task_kwargs
         
-        task.updated_at = datetime.utcnow()
+        task.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(task)
         
@@ -417,7 +417,7 @@ async def retry_dead_letter_task(task_id: UUID, db: Session = Depends(get_db)):
         task.status = TASK_STATUS_PENDING
         task.retry_count = 0
         task.next_retry_at = None
-        task.updated_at = datetime.utcnow()
+        task.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(task)
 
@@ -449,7 +449,7 @@ async def discard_dead_letter_task(task_id: UUID, db: Session = Depends(get_db))
 
     try:
         task.status = "FAILED"
-        task.updated_at = datetime.utcnow()
+        task.updated_at = datetime.now(timezone.utc)
         db.commit()
         broker.remove_from_dlq(str(task_id))
         return None

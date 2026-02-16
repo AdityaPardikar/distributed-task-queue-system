@@ -1,6 +1,6 @@
 """Worker service layer for business logic"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import UUID
 
@@ -20,7 +20,7 @@ def register_worker(
         hostname=hostname,
         status="ACTIVE",
         capacity=capacity,
-        last_heartbeat=datetime.utcnow(),
+        last_heartbeat=datetime.now(timezone.utc),
     )
     db.add(worker)
     db.commit()
@@ -42,7 +42,7 @@ def update_worker_heartbeat(db: Session, worker_id: UUID) -> Optional[Worker]:
     """Update worker last heartbeat"""
     worker = get_worker(db, worker_id)
     if worker:
-        worker.last_heartbeat = datetime.utcnow()
+        worker.last_heartbeat = datetime.now(timezone.utc)
         db.commit()
         db.refresh(worker)
         

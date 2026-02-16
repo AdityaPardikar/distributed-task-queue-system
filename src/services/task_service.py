@@ -3,7 +3,7 @@
 from sqlalchemy.orm import Session
 from src.models import Task
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 
 
@@ -43,9 +43,9 @@ def update_task_status(db: Session, task_id: UUID, status: str) -> Optional[Task
     if task:
         task.status = status
         if status == "RUNNING":
-            task.started_at = datetime.utcnow()
+            task.started_at = datetime.now(timezone.utc)
         elif status == "COMPLETED":
-            task.completed_at = datetime.utcnow()
+            task.completed_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(task)
     return task

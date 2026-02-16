@@ -27,7 +27,7 @@ class TaskDefinition(BaseModel):
 class WorkflowCreate(BaseModel):
     """Schema for creating a workflow."""
     workflow_name: str = Field(..., min_length=1, max_length=255)
-    tasks: List[TaskDefinition] = Field(..., min_items=1)
+    tasks: List[TaskDefinition] = Field(..., min_length=1)
     dependencies: Optional[Dict[str, List[str]]] = Field(
         None,
         description="Map of child task names to list of parent task names"
@@ -55,7 +55,7 @@ class WorkflowStatusResponse(BaseModel):
 
 class BatchTaskCreate(BaseModel):
     """Schema for batch task creation."""
-    tasks: List[TaskDefinition] = Field(..., min_items=1, max_items=100)
+    tasks: List[TaskDefinition] = Field(..., min_length=1, max_length=100)
 
 
 class BatchTaskResponse(BaseModel):

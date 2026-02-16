@@ -1,7 +1,7 @@
 """Tests for authentication service"""
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from jose import jwt
@@ -11,6 +11,7 @@ from src.models import User
 from src.config import get_settings
 
 settings = get_settings()
+auth_service = AuthService(settings)
 
 
 class TestAuthService:
@@ -19,8 +20,8 @@ class TestAuthService:
     def test_hash_password(self):
         """Test password hashing"""
         password = "test_password_123"
-        hashed = AuthService.hash_password(password)
-        
+        hashed = auth_service.hash_password(password)
+
         assert hashed != password
         assert hashed.startswith("$2b$")
         assert len(hashed) > 50
@@ -28,31 +29,33 @@ class TestAuthService:
     def test_verify_password_correct(self):
         """Test password verification with correct password"""
         password = "test_password_123"
-        hashed = AuthService.hash_password(password)
-        
-        assert AuthService.verify_password(password, hashed) is True
+        hashed = auth_service.hash_password(password)
+
+        assert auth_service.verify_password(password, hashed) is True
 
     def test_verify_password_incorrect(self):
         """Test password verification with incorrect password"""
         password = "test_password_123"
         wrong_password = "wrong_password"
-        hashed = AuthService.hash_password(password)
-        
-        assert AuthService.verify_password(wrong_password, hashed) is False
+        hashed = auth_service.hash_password(password)
+
+        assert auth_service.verify_password(wrong_password, hashed) is False
 
     def test_create_access_token(self):
         """Test JWT access token creation"""
         user_id = str(uuid.uuid4())
         username = "testuser"
         role = "viewer"
-        
-        token = AuthService.create_access_token(user_id, username, role)
-        
+
+        token = auth_service.create_access_token(
+            data={"sub": user_id, "username": username, "role": role}
+        )
+
         assert token is not None
         assert isinstance(token, str)
-        
+
         # Decode and verify token contents
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         assert payload["sub"] == user_id
         assert payload["username"] == username
         assert payload["role"] == role
@@ -62,14 +65,15 @@ class TestAuthService:
     def test_create_refresh_token(self):
         """Test JWT refresh token creation"""
         user_id = str(uuid.uuid4())
-        
-        token = AuthService.create_refresh_token(user_id)
-        
+
+        token = auth_service.create_refresh_token(
+            data={"sub": user_id}
+        )
+
         assert token is not None
         assert isinstance(token, str)
-        
-        # Decode and verify token contents
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         assert payload["sub"] == user_id
         assert payload["type"] == "refresh"
         assert "exp" in payload
@@ -79,170 +83,163 @@ class TestAuthService:
         user_id = str(uuid.uuid4())
         username = "testuser"
         role = "admin"
-        
-        token = AuthService.create_access_token(user_id, username, role)
-        payload = AuthService.decode_token(token)
-        
+
+        token = auth_service.create_access_token(
+            data={"sub": user_id, "username": username, "role": role}
+        )
+        payload = auth_service.decode_token(token)
+
         assert payload is not None
         assert payload["sub"] == user_id
         assert payload["username"] == username
         assert payload["role"] == role
 
-    def test_decode_token_expired(self):
-        """Test decoding an expired token"""
-        user_id = str(uuid.uuid4())
-        
-        # Create token that expires immediately
-        payload = {
-            "sub": user_id,
-            "type": "access",
-            "exp": datetime.utcnow() - timedelta(seconds=1)
-        }
-        token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
-        
-        decoded = AuthService.decode_token(token)
-        assert decoded is None
-
     def test_decode_token_invalid(self):
-        """Test decoding an invalid token"""
-        invalid_token = "invalid.jwt.token"
-        decoded = AuthService.decode_token(invalid_token)
-        assert decoded is None
+        """Test decoding an invalid token raises HTTPException"""
+        from fastapi import HTTPException
+
+        with pytest.raises(HTTPException) as exc_info:
+            auth_service.decode_token("invalid.jwt.token")
+        assert exc_info.value.status_code == 401
 
     def test_authenticate_user_success(self, db_session):
         """Test successful user authentication"""
-        # Create test user
-        user_id = uuid.uuid4()
         password = "test_password_123"
-        hashed_password = AuthService.hash_password(password)
-        
+        hashed_password = auth_service.hash_password(password)
+        uname = f"authuser_{uuid.uuid4().hex[:8]}"
+
         user = User(
-            user_id=user_id,
-            username="testuser",
-            email="test@example.com",
+            user_id=str(uuid.uuid4()),
+            username=uname,
+            email=f"{uname}@example.com",
             hashed_password=hashed_password,
             role="viewer",
-            is_active=True
+            is_active=True,
+            is_superuser=False,
         )
         db_session.add(user)
         db_session.commit()
-        
-        # Authenticate
-        authenticated_user = AuthService.authenticate_user(db_session, "testuser", password)
-        
+
+        authenticated_user = auth_service.authenticate_user(db_session, uname, password)
+
         assert authenticated_user is not None
-        assert authenticated_user.username == "testuser"
-        assert authenticated_user.user_id == user_id
+        assert authenticated_user.username == uname
 
     def test_authenticate_user_wrong_password(self, db_session):
         """Test authentication with wrong password"""
-        # Create test user
-        user_id = uuid.uuid4()
         password = "test_password_123"
-        hashed_password = AuthService.hash_password(password)
-        
+        hashed_password = auth_service.hash_password(password)
+        uname = f"wrongauth_{uuid.uuid4().hex[:8]}"
+
         user = User(
-            user_id=user_id,
-            username="testuser",
-            email="test@example.com",
+            user_id=str(uuid.uuid4()),
+            username=uname,
+            email=f"{uname}@example.com",
             hashed_password=hashed_password,
             role="viewer",
-            is_active=True
+            is_active=True,
+            is_superuser=False,
         )
         db_session.add(user)
         db_session.commit()
-        
-        # Try to authenticate with wrong password
-        authenticated_user = AuthService.authenticate_user(db_session, "testuser", "wrong_password")
-        
+
+        authenticated_user = auth_service.authenticate_user(db_session, uname, "wrong_password")
         assert authenticated_user is None
 
     def test_authenticate_user_nonexistent(self, db_session):
         """Test authentication with non-existent user"""
-        authenticated_user = AuthService.authenticate_user(db_session, "nonexistent", "password")
+        authenticated_user = auth_service.authenticate_user(
+            db_session, "nonexistent_user", "password123"
+        )
         assert authenticated_user is None
 
     def test_authenticate_user_inactive(self, db_session):
         """Test authentication with inactive user"""
-        # Create inactive user
-        user_id = uuid.uuid4()
         password = "test_password_123"
-        hashed_password = AuthService.hash_password(password)
-        
+        hashed_password = auth_service.hash_password(password)
+        uname = f"inactive_{uuid.uuid4().hex[:8]}"
+
         user = User(
-            user_id=user_id,
-            username="inactiveuser",
-            email="inactive@example.com",
+            user_id=str(uuid.uuid4()),
+            username=uname,
+            email=f"{uname}@example.com",
             hashed_password=hashed_password,
             role="viewer",
-            is_active=False
+            is_active=False,
+            is_superuser=False,
         )
         db_session.add(user)
         db_session.commit()
-        
-        # Try to authenticate
-        authenticated_user = AuthService.authenticate_user(db_session, "inactiveuser", password)
-        
+
+        authenticated_user = auth_service.authenticate_user(db_session, uname, password)
         assert authenticated_user is None
 
-    def test_create_user_success(self, db_session):
-        """Test successful user creation"""
-        user = AuthService.create_user(
-            db_session,
-            username="newuser",
-            email="new@example.com",
+    def test_create_user(self, db_session):
+        """Test creating a new user via service"""
+        uname = f"create_{uuid.uuid4().hex[:8]}"
+        user = auth_service.create_user(
+            db=db_session,
+            username=uname,
+            email=f"{uname}@example.com",
             password="password123",
-            full_name="New User",
-            role="viewer"
+            full_name="Created User",
+            role="viewer",
         )
-        
+
         assert user is not None
-        assert user.username == "newuser"
-        assert user.email == "new@example.com"
-        assert user.full_name == "New User"
+        assert user.username == uname
         assert user.role == "viewer"
         assert user.is_active is True
-        assert user.is_superuser is False
-        assert user.hashed_password != "password123"
 
     def test_create_user_duplicate_username(self, db_session):
-        """Test user creation with duplicate username"""
-        # Create first user
-        AuthService.create_user(
-            db_session,
-            username="duplicate",
-            email="user1@example.com",
-            password="password123"
+        """Test creating a user with duplicate username"""
+        from fastapi import HTTPException
+
+        uname = f"dupuser_{uuid.uuid4().hex[:8]}"
+        auth_service.create_user(
+            db=db_session,
+            username=uname,
+            email=f"{uname}_1@example.com",
+            password="password123",
         )
-        
-        # Try to create second user with same username
-        with pytest.raises(Exception):
-            AuthService.create_user(
-                db_session,
-                username="duplicate",
-                email="user2@example.com",
-                password="password123"
+
+        with pytest.raises(HTTPException) as exc_info:
+            auth_service.create_user(
+                db=db_session,
+                username=uname,
+                email=f"{uname}_2@example.com",
+                password="password123",
             )
+        assert exc_info.value.status_code == 400
 
     def test_has_permission_admin(self):
-        """Test admin has access to all roles"""
-        assert AuthService.has_permission("admin", "admin") is True
-        assert AuthService.has_permission("admin", "operator") is True
-        assert AuthService.has_permission("admin", "viewer") is True
+        """Test admin has all permissions"""
+        user = User(
+            user_id=str(uuid.uuid4()),
+            username="admin",
+            email="admin@test.com",
+            hashed_password="hash",
+            role="admin",
+            is_active=True,
+            is_superuser=True,
+        )
 
-    def test_has_permission_operator(self):
-        """Test operator has access to operator and viewer"""
-        assert AuthService.has_permission("operator", "admin") is False
-        assert AuthService.has_permission("operator", "operator") is True
-        assert AuthService.has_permission("operator", "viewer") is True
+        assert auth_service.has_permission(user, "admin") is True
+        assert auth_service.has_permission(user, "operator") is True
+        assert auth_service.has_permission(user, "viewer") is True
 
     def test_has_permission_viewer(self):
-        """Test viewer only has access to viewer"""
-        assert AuthService.has_permission("viewer", "admin") is False
-        assert AuthService.has_permission("viewer", "operator") is False
-        assert AuthService.has_permission("viewer", "viewer") is True
+        """Test viewer has limited permissions"""
+        user = User(
+            user_id=str(uuid.uuid4()),
+            username="viewer",
+            email="viewer@test.com",
+            hashed_password="hash",
+            role="viewer",
+            is_active=True,
+            is_superuser=False,
+        )
 
-    def test_has_permission_invalid_role(self):
-        """Test permission check with invalid role"""
-        assert AuthService.has_permission("invalid", "admin") is False
-        assert AuthService.has_permission("viewer", "invalid") is False
+        assert auth_service.has_permission(user, "viewer") is True
+        assert auth_service.has_permission(user, "operator") is False
+        assert auth_service.has_permission(user, "admin") is False

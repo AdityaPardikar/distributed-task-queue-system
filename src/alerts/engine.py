@@ -1,6 +1,6 @@
 """Alert system for monitoring threshold violations."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -101,7 +101,7 @@ class AlertEngine:
         threshold: float = 0.5,  # 50% failure rate
     ) -> bool:
         """Check if failure rate exceeds threshold in recent period."""
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         
         recent_tasks = db.query(Task).filter(
             Task.completed_at >= cutoff,
@@ -117,7 +117,7 @@ class AlertEngine:
 
     def evaluate_worker_down(self, db: Session, heartbeat_timeout_seconds: int = 300) -> bool:
         """Check if any worker has missed heartbeat."""
-        timeout = datetime.utcnow() - timedelta(seconds=heartbeat_timeout_seconds)
+        timeout = datetime.now(timezone.utc) - timedelta(seconds=heartbeat_timeout_seconds)
         
         dead_workers = db.query(Worker).filter(
             Worker.status == "ACTIVE",
@@ -132,7 +132,7 @@ class AlertEngine:
         expected_interval_seconds: int = 60,
     ) -> bool:
         """Check if workers are heartbeating infrequently."""
-        threshold = datetime.utcnow() - timedelta(seconds=expected_interval_seconds * 2)
+        threshold = datetime.now(timezone.utc) - timedelta(seconds=expected_interval_seconds * 2)
         
         stale_workers = db.query(Worker).filter(
             Worker.status == "ACTIVE",
@@ -153,11 +153,11 @@ class AlertEngine:
             return {}
         
         alert = {
-            "id": f"{alert_type.value}:{int(datetime.utcnow().timestamp())}",
+            "id": f"{alert_type.value}:{int(datetime.now(timezone.utc).timestamp())}",
             "type": alert_type.value,
             "severity": severity.value,
             "description": description,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "acknowledged": False,
             "metadata": metadata or {},
         }
@@ -200,7 +200,7 @@ class AlertEngine:
 
     def get_alert_history(self, hours: int = 24, limit: int = 100) -> List[Dict]:
         """Get alert history for specified time period."""
-        cutoff = (datetime.utcnow() - timedelta(hours=hours)).isoformat()
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
         
         history = self.redis.lrange(self.ALERT_HISTORY_KEY, 0, limit - 1)
         

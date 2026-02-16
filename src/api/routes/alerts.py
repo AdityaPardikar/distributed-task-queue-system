@@ -1,6 +1,6 @@
 """Alerts API routes."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends, Query
@@ -71,7 +71,7 @@ async def get_alert_history(
     """Get alert history for specified time period."""
     from datetime import timedelta
     
-    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     
     alerts = (
         db.query(Alert)
@@ -106,7 +106,7 @@ async def acknowledge_alert(
         return {"error": "Alert not found"}
     
     alert.acknowledged = True
-    alert.acknowledged_at = datetime.utcnow()
+    alert.acknowledged_at = datetime.now(timezone.utc)
     db.commit()
     
     return {

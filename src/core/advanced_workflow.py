@@ -2,7 +2,7 @@
 
 import json
 from collections import defaultdict, deque
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Union
 from uuid import uuid4
@@ -307,7 +307,7 @@ class WorkflowTemplate:
         self.tasks = tasks or []
         self.dependencies = dependencies or {}
         self.conditions = conditions or {}
-        self.created_at = datetime.utcnow()
+        self.created_at = datetime.now(timezone.utc)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -621,7 +621,7 @@ class AdvancedWorkflowEngine:
             "task_ids": {name: str(t.task_id) for name, t in task_map.items()},
             "dependencies": dependencies or {},
             "execution_levels": graph.get_execution_levels(),
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         
         self.redis.set(

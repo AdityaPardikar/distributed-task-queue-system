@@ -1,10 +1,10 @@
 """API Schemas using Pydantic"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class TaskCreate(BaseModel):
@@ -52,8 +52,7 @@ class TaskCreate(BaseModel):
             raise ValueError("task_kwargs must be a dictionary")
         return v
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "task_name": "send_email",
                 "task_kwargs": {
@@ -65,8 +64,7 @@ class TaskCreate(BaseModel):
                 "max_retries": 3,
                 "timeout_seconds": 60
             }
-        }
-
+        })
 
 class TaskResponse(BaseModel):
     """Schema for task response"""
@@ -83,8 +81,7 @@ class TaskResponse(BaseModel):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TaskListResponse(BaseModel):
@@ -98,8 +95,7 @@ class TaskListResponse(BaseModel):
     has_previous: bool = False
     total_pages: int = 1
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "items": [],
                 "total": 150,
@@ -109,8 +105,7 @@ class TaskListResponse(BaseModel):
                 "has_previous": False,
                 "total_pages": 8
             }
-        }
-
+        })
 
 class TaskExecutionInfo(BaseModel):
     """Schema for task execution information"""
@@ -123,8 +118,7 @@ class TaskExecutionInfo(BaseModel):
     status: str
     error_message: Optional[str] = None
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TaskDetailResponse(TaskResponse):
@@ -141,8 +135,7 @@ class TaskDetailResponse(TaskResponse):
     error_message: Optional[str] = None
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TaskUpdate(BaseModel):
@@ -153,15 +146,13 @@ class TaskUpdate(BaseModel):
     max_retries: Optional[int] = Field(None, ge=0, le=10, description="Update max retries")
     task_kwargs: Optional[Dict[str, Any]] = Field(None, description="Update task arguments")
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "priority": 8,
                 "timeout_seconds": 120,
                 "task_kwargs": {"email": "new@example.com"}
             }
-        }
-
+        })
 
 class WorkerResponse(BaseModel):
     """Schema for worker response"""
@@ -174,8 +165,7 @@ class WorkerResponse(BaseModel):
     last_heartbeat: Optional[datetime] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class WorkerListResponse(BaseModel):
@@ -195,16 +185,14 @@ class CampaignCreate(BaseModel):
     rate_limit_per_minute: int = Field(default=100, ge=1, le=1000)
     scheduled_at: Optional[datetime] = None
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "name": "Welcome Campaign",
                 "template_subject": "Welcome {{name}}!",
                 "template_body": "Hello {{name}}, welcome to our service.",
                 "template_variables": {"name": "John"},
             }
-        }
-
+        })
 
 class CampaignUpdate(BaseModel):
     """Schema for updating a campaign"""
@@ -217,16 +205,14 @@ class CampaignUpdate(BaseModel):
     rate_limit_per_minute: Optional[int] = Field(None, ge=1, le=1000)
     scheduled_at: Optional[datetime] = None
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "name": "Welcome Campaign v2",
                 "template_subject": "Updated subject",
                 "status": "SCHEDULED",
                 "rate_limit_per_minute": 200,
             }
-        }
-
+        })
 
 class CampaignResponse(BaseModel):
     """Schema for campaign response"""
@@ -245,8 +231,7 @@ class CampaignResponse(BaseModel):
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CampaignListResponse(BaseModel):
@@ -284,7 +269,7 @@ class ErrorResponse(BaseModel):
 
     detail: str
     error_code: Optional[str] = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class TemplateVariableSchema(BaseModel):
@@ -314,16 +299,14 @@ class TemplateCreate(BaseModel):
             raise ValueError(f"Invalid template syntax: {e.message}")
         return v
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "name": "Welcome Email",
                 "subject": "Welcome {{ first_name }}!",
                 "body": "<p>Hello {{ first_name }} {{ last_name }},</p><p>Thanks for joining!</p>",
                 "campaign_id": None
             }
-        }
-
+        })
 
 class TemplateUpdate(BaseModel):
     """Schema for updating an email template"""
@@ -359,9 +342,7 @@ class TemplateResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
-        json_schema_extra = {
+    model_config = ConfigDict(from_attributes=True, json_schema_extra={
             "example": {
                 "template_id": "550e8400-e29b-41d4-a716-446655440000",
                 "name": "Welcome Email",
@@ -375,7 +356,7 @@ class TemplateResponse(BaseModel):
                 "created_at": "2026-01-27T12:00:00",
                 "updated_at": "2026-01-27T12:00:00"
             }
-        }
+        })
 
 
 class TemplatePreviewRequest(BaseModel):
@@ -383,16 +364,14 @@ class TemplatePreviewRequest(BaseModel):
 
     variables: Dict[str, Any] = Field(..., description="Template variables for rendering")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "variables": {
                     "first_name": "John",
                     "last_name": "Doe"
                 }
             }
-        }
-
+        })
 
 class TemplatePreviewResponse(BaseModel):
     """Schema for template preview response"""
@@ -401,8 +380,7 @@ class TemplatePreviewResponse(BaseModel):
     body: str
     variables: List[TemplateVariableSchema]
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "subject": "Welcome John!",
                 "body": "<p>Hello John Doe,</p>",
@@ -411,8 +389,7 @@ class TemplatePreviewResponse(BaseModel):
                     {"name": "last_name", "required": True}
                 ]
             }
-        }
-
+        })
 
 # Recipient Schemas
 
@@ -431,8 +408,7 @@ class RecipientCreate(BaseModel):
             raise ValueError("Invalid email address")
         return v.lower().strip()
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "email": "john.doe@example.com",
                 "name": "John Doe",
@@ -442,16 +418,14 @@ class RecipientCreate(BaseModel):
                     "company": "Acme Corp"
                 }
             }
-        }
-
+        })
 
 class RecipientBulkCreate(BaseModel):
     """Schema for bulk recipient upload"""
 
     recipients: List[RecipientCreate] = Field(..., min_length=1, description="List of recipients to add")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "recipients": [
                     {
@@ -466,8 +440,7 @@ class RecipientBulkCreate(BaseModel):
                     }
                 ]
             }
-        }
-
+        })
 
 class RecipientResponse(BaseModel):
     """Schema for recipient response"""
@@ -483,8 +456,7 @@ class RecipientResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RecipientListResponse(BaseModel):
@@ -503,15 +475,13 @@ class CampaignLaunchRequest(BaseModel):
     send_immediately: bool = Field(default=True, description="Send immediately or schedule for later")
     scheduled_at: Optional[datetime] = Field(None, description="Schedule time if not sending immediately")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "template_id": "550e8400-e29b-41d4-a716-446655440000",
                 "send_immediately": True,
                 "scheduled_at": None
             }
-        }
-
+        })
 
 class CampaignLaunchResponse(BaseModel):
     """Schema for campaign launch response"""
@@ -522,8 +492,7 @@ class CampaignLaunchResponse(BaseModel):
     tasks_created: int
     scheduled_at: Optional[datetime]
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "campaign_id": "550e8400-e29b-41d4-a716-446655440000",
                 "status": "RUNNING",
@@ -531,8 +500,7 @@ class CampaignLaunchResponse(BaseModel):
                 "tasks_created": 150,
                 "scheduled_at": None
             }
-        }
-
+        })
 
 class BulkUploadResult(BaseModel):
     """Schema for bulk upload result"""
@@ -542,8 +510,7 @@ class BulkUploadResult(BaseModel):
     failed: int
     errors: List[Dict[str, Any]] = Field(default_factory=list)
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra={
             "example": {
                 "total_uploaded": 100,
                 "successful": 95,
@@ -553,4 +520,4 @@ class BulkUploadResult(BaseModel):
                     {"row": 7, "email": "duplicate@example.com", "error": "Duplicate email"}
                 ]
             }
-        }
+        })

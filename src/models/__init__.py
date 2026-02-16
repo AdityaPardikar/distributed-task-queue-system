@@ -1,6 +1,6 @@
 """Database models for TaskFlow"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
@@ -10,10 +10,15 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, rela
 from .task_status import TaskStatus, is_valid_transition, is_terminal_status, get_valid_next_statuses
 
 
+
+def _utcnow():
+    return datetime.now(timezone.utc)
+
+
 class Base(DeclarativeBase):
     """Base class for all database models"""
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
 class Task(Base):
@@ -44,7 +49,7 @@ class Task(Base):
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     worker_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("workers.worker_id"))
     created_by: Mapped[Optional[str]] = mapped_column(String(36))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (
         CheckConstraint("priority >= 1 AND priority <= 10", name="check_priority_range"),
@@ -83,7 +88,7 @@ class TaskResult(Base):
     result_data: Mapped[dict] = mapped_column(JSON, default=dict)
     error_message: Mapped[Optional[str]] = mapped_column(Text)
     stack_trace: Mapped[Optional[str]] = mapped_column(Text)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (Index("idx_task_result_id", "task_id"),)
 
@@ -101,7 +106,7 @@ class TaskLog(Base):
     level: Mapped[str] = mapped_column(String(20), default="INFO")
     message: Mapped[str] = mapped_column(Text)
     log_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (Index("idx_task_logs_task_id", "task_id", "created_at"),)
 
@@ -118,7 +123,7 @@ class TaskExecution(Base):
     task_id: Mapped[str] = mapped_column(String(36), ForeignKey("tasks.task_id"))
     worker_id: Mapped[str] = mapped_column(String(36), ForeignKey("workers.worker_id"))
     attempt_number: Mapped[int] = mapped_column(Integer)
-    started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    started_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     duration_seconds: Mapped[Optional[float]] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(50))
@@ -146,7 +151,7 @@ class Worker(Base):
     current_load: Mapped[int] = mapped_column(Integer, default=0)
     last_heartbeat: Mapped[Optional[datetime]] = mapped_column(DateTime)
     worker_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (Index("idx_workers_heartbeat", "last_heartbeat"),)
 
@@ -174,7 +179,7 @@ class Campaign(Base):
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     created_by: Mapped[Optional[str]] = mapped_column(String(36))
     rate_limit_per_minute: Mapped[int] = mapped_column(Integer, default=100)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (Index("idx_campaign_status", "status"),)
 
@@ -199,7 +204,7 @@ class EmailRecipient(Base):
     task_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("tasks.task_id"))
     error_message: Mapped[Optional[str]] = mapped_column(Text)
     bounce_reason: Mapped[Optional[str]] = mapped_column(Text)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (Index("idx_email_campaign_status", "campaign_id", "status"),)
 
@@ -219,7 +224,7 @@ class EmailTemplate(Base):
     variables: Mapped[dict] = mapped_column(JSON, default=dict)
     version: Mapped[int] = mapped_column(Integer, default=1)
     campaign_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("campaigns.campaign_id"))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (
         Index("idx_email_templates_campaign", "campaign_id"),
@@ -238,7 +243,7 @@ class CampaignTask(Base):
     campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("campaigns.campaign_id"))
     task_id: Mapped[str] = mapped_column(String(36), ForeignKey("tasks.task_id"))
     status: Mapped[str] = mapped_column(String(50), default="PENDING")
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (
         Index("idx_campaign_task_campaign", "campaign_id"),
@@ -260,7 +265,7 @@ class DeadLetterQueue(Base):
     failure_reason: Mapped[str] = mapped_column(Text)
     total_attempts: Mapped[int] = mapped_column(Integer)
     requeued_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (Index("idx_dlq_task_id", "task_id"),)
 
@@ -278,7 +283,7 @@ class Alert(Base):
     acknowledged: Mapped[bool] = mapped_column(Integer, default=False)
     acknowledged_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
     acknowledged_by: Mapped[Optional[str]] = mapped_column(String(255))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (
         Index("idx_alert_type", "alert_type"),
@@ -302,7 +307,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     last_login: Mapped[Optional[datetime]] = mapped_column(DateTime)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
 
     __table_args__ = (
         Index("idx_user_username", "username"),

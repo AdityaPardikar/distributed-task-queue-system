@@ -1,6 +1,6 @@
 """Worker routes for registration and heartbeat tracking."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -39,7 +39,7 @@ async def register_worker(
             capacity=capacity,
             current_load=0,
             status="ACTIVE",
-            last_heartbeat=datetime.utcnow(),
+            last_heartbeat=datetime.now(timezone.utc),
             metadata={"version": "1.0"}
         )
         db.add(worker)
@@ -54,7 +54,7 @@ async def register_worker(
                 "hostname": hostname,
                 "capacity": str(capacity),
                 "status": "ACTIVE",
-                "registered_at": datetime.utcnow().isoformat()
+                "registered_at": datetime.now(timezone.utc).isoformat()
             }
         )
         
@@ -72,7 +72,7 @@ async def register_worker(
 async def send_heartbeat(
     worker_id: UUID,
     current_load: int = Query(..., ge=0, description="Current task load"),
-    worker_status: str = Query("ACTIVE", regex="^(ACTIVE|DRAINING|OFFLINE)$"),
+    worker_status: str = Query("ACTIVE", pattern="^(ACTIVE|DRAINING|OFFLINE)$"),
     db: Session = Depends(get_db)
 ):
     """Send heartbeat to keep worker alive.
@@ -92,13 +92,13 @@ async def send_heartbeat(
         # Update worker
         worker.current_load = current_load
         worker.status = worker_status
-        worker.last_heartbeat = datetime.utcnow()
+        worker.last_heartbeat = datetime.now(timezone.utc)
         db.commit()
         db.refresh(worker)
         
         # Update in Redis
         broker = get_broker()
-        broker.update_worker_heartbeat(str(worker_id), int(datetime.utcnow().timestamp()))
+        broker.update_worker_heartbeat(str(worker_id), int(datetime.now(timezone.utc).timestamp()))
         broker.redis.hset(
             f"worker:{worker_id}",
             mapping={
@@ -122,7 +122,7 @@ async def send_heartbeat(
 async def list_workers(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    worker_status: str = Query(None, regex="^(ACTIVE|DRAINING|OFFLINE)$"),
+    worker_status: str = Query(None, pattern="^(ACTIVE|DRAINING|OFFLINE)$"),
     db: Session = Depends(get_db),
 ):
     """List all registered workers with pagination and filtering."""
@@ -191,7 +191,7 @@ async def get_worker_tasks(
 @router.patch("/{worker_id}/status", response_model=WorkerResponse)
 async def update_worker_status(
     worker_id: UUID,
-    new_status: str = Query(..., regex="^(ACTIVE|DRAINING|OFFLINE)$"),
+    new_status: str = Query(..., pattern="^(ACTIVE|DRAINING|OFFLINE)$"),
     db: Session = Depends(get_db)
 ):
     """Update worker status.
@@ -249,7 +249,7 @@ async def update_worker_status(
                         broker.enqueue_task(task)
                     else:
                         task.status = "FAILED"
-                        task.failed_at = datetime.utcnow()
+                        task.failed_at = datetime.now(timezone.utc)
                         task.error_message = "Worker failed and max retries exceeded"
                 # If already QUEUED, leave as is (might already be queued)
             
@@ -257,7 +257,7 @@ async def update_worker_status(
         
         # Update worker status
         worker.status = new_status
-        worker.updated_at = datetime.utcnow()
+        worker.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(worker)
         
@@ -319,7 +319,7 @@ async def deregister_worker(
                         broker.enqueue_task(task)
                     else:
                         task.status = "FAILED"
-                        task.failed_at = datetime.utcnow()
+                        task.failed_at = datetime.now(timezone.utc)
                         task.error_message = "Worker deregistered and max retries exceeded"
         
         # Remove from Redis

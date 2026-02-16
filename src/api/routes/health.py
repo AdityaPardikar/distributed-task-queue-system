@@ -1,6 +1,6 @@
 """Health check routes"""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import text
@@ -20,7 +20,7 @@ settings = get_settings()
 @router.get("/health", response_model=HealthResponse)
 async def health_check():
     """Health check endpoint"""
-    return HealthResponse(status="healthy", version=settings.VERSION, timestamp=datetime.utcnow())
+    return HealthResponse(status="healthy", version=settings.VERSION, timestamp=datetime.now(timezone.utc))
 
 
 @router.get("/ready", response_model=HealthResponse)
@@ -45,13 +45,13 @@ async def readiness_check(db: Session = Depends(get_db)):
         return HealthResponse(
             status="not_ready",
             version=settings.VERSION,
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(timezone.utc)
         )
     
     return HealthResponse(
         status="ready",
         version=settings.VERSION,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.now(timezone.utc)
     )
 
 
@@ -69,7 +69,7 @@ async def info():
 @router.get("/workers/status")
 async def worker_health_status(db: Session = Depends(get_db)):
     """Check worker health based on heartbeat timestamps."""
-    threshold = datetime.utcnow() - timedelta(seconds=settings.WORKER_DEAD_TIMEOUT_SECONDS)
+    threshold = datetime.now(timezone.utc) - timedelta(seconds=settings.WORKER_DEAD_TIMEOUT_SECONDS)
     
     active_workers = db.query(Worker).filter(
         Worker.status == "ACTIVE",
@@ -104,7 +104,7 @@ async def system_status(db: Session = Depends(get_db)):
 async def system_resources():
     """Get current system resource usage."""
     return {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         **SystemStatusMonitor.get_resource_usage(),
         "system": SystemStatusMonitor.get_system_info(),
     }
@@ -113,4 +113,4 @@ async def system_resources():
 @router.get("/live")
 async def liveness_probe():
     """Kubernetes liveness probe - minimal check that service is running."""
-    return {"status": "alive", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "alive", "timestamp": datetime.now(timezone.utc).isoformat()}

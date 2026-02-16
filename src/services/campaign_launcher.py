@@ -1,6 +1,6 @@
 """Campaign launcher service for creating email tasks from recipients"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Tuple
 from uuid import UUID, uuid4
 
@@ -127,7 +127,7 @@ class CampaignLauncherService:
 
         # Update campaign status
         campaign.status = "RUNNING" if send_immediately else "SCHEDULED"
-        campaign.started_at = datetime.utcnow() if send_immediately else None
+        campaign.started_at = datetime.now(timezone.utc) if send_immediately else None
         campaign.total_recipients = len(recipients)
 
         # Commit all changes

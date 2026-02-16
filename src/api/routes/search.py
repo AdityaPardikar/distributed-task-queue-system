@@ -48,7 +48,7 @@ async def search_tasks(
     search: Optional[str] = Query(None, description="Full-text search query"),
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0),
-    order_by: str = Query("created_at", regex="^(created_at|priority|status)$"),
+    order_by: str = Query("created_at", pattern="^(created_at|priority|status)$"),
     order_desc: bool = Query(True),
     db: Session = Depends(get_db),
 ):
@@ -193,7 +193,7 @@ async def export_tasks_csv(
 
 @router.post("/tasks/bulk-action")
 async def bulk_action(
-    action: str = Query(..., regex="^(retry|cancel|priority_boost)$"),
+    action: str = Query(..., pattern="^(retry|cancel|priority_boost)$"),
     status: Optional[str] = Query(None),
     priority: Optional[int] = Query(None, ge=1, le=10),
     search: Optional[str] = Query(None),

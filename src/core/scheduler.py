@@ -1,7 +1,7 @@
 """Task scheduler for cron-based and delayed task execution."""
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from croniter import croniter
@@ -58,7 +58,7 @@ class TaskScheduler:
         """
         db: Session = SessionLocal()
         try:
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             
             # Find tasks that are scheduled and due
             due_tasks = db.query(Task).filter(
@@ -119,7 +119,7 @@ class TaskScheduler:
         """
         try:
             if not base_time:
-                base_time = datetime.utcnow()
+                base_time = datetime.now(timezone.utc)
             
             cron = croniter(cron_expression, base_time)
             return cron.get_next(datetime)

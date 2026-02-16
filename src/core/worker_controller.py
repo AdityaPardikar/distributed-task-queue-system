@@ -1,6 +1,6 @@
 """Worker administration and control service."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -50,7 +50,7 @@ class WorkerController:
         # Store pause state in Redis
         self.redis.hset(
             f"{self.WORKER_STATE_KEY}:{worker_id}",
-            mapping={"status": "PAUSED", "paused_at": datetime.utcnow().isoformat()},
+            mapping={"status": "PAUSED", "paused_at": datetime.now(timezone.utc).isoformat()},
         )
 
         return True

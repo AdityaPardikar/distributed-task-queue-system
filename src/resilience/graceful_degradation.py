@@ -51,7 +51,7 @@ class GracefulDegradation:
         degradation_info = {
             "service": service_name,
             "strategy": strategy.value,
-            "marked_at": str(__import__('datetime').datetime.utcnow().isoformat()),
+            "marked_at": str(__import__('datetime').datetime.now(timezone.utc).isoformat()),
             "metadata": metadata or {},
         }
 

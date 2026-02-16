@@ -1,6 +1,6 @@
 """Metrics routes"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends
@@ -90,7 +90,7 @@ async def prometheus_metrics(db: Session = Depends(get_db)):
 async def get_stats(db: Session = Depends(get_db)):
     """Get system statistics"""
     return {
-        "timestamp": datetime.utcnow(),
+        "timestamp": datetime.now(timezone.utc),
         "tasks": {
             "total": db.query(Task).count(),
             "pending": db.query(Task).filter(Task.status == "PENDING").count(),

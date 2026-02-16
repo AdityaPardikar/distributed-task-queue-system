@@ -3,7 +3,7 @@
 import os
 import platform
 import psutil
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
@@ -69,10 +69,10 @@ class SystemStatusMonitor:
     @staticmethod
     def check_database_health(db: Session) -> Dict[str, Any]:
         """Check database connectivity and performance."""
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         try:
             db.execute(text("SELECT 1"))
-            latency = (datetime.utcnow() - start).total_seconds() * 1000
+            latency = (datetime.now(timezone.utc) - start).total_seconds() * 1000
             return {
                 "status": "healthy",
                 "latency_ms": round(latency, 2),
@@ -88,12 +88,12 @@ class SystemStatusMonitor:
     @staticmethod
     def check_redis_health() -> Dict[str, Any]:
         """Check Redis connectivity and performance."""
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         try:
             redis = get_redis_client()
             redis.ping()
             info = redis.info() if hasattr(redis, "info") else {}
-            latency = (datetime.utcnow() - start).total_seconds() * 1000
+            latency = (datetime.now(timezone.utc) - start).total_seconds() * 1000
             return {
                 "status": "healthy",
                 "latency_ms": round(latency, 2),
@@ -123,7 +123,7 @@ class SystemStatusMonitor:
             success_rate = (completed / finished * 100) if finished > 0 else 100.0
 
             # Get tasks created in last hour
-            hour_ago = datetime.utcnow() - timedelta(hours=1)
+            hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
             tasks_last_hour = db.query(func.count(Task.task_id)).filter(
                 Task.created_at >= hour_ago
             ).scalar() or 0
@@ -145,7 +145,7 @@ class SystemStatusMonitor:
     def get_worker_statistics(db: Session) -> Dict[str, Any]:
         """Get worker pool statistics."""
         try:
-            threshold = datetime.utcnow() - timedelta(seconds=settings.WORKER_DEAD_TIMEOUT_SECONDS)
+            threshold = datetime.now(timezone.utc) - timedelta(seconds=settings.WORKER_DEAD_TIMEOUT_SECONDS)
             
             total = db.query(func.count(Worker.worker_id)).scalar() or 0
             active = db.query(func.count(Worker.worker_id)).filter(
@@ -199,7 +199,7 @@ class SystemStatusMonitor:
     def get_full_status(cls, db: Session) -> Dict[str, Any]:
         """Get comprehensive system status."""
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "version": settings.VERSION,
             "environment": settings.APP_ENV,
             "system": cls.get_system_info(),

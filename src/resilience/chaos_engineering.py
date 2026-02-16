@@ -2,7 +2,7 @@
 
 import asyncio
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, TypeVar
@@ -76,8 +76,8 @@ class ChaosEngineering:
             "chaos_type": config.chaos_type.value,
             "probability": config.probability,
             "enabled": config.enabled,
-            "started_at": datetime.utcnow().isoformat(),
-            "expires_at": (datetime.utcnow() + timedelta(seconds=duration_seconds)).isoformat(),
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": (datetime.now(timezone.utc) + timedelta(seconds=duration_seconds)).isoformat(),
         }
         
         self.redis.hset(experiment_key, mapping=experiment_data)
@@ -356,7 +356,7 @@ class DeadLetterQueue:
             "error": error,
             "attempts": attempts,
             "task_data": task_data,
-            "added_at": datetime.utcnow().isoformat(),
+            "added_at": datetime.now(timezone.utc).isoformat(),
         }
         
         self.redis.lpush(self.key, json.dumps(entry))

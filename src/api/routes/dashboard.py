@@ -1,6 +1,6 @@
 """Dashboard routes for system health and monitoring."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import psutil
 from fastapi import APIRouter, Depends
@@ -120,7 +120,7 @@ async def get_system_stats(db: Session = Depends(get_db)):
         queue_depth_low=queue_low,
         system_cpu_percent=cpu_percent,
         system_memory_percent=memory.percent,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
     )
 
 
@@ -207,10 +207,10 @@ async def get_queue_depth(db: Session = Depends(get_db)):
     
     oldest_age = None
     if oldest_task:
-        oldest_age = (datetime.utcnow() - oldest_task.created_at).total_seconds()
+        oldest_age = (datetime.now(timezone.utc) - oldest_task.created_at).total_seconds()
     
     # Calculate average wait time for recently completed tasks
-    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+    one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
     recent_completed = (
         db.query(Task)
         .filter(
@@ -242,7 +242,7 @@ async def get_queue_depth(db: Session = Depends(get_db)):
 @router.get("/hourly-stats", response_model=list[HourlyTaskStats])
 async def get_hourly_stats(hours: int = 24, db: Session = Depends(get_db)):
     """Get hourly task statistics for the last N hours."""
-    cutoff = datetime.utcnow() - timedelta(hours=hours)
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
     
     # Query tasks created in the last N hours
     tasks = db.query(Task).filter(Task.created_at >= cutoff).all()
@@ -282,7 +282,7 @@ async def get_hourly_stats(hours: int = 24, db: Session = Depends(get_db)):
 @router.get("/daily-stats")
 async def get_daily_stats(days: int = 7, db: Session = Depends(get_db)):
     """Get daily task statistics for the last N days."""
-    cutoff = datetime.utcnow() - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     
     # Query tasks created in the last N days
     tasks = db.query(Task).filter(Task.created_at >= cutoff).all()

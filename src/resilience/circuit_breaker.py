@@ -1,6 +1,6 @@
 """Circuit breaker pattern implementation for resilience."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Callable, Optional, Any
 
@@ -104,7 +104,7 @@ class CircuitBreaker:
     def _on_failure(self) -> None:
         """Handle failed call."""
         count = self.redis.incr(self.key_count)
-        self.redis.set(self.key_last_failure, datetime.utcnow().isoformat())
+        self.redis.set(self.key_last_failure, datetime.now(timezone.utc).isoformat())
 
         if count >= self.failure_threshold:
             self._transition_to_open()
@@ -112,7 +112,7 @@ class CircuitBreaker:
     def _transition_to_open(self) -> None:
         """Transition to open state."""
         self.redis.set(self.key_state, CircuitState.OPEN.value)
-        self.redis.set(self.key_opened_at, datetime.utcnow().isoformat())
+        self.redis.set(self.key_opened_at, datetime.now(timezone.utc).isoformat())
 
     def _transition_to_half_open(self) -> None:
         """Transition to half-open state."""
@@ -129,7 +129,7 @@ class CircuitBreaker:
             return True
 
         opened_at = datetime.fromisoformat(opened_at_str)
-        elapsed = (datetime.utcnow() - opened_at).total_seconds()
+        elapsed = (datetime.now(timezone.utc) - opened_at).total_seconds()
         return elapsed >= self.recovery_timeout_seconds
 
     def reset(self) -> None:

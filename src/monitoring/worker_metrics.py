@@ -1,7 +1,7 @@
 """Worker-specific performance metrics and tracking."""
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from prometheus_client import Gauge, Histogram
@@ -66,7 +66,7 @@ class WorkerMetricsTracker:
         task_name: str,
     ) -> None:
         """Record when a worker starts processing a task."""
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         log_entry = json.dumps({
             "task_id": task_id,
             "task_name": task_name,
@@ -75,7 +75,7 @@ class WorkerMetricsTracker:
         })
 
         # Add to task log (use sorted set for time-based queries)
-        score = datetime.utcnow().timestamp()
+        score = datetime.now(timezone.utc).timestamp()
         log_key = self._task_log_key(worker_id)
         self.redis.zadd(log_key, {log_entry: score})
         self.redis.expire(log_key, self.METRICS_TTL)
@@ -90,7 +90,7 @@ class WorkerMetricsTracker:
     ) -> None:
         """Record task completion and update worker metrics."""
         # Update task log
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         log_entry = json.dumps({
             "task_id": task_id,
             "task_name": task_name,
@@ -98,13 +98,13 @@ class WorkerMetricsTracker:
             "duration": duration_seconds,
             "status": "success" if success else "failed",
         })
-        score = datetime.utcnow().timestamp()
+        score = datetime.now(timezone.utc).timestamp()
         log_key = self._task_log_key(worker_id)
         self.redis.zadd(log_key, {log_entry: score})
 
         # Update aggregated metrics
         metrics_key = self._metrics_key(worker_id)
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
 
         # Increment counters
         self.redis.hincrby(metrics_key, "total_tasks", 1)
@@ -132,7 +132,7 @@ class WorkerMetricsTracker:
     def record_worker_start(self, worker_id: str) -> None:
         """Record when a worker starts."""
         metrics_key = self._metrics_key(worker_id)
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
 
         # Increment restart count
         restart_count = self.redis.hincrby(metrics_key, "restart_count", 1)
@@ -150,7 +150,7 @@ class WorkerMetricsTracker:
     def record_heartbeat(self, worker_id: str) -> None:
         """Record worker heartbeat."""
         metrics_key = self._metrics_key(worker_id)
-        current_time = datetime.utcnow()
+        current_time = datetime.now(timezone.utc)
 
         self.redis.hset(metrics_key, "last_heartbeat", current_time.isoformat())
         self.redis.expire(metrics_key, self.METRICS_TTL)
@@ -176,7 +176,7 @@ class WorkerMetricsTracker:
         uptime_seconds = 0
         if start_time:
             start_dt = datetime.fromisoformat(start_time)
-            uptime_seconds = (datetime.utcnow() - start_dt).total_seconds()
+            uptime_seconds = (datetime.now(timezone.utc) - start_dt).total_seconds()
 
         # Calculate task rate (tasks per minute in last hour)
         task_rate = self._calculate_task_rate(worker_id)
@@ -197,7 +197,7 @@ class WorkerMetricsTracker:
     def _calculate_task_rate(self, worker_id: str) -> float:
         """Calculate task processing rate (tasks/minute) for last hour."""
         log_key = self._task_log_key(worker_id)
-        one_hour_ago = (datetime.utcnow() - timedelta(hours=1)).timestamp()
+        one_hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).timestamp()
 
         # Count tasks completed in last hour
         count = self.redis.zcount(log_key, one_hour_ago, "+inf")

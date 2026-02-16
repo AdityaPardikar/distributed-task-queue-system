@@ -1,7 +1,7 @@
 """Unit tests for task scheduler."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from src.core.scheduler import TaskScheduler
 
 
@@ -86,7 +86,7 @@ class TestTaskScheduler:
         """Test that invalid cron expression returns None."""
         scheduler = TaskScheduler()
         
-        next_run = scheduler.get_next_run_time("invalid cron", datetime.utcnow())
+        next_run = scheduler.get_next_run_time("invalid cron", datetime.now(timezone.utc))
         assert next_run is None
     
     def test_get_next_run_time_defaults_to_now(self):
@@ -96,7 +96,11 @@ class TestTaskScheduler:
         # Should not raise an error
         next_run = scheduler.get_next_run_time("0 * * * *")
         assert next_run is not None
-        assert next_run > datetime.utcnow()
+        # next_run should be in the future - compare timezone-naive if needed
+        now = datetime.now(timezone.utc)
+        if next_run.tzinfo is None:
+            now = now.replace(tzinfo=None)
+        assert next_run > now
     
     def test_scheduler_initialization(self):
         """Test scheduler initialization."""

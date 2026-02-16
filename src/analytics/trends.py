@@ -1,6 +1,6 @@
 """Analytics module for task trends and performance analysis."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 from sqlalchemy import func
@@ -28,7 +28,7 @@ class TaskAnalytics:
         Returns:
             List of trend data points with timestamp, completed, and failed counts
         """
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         
         tasks = db.query(Task).filter(Task.completed_at >= cutoff).all()
         
@@ -81,7 +81,7 @@ class TaskAnalytics:
         Returns:
             List of trend data with average wait time per interval
         """
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         
         tasks = (
             db.query(Task)
@@ -143,7 +143,7 @@ class TaskAnalytics:
         Returns:
             List of top N peak load times with submission counts
         """
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         
         tasks = db.query(Task).filter(Task.created_at >= cutoff).all()
         
@@ -187,7 +187,7 @@ class TaskAnalytics:
         Returns:
             List of task types with counts and percentages
         """
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         
         tasks = db.query(Task).filter(Task.created_at >= cutoff).all()
         
@@ -235,7 +235,7 @@ class TaskAnalytics:
         Returns:
             List of most common failure patterns
         """
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         
         failed_tasks = (
             db.query(Task)
@@ -285,7 +285,7 @@ class TaskAnalytics:
         Returns:
             Dictionary with retry statistics by task type
         """
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
         
         tasks = (
             db.query(Task)

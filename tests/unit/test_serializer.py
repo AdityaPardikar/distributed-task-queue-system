@@ -2,7 +2,7 @@
 
 import json
 import pickle
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
@@ -43,7 +43,7 @@ class TestTaskSerializer:
         """Test JSON serialization of datetime objects."""
         serializer = TaskSerializer(format=SerializationFormat.JSON)
         
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         data = {"timestamp": now}
         
         serialized = serializer.serialize(data)
@@ -96,7 +96,7 @@ class TestTaskSerializer:
         serializer = TaskSerializer(format=SerializationFormat.PICKLE)
         
         # Use module-level class (datetime) or built-in types
-        from datetime import datetime
+        from datetime import datetime, timezone
         
         obj = datetime(2024, 1, 1, 12, 0, 0)
         data = {"datetime": obj, "nested": {"list": [1, 2, 3], "dict": {"key": "value"}}}
@@ -145,7 +145,7 @@ class TestTaskSerializer:
         data = {
             "user": {
                 "id": uuid4(),
-                "created_at": datetime.utcnow(),
+                "created_at": datetime.now(timezone.utc),
                 "profile": {
                     "name": "John Doe",
                     "tags": ["tag1", "tag2"],

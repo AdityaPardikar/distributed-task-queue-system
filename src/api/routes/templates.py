@@ -2,7 +2,7 @@
 
 from typing import List
 from uuid import UUID, uuid4
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -178,7 +178,7 @@ async def update_template(
         
         # Increment version
         template.version += 1
-        template.updated_at = datetime.utcnow()
+        template.updated_at = datetime.now(timezone.utc)
         
         db.commit()
         db.refresh(template)

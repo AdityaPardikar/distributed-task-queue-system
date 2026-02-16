@@ -85,7 +85,7 @@ async def get_campaign(campaign_id: UUID, db: Session = Depends(get_db)):
 @router.patch("/{campaign_id}", response_model=CampaignResponse)
 async def update_campaign(campaign_id: UUID, payload: CampaignUpdate, db: Session = Depends(get_db)):
     """Update an existing campaign"""
-    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == str(campaign_id)).first()
 
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
