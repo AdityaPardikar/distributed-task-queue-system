@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 6 - Frontend Completion & Real-Time Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-bar {
+            transition: width 0.6s ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .pulse-dot {
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- HEADER                                                 -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div
+            class="bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 rounded-2xl shadow-2xl p-10 mb-10 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2">
+            </div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2">
+            </div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="bg-white/20 px-3 py-1 rounded-full text-sm font-semibold tracking-wide">WEEK 6</span>
+                    <span class="pulse-dot inline-block w-2 h-2 bg-green-400 rounded-full"></span>
+                    <span class="text-sm text-green-300 font-medium">Active Sprint</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-3 tracking-tight">
+                    🖥️ Frontend Completion &amp; Real-Time Integration
+                </h1>
+                <p class="text-xl text-blue-100 max-w-3xl">
+                    Build the remaining frontend pages, establish real-time WebSocket data pipelines,
+                    and polish the application into a fully-integrated, production-ready product.
+                </p>
+                <div class="mt-6 flex gap-3 flex-wrap">
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">7 Days</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">Frontend Focus</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">Real-Time Data</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">6,000+ Lines</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">📊 Full-Stack</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- STATUS OVERVIEW                                        -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-cyan-400">106</p>
+                <p class="text-sm text-gray-600 mt-1">Unit Tests Passing</p>
+            </div>
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-green-500">18</p>
+                <p class="text-sm text-gray-600 mt-1">API Routers Active</p>
+            </div>
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-indigo-500">10</p>
+                <p class="text-sm text-gray-600 mt-1">Frontend Pages Built</p>
+            </div>
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-amber-500">5</p>
+                <p class="text-sm text-gray-600 mt-1">Pages Remaining</p>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- PREREQUISITES                                          -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="glass rounded-xl shadow-lg p-6 mb-10 border border-white/20">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">✅ Prerequisites &amp; Week 5 Status</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold text-green-700 mb-2">Completed (Week 1–5)</h3>
+                    <ul class="text-sm text-gray-700 space-y-1">
+                        <li>✅ Core task queue with Redis broker</li>
+                        <li>✅ 18 REST API routers (tasks, workers, campaigns, auth, analytics, …)</li>
+                        <li>✅ JWT authentication &amp; RBAC</li>
+                        <li>✅ Email campaign system with templates</li>
+                        <li>✅ React dashboard with login, tasks, campaigns, templates pages</li>
+                        <li>✅ Prometheus metrics, OpenTelemetry tracing</li>
+                        <li>✅ Circuit breaker, graceful degradation, chaos engineering</li>
+                        <li>✅ Advanced workflow engine with DAG dependencies</li>
+                        <li>✅ Database optimization, backup &amp; recovery</li>
+                        <li>✅ 106 unit tests passing, code quality hardened</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-amber-700 mb-2">Gaps to Address (Week 6)</h3>
+                    <ul class="text-sm text-gray-700 space-y-1">
+                        <li>⬜ Workers page is a placeholder stub</li>
+                        <li>⬜ Monitoring page is a placeholder stub</li>
+                        <li>⬜ No Workflows visualization page</li>
+                        <li>⬜ No Settings / Admin panel</li>
+                        <li>⬜ No backend WebSocket endpoints</li>
+                        <li>⬜ Middleware imported but not activated (rate limit, request ID)</li>
+                        <li>⬜ No real-time notification delivery to frontend</li>
+                        <li>⬜ Frontend WebSocket hooks exist but have no backend counterpart</li>
+                        <li>⬜ src/utils/ is empty — no shared utilities</li>
+                        <li>⬜ No frontend tests for new pages</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 1                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold">Day 1 — Workers Management Page</h2>
+                        <p class="text-cyan-100 mt-2">Full-featured worker management UI with real-time status, actions,
+                            and capacity monitoring</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">⚛️ Frontend</span>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-cyan-500">
+                <div class="bg-cyan-50 p-5 rounded-lg mb-4">
+                    <h4 class="font-bold text-cyan-900 mb-3">📋 Deliverables</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✦ <strong>WorkersPage.tsx</strong> — Full page with worker list table, status badges, action
+                            buttons (pause/resume/drain/remove)</li>
+                        <li>✦ <strong>WorkerDetailCard.tsx</strong> — Expandable card showing worker metrics (CPU,
+                            memory, task count, uptime)</li>
+                        <li>✦ <strong>WorkerStatusBadge.tsx</strong> — Colored status indicator
+                            (active/paused/draining/offline)</li>
+                        <li>✦ <strong>workerAPI.ts</strong> — API service wrapping all <code>/api/v1/workers/*</code>
+                            endpoints</li>
+                        <li>✦ <strong>types/worker.ts</strong> — Full TypeScript type definitions for Worker entities
+                        </li>
+                        <li>✦ Update <strong>App.tsx</strong> to replace the Workers placeholder with the real page</li>
+                        <li>✦ Unit tests for the WorkersPage and worker API service</li>
+                    </ul>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h5 class="font-semibold text-gray-800 mb-2">Backend Endpoints Used</h5>
+                        <ul class="text-xs text-gray-600 space-y-1 font-mono">
+                            <li>GET /api/v1/workers</li>
+                            <li>GET /api/v1/workers/{id}</li>
+                            <li>POST /api/v1/workers/register</li>
+                            <li>POST /api/v1/workers/{id}/pause</li>
+                            <li>POST /api/v1/workers/{id}/resume</li>
+                            <li>POST /api/v1/workers/{id}/drain</li>
+                            <li>DELETE /api/v1/workers/{id}</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h5 class="font-semibold text-gray-800 mb-2">UI Features</h5>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li>📊 Worker capacity utilization bar chart</li>
+                            <li>🔴🟡🟢 Color-coded status badges</li>
+                            <li>⚡ Action buttons with confirmation dialogs</li>
+                            <li>🔄 Auto-refresh every 10 seconds</li>
+                            <li>📱 Responsive table/card layout</li>
+                            <li>🔍 Filter by status, search by hostname</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg mt-4 text-sm text-gray-700">
+                    <strong>Files Created:</strong>
+                    <code class="text-xs ml-2">frontend/src/pages/WorkersPage.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/services/workerAPI.ts</code>,
+                    <code class="text-xs ml-1">frontend/src/types/worker.ts</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 2                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold">Day 2 — System Monitoring Dashboard</h2>
+                        <p class="text-green-100 mt-2">Real-time system health dashboard with live metrics, worker
+                            health grid, and alert timeline</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">📊 Monitoring</span>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-emerald-500">
+                <div class="bg-emerald-50 p-5 rounded-lg mb-4">
+                    <h4 class="font-bold text-emerald-900 mb-3">📋 Deliverables</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✦ <strong>MonitoringPage.tsx</strong> — Full monitoring dashboard with tabs: Overview,
+                            Workers, Alerts, Performance</li>
+                        <li>✦ <strong>SystemOverviewPanel.tsx</strong> — Key metrics cards (tasks/min, error rate, queue
+                            depth, uptime)</li>
+                        <li>✦ <strong>WorkerHealthGrid.tsx</strong> — Grid of worker cards with live health indicators
+                        </li>
+                        <li>✦ <strong>AlertsTimeline.tsx</strong> — Chronological alert feed with severity colors and
+                            acknowledgment</li>
+                        <li>✦ <strong>PerformanceCharts.tsx</strong> — Line charts for throughput, latency p50/p95/p99,
+                            error rate over time</li>
+                        <li>✦ <strong>monitoringAPI.ts</strong> — API service wrapping metrics, health, and alerts
+                            endpoints</li>
+                        <li>✦ <strong>types/monitoring.ts</strong> — TypeScript types for metrics, health, and alert
+                            data</li>
+                        <li>✦ Update <strong>App.tsx</strong> to replace the Monitoring placeholder</li>
+                    </ul>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h5 class="font-semibold text-gray-800 mb-2">Backend Endpoints Used</h5>
+                        <ul class="text-xs text-gray-600 space-y-1 font-mono">
+                            <li>GET /health</li>
+                            <li>GET /api/v1/metrics/system</li>
+                            <li>GET /api/v1/dashboard/stats</li>
+                            <li>GET /api/v1/dashboard/overview</li>
+                            <li>GET /api/v1/analytics/trends</li>
+                            <li>GET /api/v1/workers</li>
+                            <li>GET /api/v1/alerts</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h5 class="font-semibold text-gray-800 mb-2">UI Features</h5>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li>📈 Live Recharts line/area charts (throughput, latency)</li>
+                            <li>🏥 System health score with color gradient</li>
+                            <li>👷 Worker health grid with CPU/memory gauges</li>
+                            <li>🔔 Alert timeline with severity filtering</li>
+                            <li>⏱️ Auto-refresh with configurable interval</li>
+                            <li>📅 Time range selector (1h, 6h, 24h, 7d)</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg mt-4 text-sm text-gray-700">
+                    <strong>Files Created:</strong>
+                    <code class="text-xs ml-2">frontend/src/pages/MonitoringPage.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/services/monitoringAPI.ts</code>,
+                    <code class="text-xs ml-1">frontend/src/types/monitoring.ts</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 3                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold">Day 3 — WebSocket Backend &amp; Real-Time Pipeline</h2>
+                        <p class="text-purple-100 mt-2">Build backend WebSocket endpoints and connect the existing
+                            frontend hooks to live data</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">🔌 Real-Time</span>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-violet-500">
+                <div class="bg-violet-50 p-5 rounded-lg mb-4">
+                    <h4 class="font-bold text-violet-900 mb-3">📋 Deliverables</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✦ <strong>src/api/routes/websocket.py</strong> — WebSocket endpoint for
+                            <code>/ws/metrics</code>, <code>/ws/tasks</code>, <code>/ws/workers</code></li>
+                        <li>✦ <strong>src/core/event_bus.py</strong> — In-process pub/sub event bus for broadcasting
+                            state changes</li>
+                        <li>✦ <strong>WebSocket connection manager</strong> — Track connected clients, broadcast
+                            updates, handle reconnection</li>
+                        <li>✦ <strong>Connect frontend hooks</strong> — Wire <code>useMetricsStream</code> and
+                            <code>useWebSocket</code> to live backend data</li>
+                        <li>✦ <strong>Activate middleware</strong> — Enable <code>request_id</code>,
+                            <code>rate_limit</code>, and <code>request_timing</code> middleware in <code>main.py</code>
+                        </li>
+                        <li>✦ Unit tests for WebSocket manager and event bus</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <code class="text-xs ml-2">src/api/routes/websocket.py</code>,
+                    <code class="text-xs ml-1">src/core/event_bus.py</code>,
+                    <code class="text-xs ml-1">src/api/main.py</code> (updated)
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 4                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold">Day 4 — Workflow Visualization &amp; Alert Management</h2>
+                        <p class="text-orange-100 mt-2">Interactive DAG-based workflow visualization and full alert
+                            management dashboard</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">🗺️ Workflows</span>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-amber-500">
+                <div class="bg-amber-50 p-5 rounded-lg mb-4">
+                    <h4 class="font-bold text-amber-900 mb-3">📋 Deliverables</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✦ <strong>WorkflowsPage.tsx</strong> — Workflow list with DAG visualization, execution
+                            status, history</li>
+                        <li>✦ <strong>DAGVisualization.tsx</strong> — SVG-based directed acyclic graph renderer for task
+                            dependencies</li>
+                        <li>✦ <strong>AlertsPage.tsx</strong> — Alert management with filtering, acknowledgment,
+                            escalation</li>
+                        <li>✦ <strong>workflowAPI.ts</strong> — API service for workflow and advanced-workflow endpoints
+                        </li>
+                        <li>✦ <strong>types/workflow.ts</strong> — TypeScript types for workflows and DAG nodes</li>
+                        <li>✦ Update <strong>App.tsx</strong> with new routes: <code>/workflows</code>,
+                            <code>/alerts</code></li>
+                    </ul>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700">
+                    <strong>Files Created:</strong>
+                    <code class="text-xs ml-2">frontend/src/pages/WorkflowsPage.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/pages/AlertsPage.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/components/DAGVisualization.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/services/workflowAPI.ts</code>,
+                    <code class="text-xs ml-1">frontend/src/types/workflow.ts</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 5                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold">Day 5 — Settings Panel &amp; Admin Controls</h2>
+                        <p class="text-pink-100 mt-2">System configuration dashboard, user management, and admin tools
+                        </p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">⚙️ Admin</span>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-rose-500">
+                <div class="bg-rose-50 p-5 rounded-lg mb-4">
+                    <h4 class="font-bold text-rose-900 mb-3">📋 Deliverables</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✦ <strong>SettingsPage.tsx</strong> — Tabbed settings panel (General, Workers, Alerts,
+                            Database, Security)</li>
+                        <li>✦ <strong>UserManagement.tsx</strong> — User list with role management
+                            (admin/operator/viewer RBAC)</li>
+                        <li>✦ <strong>SystemConfigPanel.tsx</strong> — View/edit runtime configuration with validation
+                        </li>
+                        <li>✦ <strong>settingsAPI.ts</strong> — API service for operations and configuration endpoints
+                        </li>
+                        <li>✦ <strong>types/settings.ts</strong> — TypeScript types for settings and user management
+                        </li>
+                        <li>✦ Update <strong>App.tsx</strong> with route: <code>/settings</code></li>
+                    </ul>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700">
+                    <strong>Files Created:</strong>
+                    <code class="text-xs ml-2">frontend/src/pages/SettingsPage.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/services/settingsAPI.ts</code>,
+                    <code class="text-xs ml-1">frontend/src/types/settings.ts</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 6                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold">Day 6 — Notification Center &amp; Global Search</h2>
+                        <p class="text-cyan-100 mt-2">In-app notification system with activity feed and cross-entity
+                            search UI</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">🔔 Notify</span>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-teal-500">
+                <div class="bg-teal-50 p-5 rounded-lg mb-4">
+                    <h4 class="font-bold text-teal-900 mb-3">📋 Deliverables</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✦ <strong>NotificationCenter.tsx</strong> — Slide-out notification panel with read/unread,
+                            grouping, actions</li>
+                        <li>✦ <strong>ActivityFeed.tsx</strong> — Real-time feed of system events (task created, worker
+                            joined, campaign launched)</li>
+                        <li>✦ <strong>GlobalSearch.tsx</strong> — Command-palette style search (Ctrl+K) for tasks,
+                            workers, campaigns</li>
+                        <li>✦ <strong>SearchResultsPage.tsx</strong> — Dedicated search results page with faceted
+                            filtering</li>
+                        <li>✦ <strong>NotificationContext.tsx</strong> — Enhanced notification context with WebSocket
+                            integration</li>
+                        <li>✦ Update <strong>Layout.tsx</strong> with notification bell icon and search shortcut</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700">
+                    <strong>Files Created:</strong>
+                    <code class="text-xs ml-2">frontend/src/components/NotificationCenter.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/components/ActivityFeed.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/components/GlobalSearch.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/pages/SearchResultsPage.tsx</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 7                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10">
+            <div class="bg-gradient-to-r from-indigo-600 to-blue-700 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold">Day 7 — Frontend Testing &amp; Final Polish</h2>
+                        <p class="text-blue-100 mt-2">Comprehensive frontend test coverage, accessibility audit, and
+                            production build optimization</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">✅ QA</span>
+                </div>
+            </div>
+
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-indigo-600">
+                <div class="bg-indigo-50 p-5 rounded-lg mb-4">
+                    <h4 class="font-bold text-indigo-900 mb-3">📋 Deliverables</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>✦ Unit tests for all new pages (WorkersPage, MonitoringPage, WorkflowsPage, SettingsPage,
+                            AlertsPage)</li>
+                        <li>✦ Unit tests for all new services (workerAPI, monitoringAPI, workflowAPI, settingsAPI)</li>
+                        <li>✦ Accessibility audit — ARIA labels, keyboard navigation, screen reader support</li>
+                        <li>✦ Performance audit — Lighthouse scores, bundle size analysis, lazy loading verification
+                        </li>
+                        <li>✦ Backend unit tests for WebSocket manager, event bus, and new endpoints</li>
+                        <li>✦ End-to-end smoke tests for critical user journeys</li>
+                        <li>✦ Production build optimization — tree shaking, code splitting, asset compression</li>
+                        <li>✦ Update documentation — README, API docs, deployment guide</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-100 p-4 rounded-lg text-sm text-gray-700">
+                    <strong>Files Created/Modified:</strong>
+                    <code class="text-xs ml-2">frontend/src/pages/__tests__/*.test.tsx</code>,
+                    <code class="text-xs ml-1">frontend/src/services/__tests__/*.test.ts</code>,
+                    <code class="text-xs ml-1">tests/unit/test_websocket.py</code>,
+                    <code class="text-xs ml-1">README.md</code> (updated)
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- SUMMARY SECTION                                        -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl shadow-xl p-8 mb-10 text-white">
+            <h2 class="text-2xl font-bold mb-4">📊 Week 6 Progress Tracker</h2>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1"><span>Day 1 — Workers Page</span><span>⬜ Not
+                            Started</span></div>
+                    <div class="w-full bg-white/10 rounded-full h-2">
+                        <div class="progress-bar bg-cyan-400 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1"><span>Day 2 — Monitoring Dashboard</span><span>⬜ Not
+                            Started</span></div>
+                    <div class="w-full bg-white/10 rounded-full h-2">
+                        <div class="progress-bar bg-emerald-400 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1"><span>Day 3 — WebSocket &amp; Real-Time</span><span>⬜
+                            Not Started</span></div>
+                    <div class="w-full bg-white/10 rounded-full h-2">
+                        <div class="progress-bar bg-violet-400 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1"><span>Day 4 — Workflows &amp; Alerts</span><span>⬜
+                            Not Started</span></div>
+                    <div class="w-full bg-white/10 rounded-full h-2">
+                        <div class="progress-bar bg-amber-400 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1"><span>Day 5 — Settings &amp; Admin</span><span>⬜ Not
+                            Started</span></div>
+                    <div class="w-full bg-white/10 rounded-full h-2">
+                        <div class="progress-bar bg-rose-400 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1"><span>Day 6 — Notifications &amp;
+                            Search</span><span>⬜ Not Started</span></div>
+                    <div class="w-full bg-white/10 rounded-full h-2">
+                        <div class="progress-bar bg-teal-400 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1"><span>Day 7 — Testing &amp; Polish</span><span>⬜ Not
+                            Started</span></div>
+                    <div class="w-full bg-white/10 rounded-full h-2">
+                        <div class="progress-bar bg-indigo-400 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/20">
+                <h3 class="font-bold mb-3">🎯 Week 6 Success Criteria</h3>
+                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                    <ul class="space-y-1">
+                        <li>⬜ All 5 placeholder pages replaced with full implementations</li>
+                        <li>⬜ Backend WebSocket endpoints live and serving data</li>
+                        <li>⬜ Frontend tests covering all new pages (90%+ coverage)</li>
+                        <li>⬜ Real-time metrics streaming working end-to-end</li>
+                    </ul>
+                    <ul class="space-y-1">
+                        <li>⬜ Global search functional across tasks, workers, campaigns</li>
+                        <li>⬜ Notification center with live alert delivery</li>
+                        <li>⬜ All existing backend tests still passing (106+)</li>
+                        <li>⬜ Production build under 500KB gzipped</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- STATISTICS TABLE                                       -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="glass rounded-xl shadow-lg p-6 mb-10 border border-white/20">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Week 6 Daily Statistics</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b-2 border-gray-300 bg-gray-50">
+                            <th class="text-left px-4 py-3 font-semibold">Day</th>
+                            <th class="text-left px-4 py-3 font-semibold">Feature</th>
+                            <th class="text-center px-4 py-3 font-semibold">Stack</th>
+                            <th class="text-center px-4 py-3 font-semibold">Est. Lines</th>
+                            <th class="text-center px-4 py-3 font-semibold">New Files</th>
+                            <th class="text-center px-4 py-3 font-semibold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-cyan-800">Day 1</td>
+                            <td class="px-4 py-3">Workers Management Page</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded text-xs">Frontend</span></td>
+                            <td class="text-center px-4 py-3">800+</td>
+                            <td class="text-center px-4 py-3">3</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-semibold">⬜</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-emerald-800">Day 2</td>
+                            <td class="px-4 py-3">System Monitoring Dashboard</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-xs">Frontend</span>
+                            </td>
+                            <td class="text-center px-4 py-3">1,000+</td>
+                            <td class="text-center px-4 py-3">3</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-semibold">⬜</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-violet-800">Day 3</td>
+                            <td class="px-4 py-3">WebSocket Backend &amp; Real-Time</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-xs">Full-Stack</span>
+                            </td>
+                            <td class="text-center px-4 py-3">900+</td>
+                            <td class="text-center px-4 py-3">3</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-semibold">⬜</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-amber-800">Day 4</td>
+                            <td class="px-4 py-3">Workflows &amp; Alert Management</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs">Frontend</span></td>
+                            <td class="text-center px-4 py-3">1,100+</td>
+                            <td class="text-center px-4 py-3">5</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-semibold">⬜</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-rose-800">Day 5</td>
+                            <td class="px-4 py-3">Settings &amp; Admin Controls</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-xs">Frontend</span></td>
+                            <td class="text-center px-4 py-3">900+</td>
+                            <td class="text-center px-4 py-3">3</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-semibold">⬜</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td class="px-4 py-3 font-semibold text-teal-800">Day 6</td>
+                            <td class="px-4 py-3">Notifications &amp; Search</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-teal-100 text-teal-700 px-2 py-0.5 rounded text-xs">Frontend</span></td>
+                            <td class="text-center px-4 py-3">800+</td>
+                            <td class="text-center px-4 py-3">4</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-semibold">⬜</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 font-semibold text-indigo-800">Day 7</td>
+                            <td class="px-4 py-3">Testing &amp; Polish</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">QA</span></td>
+                            <td class="text-center px-4 py-3">600+</td>
+                            <td class="text-center px-4 py-3">6+</td>
+                            <td class="text-center px-4 py-3"><span
+                                    class="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs font-semibold">⬜</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="border-t-2 border-gray-400 bg-gray-50">
+                            <td class="px-4 py-3 font-bold" colspan="3">Total</td>
+                            <td class="text-center px-4 py-3 font-bold">6,100+</td>
+                            <td class="text-center px-4 py-3 font-bold">27+</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- TECH STACK                                             -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="glass rounded-xl shadow-lg p-6 mb-10 border border-white/20">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">🛠️ Technology Stack Reference</h3>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div>
+                    <h4 class="font-semibold text-blue-800 mb-2">Backend</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>Python 3.13 + FastAPI 0.104</li>
+                        <li>SQLAlchemy 2.0 + PostgreSQL</li>
+                        <li>Redis 5.0 (broker + cache)</li>
+                        <li>Pydantic v2 + JWT Auth</li>
+                        <li>Prometheus + OpenTelemetry</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-green-800 mb-2">Frontend</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>React 19 + TypeScript 5.9</li>
+                        <li>Vite 7.2 (bundler)</li>
+                        <li>Tailwind CSS 4.1</li>
+                        <li>Recharts 3.7 (charts)</li>
+                        <li>Lucide React (icons)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-purple-800 mb-2">Testing</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>pytest + pytest-asyncio</li>
+                        <li>Jest 30 + Testing Library</li>
+                        <li>106 backend tests passing</li>
+                        <li>198/199 frontend tests passing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-gray-400 text-sm py-6">
+            <p>TaskFlow — Distributed Task Queue System &middot; Week 6 Roadmap</p>
+            <p class="mt-1">Last Updated: February 17, 2026</p>
+        </div>
+
+    </div>
+</body>
+
+</html>
