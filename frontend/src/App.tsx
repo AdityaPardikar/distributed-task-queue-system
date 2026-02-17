@@ -45,6 +45,9 @@ const CreateTemplatePage = lazy(() =>
   })),
 );
 
+const WorkersPage = lazy(() => import("./pages/WorkersPage"));
+const MonitoringPage = lazy(() => import("./pages/MonitoringPage"));
+
 function App() {
   return (
     <ErrorBoundary>
@@ -90,20 +93,8 @@ function App() {
                     element={<CreateTemplatePage />}
                   />
 
-                  <Route
-                    path="workers"
-                    element={
-                      <div className="text-2xl">Workers Page - Coming Soon</div>
-                    }
-                  />
-                  <Route
-                    path="monitoring"
-                    element={
-                      <div className="text-2xl">
-                        Monitoring Page - Coming Soon
-                      </div>
-                    }
-                  />
+                  <Route path="workers" element={<WorkersPage />} />
+                  <Route path="monitoring" element={<MonitoringPage />} />
                   <Route
                     path=""
                     element={<Navigate to="/dashboard" replace />}
