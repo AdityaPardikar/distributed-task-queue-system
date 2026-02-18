@@ -9,8 +9,9 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
 from src.api.middleware import add_request_id, rate_limit_middleware, request_timing_middleware
-from src.api.routes import alerts, analytics, auth, campaigns, dashboard, debug, health, metrics, operations, performance, resilience, search, tasks, templates, workers, workflows, advanced_workflows, chaos
+from src.api.routes import alerts, analytics, auth, campaigns, dashboard, debug, health, metrics, operations, performance, resilience, search, tasks, templates, workers, workflows, advanced_workflows, chaos, websocket
 from src.config import get_settings
+from src.core.event_bus import get_event_bus
 from src.performance.profiler import get_profiler
 
 settings = get_settings()
@@ -20,7 +21,16 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """Application lifespan context"""
     print(f"Starting {settings.APP_NAME} v{settings.VERSION}")
+
+    # Register the WebSocket connection manager with the event bus
+    from src.api.routes.websocket import get_connection_manager
+    manager = get_connection_manager()
+    manager.register_with_event_bus()
+
     yield
+
+    # Cleanup
+    manager.unregister_from_event_bus()
     print(f"Shutting down {settings.APP_NAME}")
 
 
@@ -50,6 +60,20 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Custom middleware — request ID, timing, rate limiting
+    @app.middleware("http")
+    async def _request_id_mw(request: Request, call_next):
+        return await add_request_id(request, call_next)
+
+    @app.middleware("http")
+    async def _request_timing_mw(request: Request, call_next):
+        return await request_timing_middleware(request, call_next)
+
+    if settings.RATE_LIMIT_ENABLED:
+        @app.middleware("http")
+        async def _rate_limit_mw(request: Request, call_next):
+            return await rate_limit_middleware(request, call_next)
+
     # Custom middleware - performance tracking
     @app.middleware("http")
     async def performance_tracking_middleware(request: Request, call_next):
@@ -68,7 +92,8 @@ def create_app() -> FastAPI:
 
     # Include routers
     app.include_router(health.router)
-    
+    app.include_router(websocket.router)  # WebSocket endpoints (no prefix — /ws/*)
+
     try:
         app.include_router(tasks.router, prefix="/api/v1", tags=["tasks"])
         app.include_router(workers.router, prefix="/api/v1", tags=["workers"])

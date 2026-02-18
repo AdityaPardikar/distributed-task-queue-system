@@ -19,6 +19,7 @@ from . import (
     advanced_workflows,
     chaos,
     operations,
+    websocket,
 )
 
 __all__ = [
@@ -40,4 +41,5 @@ __all__ = [
     "workflows",
     "advanced_workflows",
     "chaos",
+    "websocket",
 ]

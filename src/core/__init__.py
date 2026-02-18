@@ -2,6 +2,7 @@
 
 from .serializer import TaskSerializer, SerializationFormat, get_serializer
 from .worker_controller import WorkerController, get_worker_controller, WorkerState
+from .event_bus import EventBus, EventChannel, Event, get_event_bus
 from .advanced_workflow import (
     AdvancedWorkflowEngine,
     DependencyGraph,
@@ -22,6 +23,10 @@ __all__ = [
     "WorkerController",
     "get_worker_controller",
     "WorkerState",
+    "EventBus",
+    "EventChannel",
+    "Event",
+    "get_event_bus",
     "AdvancedWorkflowEngine",
     "DependencyGraph",
     "TaskCondition",
