@@ -50,6 +50,7 @@ const MonitoringPage = lazy(() => import("./pages/MonitoringPage"));
 const WorkflowsPage = lazy(() => import("./pages/WorkflowsPage"));
 const AlertsPage = lazy(() => import("./pages/AlertsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const SearchResultsPage = lazy(() => import("./pages/SearchResultsPage"));
 
 function App() {
   return (
@@ -101,6 +102,7 @@ function App() {
                   <Route path="workflows" element={<WorkflowsPage />} />
                   <Route path="alerts" element={<AlertsPage />} />
                   <Route path="settings" element={<SettingsPage />} />
+                  <Route path="search" element={<SearchResultsPage />} />
                   <Route
                     path=""
                     element={<Navigate to="/dashboard" replace />}

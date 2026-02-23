@@ -1,15 +1,31 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import NotificationCenter from "./NotificationCenter";
+import GlobalSearch from "./GlobalSearch";
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
+  /* Ctrl+K / Cmd+K global shortcut */
+  const handleGlobalKeyDown = useCallback((e: KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      setSearchOpen((v) => !v);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [handleGlobalKeyDown]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -251,10 +267,38 @@ const Layout: React.FC = () => {
       <div className="ml-64">
         {/* Header */}
         <header className="bg-white shadow-sm">
-          <div className="px-8 py-4">
+          <div className="flex items-center justify-between px-8 py-4">
             <h2 className="text-xl font-semibold text-gray-800">
               Distributed Task Queue System
             </h2>
+            <div className="flex items-center gap-2">
+              {/* Search shortcut */}
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400
+                           bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <span className="hidden md:inline">Search</span>
+                <kbd className="hidden md:inline-flex px-1.5 py-0.5 text-[10px] bg-white border border-gray-200 rounded font-mono">
+                  Ctrl+K
+                </kbd>
+              </button>
+              {/* Notification bell */}
+              <NotificationCenter />
+            </div>
           </div>
         </header>
 
@@ -263,6 +307,9 @@ const Layout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Global search overlay */}
+      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 };
