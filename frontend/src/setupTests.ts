@@ -1,4 +1,15 @@
 import "@testing-library/jest-dom";
+import { TextEncoder, TextDecoder } from "util";
+
+// Polyfill TextEncoder/TextDecoder for jsdom (required by react-router-dom)
+if (typeof globalThis.TextEncoder === "undefined") {
+  (globalThis as unknown as { TextEncoder: typeof TextEncoder }).TextEncoder =
+    TextEncoder;
+}
+if (typeof globalThis.TextDecoder === "undefined") {
+  (globalThis as unknown as { TextDecoder: typeof TextDecoder }).TextDecoder =
+    TextDecoder as typeof globalThis.TextDecoder;
+}
 
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {
@@ -14,6 +25,9 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// Mock scrollIntoView (not implemented in jsdom)
+Element.prototype.scrollIntoView = jest.fn();
 
 // Mock IntersectionObserver
 (

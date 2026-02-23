@@ -8,6 +8,25 @@ export default {
     "ts-jest": {
       tsconfig: "<rootDir>/tsconfig.jest.json",
       babelConfig: false,
+      diagnostics: { ignoreDiagnostics: [1343] },
+      astTransformers: {
+        before: [
+          {
+            path: "ts-jest-mock-import-meta",
+            options: {
+              metaObjectReplacement: {
+                env: {
+                  VITE_API_URL: "",
+                  VITE_WS_URL: "",
+                  MODE: "test",
+                  DEV: true,
+                  PROD: false,
+                },
+              },
+            },
+          },
+        ],
+      },
     },
   },
   moduleNameMapper: {
