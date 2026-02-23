@@ -49,6 +49,7 @@ const WorkersPage = lazy(() => import("./pages/WorkersPage"));
 const MonitoringPage = lazy(() => import("./pages/MonitoringPage"));
 const WorkflowsPage = lazy(() => import("./pages/WorkflowsPage"));
 const AlertsPage = lazy(() => import("./pages/AlertsPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 function App() {
   return (
@@ -99,6 +100,7 @@ function App() {
                   <Route path="monitoring" element={<MonitoringPage />} />
                   <Route path="workflows" element={<WorkflowsPage />} />
                   <Route path="alerts" element={<AlertsPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
                   <Route
                     path=""
                     element={<Navigate to="/dashboard" replace />}

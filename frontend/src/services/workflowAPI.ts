@@ -171,16 +171,26 @@ const generateMockVisualization = (
     { id: "e1", source: "fetch", target: "validate", type: "sequential" },
     { id: "e2", source: "validate", target: "transform_a", type: "sequential" },
     { id: "e3", source: "validate", target: "transform_b", type: "sequential" },
-    { id: "e4", source: "transform_a", target: "aggregate", type: "wait_for_all" },
-    { id: "e5", source: "transform_b", target: "aggregate", type: "wait_for_all" },
+    {
+      id: "e4",
+      source: "transform_a",
+      target: "aggregate",
+      type: "wait_for_all",
+    },
+    {
+      id: "e5",
+      source: "transform_b",
+      target: "aggregate",
+      type: "wait_for_all",
+    },
     { id: "e6", source: "aggregate", target: "notify", type: "sequential" },
   ];
 
   return {
     workflow_id: workflowId,
     workflow_name:
-      MOCK_WORKFLOWS.find((w) => w.workflow_id === workflowId)
-        ?.workflow_name ?? "Workflow",
+      MOCK_WORKFLOWS.find((w) => w.workflow_id === workflowId)?.workflow_name ??
+      "Workflow",
     nodes,
     edges,
     execution_levels: [
@@ -307,17 +317,12 @@ export const workflowAPI = {
   createTemplate: async (
     data: WorkflowTemplateCreate,
   ): Promise<WorkflowTemplate> => {
-    const res = await client.post(
-      "/api/v1/workflows/advanced/templates",
-      data,
-    );
+    const res = await client.post("/api/v1/workflows/advanced/templates", data);
     return res.data;
   },
 
   deleteTemplate: async (templateId: string): Promise<void> => {
-    await client.delete(
-      `/api/v1/workflows/advanced/templates/${templateId}`,
-    );
+    await client.delete(`/api/v1/workflows/advanced/templates/${templateId}`);
   },
 
   /** Create a workflow from a template. */
@@ -326,10 +331,11 @@ export const workflowAPI = {
     workflowName: string,
     parameters?: Record<string, unknown>,
   ): Promise<WorkflowCreateResponse> => {
-    const res = await client.post(
-      "/api/v1/workflows/advanced/from-template",
-      { template_id: templateId, workflow_name: workflowName, parameters },
-    );
+    const res = await client.post("/api/v1/workflows/advanced/from-template", {
+      template_id: templateId,
+      workflow_name: workflowName,
+      parameters,
+    });
     return res.data;
   },
 };

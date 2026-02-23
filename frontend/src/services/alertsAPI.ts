@@ -126,9 +126,7 @@ const MOCK_HISTORY: AlertHistoryItem[] = Array.from({ length: 20 }, (_, i) => {
 
 export const alertsAPI = {
   /** Get active alerts. */
-  getActiveAlerts: async (
-    includeAcknowledged = false,
-  ): Promise<Alert[]> => {
+  getActiveAlerts: async (includeAcknowledged = false): Promise<Alert[]> => {
     try {
       const res = await client.get("/api/v1/alerts", {
         params: { acknowledged: includeAcknowledged },
@@ -142,10 +140,7 @@ export const alertsAPI = {
   },
 
   /** Get alert history. */
-  getHistory: async (
-    hours = 24,
-    limit = 100,
-  ): Promise<AlertHistoryItem[]> => {
+  getHistory: async (hours = 24, limit = 100): Promise<AlertHistoryItem[]> => {
     try {
       const res = await client.get("/api/v1/alerts/history", {
         params: { hours, limit },
@@ -161,9 +156,7 @@ export const alertsAPI = {
     alertId: string,
   ): Promise<{ alert_id: string; acknowledged: boolean }> => {
     try {
-      const res = await client.post(
-        `/api/v1/alerts/${alertId}/acknowledge`,
-      );
+      const res = await client.post(`/api/v1/alerts/${alertId}/acknowledge`);
       return res.data;
     } catch {
       return { alert_id: alertId, acknowledged: true };

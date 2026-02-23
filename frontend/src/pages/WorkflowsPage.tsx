@@ -68,12 +68,17 @@ const WorkflowsPage: React.FC = () => {
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<WorkflowStatus | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<WorkflowStatus | "all">(
+    "all",
+  );
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [visualisation, setVisualisation] = useState<WorkflowVisualization | null>(null);
+  const [visualisation, setVisualisation] =
+    useState<WorkflowVisualization | null>(null);
   const [vizLoading, setVizLoading] = useState(false);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"workflows" | "templates">("workflows");
+  const [activeTab, setActiveTab] = useState<"workflows" | "templates">(
+    "workflows",
+  );
 
   /* fetchers */
   const fetchWorkflows = useCallback(async () => {
@@ -175,13 +180,38 @@ const WorkflowsPage: React.FC = () => {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {([
-          { label: "Total Workflows", value: stats.total, color: "bg-indigo-50 text-indigo-700", icon: <Layers className="w-5 h-5" /> },
-          { label: "Running", value: stats.running, color: "bg-blue-50 text-blue-700", icon: <Play className="w-5 h-5" /> },
-          { label: "Completed", value: stats.completed, color: "bg-green-50 text-green-700", icon: <CheckCircle2 className="w-5 h-5" /> },
-          { label: "Failed", value: stats.failed, color: "bg-red-50 text-red-700", icon: <XCircle className="w-5 h-5" /> },
-        ] as const).map((card) => (
-          <div key={card.label} className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4">
+        {(
+          [
+            {
+              label: "Total Workflows",
+              value: stats.total,
+              color: "bg-indigo-50 text-indigo-700",
+              icon: <Layers className="w-5 h-5" />,
+            },
+            {
+              label: "Running",
+              value: stats.running,
+              color: "bg-blue-50 text-blue-700",
+              icon: <Play className="w-5 h-5" />,
+            },
+            {
+              label: "Completed",
+              value: stats.completed,
+              color: "bg-green-50 text-green-700",
+              icon: <CheckCircle2 className="w-5 h-5" />,
+            },
+            {
+              label: "Failed",
+              value: stats.failed,
+              color: "bg-red-50 text-red-700",
+              icon: <XCircle className="w-5 h-5" />,
+            },
+          ] as const
+        ).map((card) => (
+          <div
+            key={card.label}
+            className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4"
+          >
             <div className={`rounded-lg p-2.5 ${card.color}`}>{card.icon}</div>
             <div>
               <p className="text-sm text-gray-500">{card.label}</p>
@@ -210,7 +240,8 @@ const WorkflowsPage: React.FC = () => {
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5">
-                  <FileText className="w-4 h-4" /> Templates ({templates.length})
+                  <FileText className="w-4 h-4" /> Templates ({templates.length}
+                  )
                 </span>
               )}
             </button>
@@ -224,21 +255,21 @@ const WorkflowsPage: React.FC = () => {
           {/* Filter bar */}
           <div className="flex items-center gap-3">
             <Filter className="w-4 h-4 text-gray-400" />
-            {(["all", "pending", "running", "completed", "failed"] as const).map(
-              (s) => (
-                <button
-                  key={s}
-                  onClick={() => setStatusFilter(s)}
-                  className={`px-3 py-1.5 text-xs rounded-full font-medium transition-colors ${
-                    statusFilter === s
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {s === "all" ? "All" : STATUS_CONFIG[s].label}
-                </button>
-              ),
-            )}
+            {(
+              ["all", "pending", "running", "completed", "failed"] as const
+            ).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-3 py-1.5 text-xs rounded-full font-medium transition-colors ${
+                  statusFilter === s
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {s === "all" ? "All" : STATUS_CONFIG[s].label}
+              </button>
+            ))}
           </div>
 
           {/* Workflow list */}
@@ -267,7 +298,9 @@ const WorkflowsPage: React.FC = () => {
                       className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors text-left"
                     >
                       <div className="flex items-center gap-4 min-w-0">
-                        <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.color}`}>
+                        <span
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.color}`}
+                        >
                           {cfg.icon} {cfg.label}
                         </span>
                         <div className="min-w-0">
@@ -331,7 +364,9 @@ const WorkflowsPage: React.FC = () => {
                         {vizLoading ? (
                           <div className="flex items-center justify-center h-48">
                             <Loader2 className="w-6 h-6 animate-spin text-indigo-400" />
-                            <span className="ml-2 text-sm text-gray-500">Loading DAG…</span>
+                            <span className="ml-2 text-sm text-gray-500">
+                              Loading DAG…
+                            </span>
                           </div>
                         ) : visualisation ? (
                           <div className="flex flex-col lg:flex-row gap-4">
@@ -368,7 +403,8 @@ const WorkflowsPage: React.FC = () => {
                                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                                           STATUS_CONFIG[
                                             selectedNodeData.status as WorkflowStatus
-                                          ]?.color ?? "bg-gray-100 text-gray-600"
+                                          ]?.color ??
+                                          "bg-gray-100 text-gray-600"
                                         }`}
                                       >
                                         {selectedNodeData.status}
@@ -377,19 +413,29 @@ const WorkflowsPage: React.FC = () => {
                                   </div>
                                   <div className="flex justify-between">
                                     <dt className="text-gray-500">Priority</dt>
-                                    <dd className="text-gray-700">{selectedNodeData.priority}</dd>
+                                    <dd className="text-gray-700">
+                                      {selectedNodeData.priority}
+                                    </dd>
                                   </div>
                                   <div className="flex justify-between">
-                                    <dt className="text-gray-500">Max Retries</dt>
-                                    <dd className="text-gray-700">{selectedNodeData.maxRetries}</dd>
+                                    <dt className="text-gray-500">
+                                      Max Retries
+                                    </dt>
+                                    <dd className="text-gray-700">
+                                      {selectedNodeData.maxRetries}
+                                    </dd>
                                   </div>
                                   <div className="flex justify-between">
                                     <dt className="text-gray-500">Timeout</dt>
-                                    <dd className="text-gray-700">{selectedNodeData.timeoutSeconds}s</dd>
+                                    <dd className="text-gray-700">
+                                      {selectedNodeData.timeoutSeconds}s
+                                    </dd>
                                   </div>
                                   <div className="flex justify-between">
                                     <dt className="text-gray-500">Level</dt>
-                                    <dd className="text-gray-700">{selectedNodeData.level}</dd>
+                                    <dd className="text-gray-700">
+                                      {selectedNodeData.level}
+                                    </dd>
                                   </div>
                                 </dl>
                               </div>
