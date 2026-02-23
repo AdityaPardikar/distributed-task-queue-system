@@ -15,10 +15,8 @@ import {
   Trash2,
   Download,
   HardDrive,
-  Clock,
   Activity,
   Info,
-  ChevronRight,
 } from "lucide-react";
 import { settingsAPI } from "../services/settingsAPI";
 import type {

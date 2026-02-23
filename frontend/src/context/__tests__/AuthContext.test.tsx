@@ -165,22 +165,33 @@ describe("AuthContext", () => {
   });
 
   it("should logout successfully", async () => {
-    // Setup authenticated state
+    const mockUser = {
+      user_id: "123",
+      username: "testuser",
+      email: "test@example.com",
+      role: "viewer" as const,
+      is_active: true,
+      is_superuser: false,
+      created_at: new Date().toISOString(),
+    };
+
+    // Setup authenticated state via session restore
     localStorage.setItem("access_token", "mock-access-token");
     localStorage.setItem("refresh_token", "mock-refresh-token");
+
+    // Mock /me response for session restore
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUser,
+    } as Response);
 
     const { result } = renderHook(() => useAuth(), {
       wrapper: AuthProvider,
     });
 
-    // Set user manually for testing
-    act(() => {
-      (result.current as any).user = {
-        user_id: "123",
-        username: "testuser",
-        email: "test@example.com",
-        role: "viewer",
-      };
+    // Wait for session to be restored
+    await waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(true);
     });
 
     act(() => {
@@ -196,11 +207,27 @@ describe("AuthContext", () => {
   it("should refresh token successfully", async () => {
     localStorage.setItem("refresh_token", "mock-refresh-token");
 
+    // Mock refresh response
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         access_token: "new-access-token",
+        refresh_token: "new-refresh-token",
         token_type: "bearer",
+      }),
+    } as Response);
+
+    // Mock /me response after refresh
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user_id: "123",
+        username: "testuser",
+        email: "test@example.com",
+        role: "viewer",
+        is_active: true,
+        is_superuser: false,
+        created_at: new Date().toISOString(),
       }),
     } as Response);
 
@@ -229,53 +256,93 @@ describe("AuthContext", () => {
     });
 
     await expect(result.current.refreshToken()).rejects.toThrow(
-      "Invalid refresh token",
+      "Token refresh failed",
     );
   });
 
-  it("should check role permissions correctly", () => {
-    const { result } = renderHook(() => useAuth(), {
+  it("should check role permissions correctly", async () => {
+    // Test admin role
+    localStorage.setItem("access_token", "mock-token");
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user_id: "1",
+        username: "admin",
+        email: "admin@example.com",
+        role: "admin",
+        is_active: true,
+        is_superuser: true,
+        created_at: new Date().toISOString(),
+      }),
+    } as Response);
+
+    const { result: adminResult } = renderHook(() => useAuth(), {
       wrapper: AuthProvider,
     });
 
-    // Admin user
-    act(() => {
-      (result.current as any).user = {
-        user_id: "1",
-        username: "admin",
-        role: "admin",
-      };
+    await waitFor(() => {
+      expect(adminResult.current.user).not.toBeNull();
     });
 
-    expect(result.current.hasRole("admin")).toBe(true);
-    expect(result.current.hasRole("operator")).toBe(true);
-    expect(result.current.hasRole("viewer")).toBe(true);
+    expect(adminResult.current.hasRole("admin")).toBe(true);
+    expect(adminResult.current.hasRole("operator")).toBe(true);
+    expect(adminResult.current.hasRole("viewer")).toBe(true);
 
-    // Operator user
-    act(() => {
-      (result.current as any).user = {
+    // Test operator role
+    localStorage.clear();
+    localStorage.setItem("access_token", "mock-token");
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
         user_id: "2",
         username: "operator",
+        email: "op@example.com",
         role: "operator",
-      };
+        is_active: true,
+        is_superuser: false,
+        created_at: new Date().toISOString(),
+      }),
+    } as Response);
+
+    const { result: opResult } = renderHook(() => useAuth(), {
+      wrapper: AuthProvider,
     });
 
-    expect(result.current.hasRole("admin")).toBe(false);
-    expect(result.current.hasRole("operator")).toBe(true);
-    expect(result.current.hasRole("viewer")).toBe(true);
+    await waitFor(() => {
+      expect(opResult.current.user).not.toBeNull();
+    });
 
-    // Viewer user
-    act(() => {
-      (result.current as any).user = {
+    expect(opResult.current.hasRole("admin")).toBe(false);
+    expect(opResult.current.hasRole("operator")).toBe(true);
+    expect(opResult.current.hasRole("viewer")).toBe(true);
+
+    // Test viewer role
+    localStorage.clear();
+    localStorage.setItem("access_token", "mock-token");
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
         user_id: "3",
         username: "viewer",
+        email: "viewer@example.com",
         role: "viewer",
-      };
+        is_active: true,
+        is_superuser: false,
+        created_at: new Date().toISOString(),
+      }),
+    } as Response);
+
+    const { result: viewerResult } = renderHook(() => useAuth(), {
+      wrapper: AuthProvider,
     });
 
-    expect(result.current.hasRole("admin")).toBe(false);
-    expect(result.current.hasRole("operator")).toBe(false);
-    expect(result.current.hasRole("viewer")).toBe(true);
+    await waitFor(() => {
+      expect(viewerResult.current.user).not.toBeNull();
+    });
+
+    expect(viewerResult.current.hasRole("admin")).toBe(false);
+    expect(viewerResult.current.hasRole("operator")).toBe(false);
+    expect(viewerResult.current.hasRole("viewer")).toBe(true);
   });
 
   it("should restore session from localStorage on mount", async () => {

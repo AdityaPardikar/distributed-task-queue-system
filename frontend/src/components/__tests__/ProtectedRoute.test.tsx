@@ -36,7 +36,9 @@ describe("ProtectedRoute", () => {
       </BrowserRouter>,
     );
 
-    expect(screen.getByRole("status")).toBeInTheDocument();
+    // Loading spinner renders as a div with animate-spin class (no role attr)
+    const spinner = document.querySelector(".animate-spin");
+    expect(spinner).toBeInTheDocument();
   });
 
   it("should redirect to login when not authenticated", () => {

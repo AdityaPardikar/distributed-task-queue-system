@@ -1,21 +1,42 @@
 import React from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useTaskEvents, TaskEvent } from "../../hooks/useTaskEvents";
-import { NotificationProvider } from "../../context/NotificationContext";
+
+// Mock useNotification to avoid NotificationProvider's own WebSocket
+const mockShowNotification = jest.fn();
+jest.mock("../../context/NotificationContext", () => ({
+  useNotification: () => ({
+    showNotification: mockShowNotification,
+    persistent: [],
+    unreadCount: 0,
+    addPersistent: jest.fn(),
+    markRead: jest.fn(),
+    markAllRead: jest.fn(),
+    removePersistent: jest.fn(),
+    clearPersistent: jest.fn(),
+    activities: [],
+    addActivity: jest.fn(),
+    clearActivities: jest.fn(),
+    wsConnected: false,
+  }),
+  NotificationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
 
 describe("useTaskEvents Hook", () => {
   let mockWebSocket: any;
   const originalWebSocket = window.WebSocket;
 
   beforeEach(() => {
+    mockShowNotification.mockClear();
     mockWebSocket = {
       send: jest.fn(),
       close: jest.fn(),
       readyState: WebSocket.OPEN,
-      onopen: null,
-      onmessage: null,
-      onerror: null,
-      onclose: null,
+      onopen: null as any,
+      onmessage: null as any,
+      onerror: null as any,
+      onclose: null as any,
     };
 
     (window as any).WebSocket = jest.fn(() => mockWebSocket);
@@ -25,16 +46,13 @@ describe("useTaskEvents Hook", () => {
     (window as any).WebSocket = originalWebSocket;
   });
 
-  const wrapper = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(NotificationProvider, {}, children);
-
   test("should initialize with enabled true by default", () => {
-    const { result } = renderHook(() => useTaskEvents(), { wrapper });
+    const { result } = renderHook(() => useTaskEvents());
     expect(result.current).toBeDefined();
   });
 
   test("should connect to WebSocket on mount when enabled", () => {
-    renderHook(() => useTaskEvents({ enabled: true }), { wrapper });
+    renderHook(() => useTaskEvents({ enabled: true }));
 
     expect(window.WebSocket).toHaveBeenCalled();
   });
@@ -42,7 +60,7 @@ describe("useTaskEvents Hook", () => {
   test("should not connect to WebSocket when disabled", () => {
     const { rerender } = renderHook(
       ({ enabled }) => useTaskEvents({ enabled }),
-      { wrapper, initialProps: { enabled: false } },
+      { initialProps: { enabled: false } },
     );
 
     expect(window.WebSocket).not.toHaveBeenCalled();
@@ -50,7 +68,7 @@ describe("useTaskEvents Hook", () => {
 
   test("should handle task event messages", async () => {
     const onTaskStatusChange = jest.fn();
-    renderHook(() => useTaskEvents({ onTaskStatusChange }), { wrapper });
+    renderHook(() => useTaskEvents({ onTaskStatusChange }));
 
     act(() => {
       mockWebSocket.onopen();
@@ -81,7 +99,7 @@ describe("useTaskEvents Hook", () => {
   test.skip("should subscribe to task_events channel on connection", () => {
     // This test has timing issues with the WebSocket mock
     // but the feature is verified through integration tests
-    renderHook(() => useTaskEvents(), { wrapper });
+    renderHook(() => useTaskEvents());
 
     act(() => {
       if (mockWebSocket.onopen) {
@@ -99,7 +117,7 @@ describe("useTaskEvents Hook", () => {
 
   test("should handle task completion event", async () => {
     const onTaskStatusChange = jest.fn();
-    renderHook(() => useTaskEvents({ onTaskStatusChange }), { wrapper });
+    renderHook(() => useTaskEvents({ onTaskStatusChange }));
 
     act(() => {
       mockWebSocket.onopen();
@@ -130,7 +148,7 @@ describe("useTaskEvents Hook", () => {
 
   test("should handle task failure event", async () => {
     const onTaskStatusChange = jest.fn();
-    renderHook(() => useTaskEvents({ onTaskStatusChange }), { wrapper });
+    renderHook(() => useTaskEvents({ onTaskStatusChange }));
 
     act(() => {
       mockWebSocket.onopen();
@@ -161,9 +179,7 @@ describe("useTaskEvents Hook", () => {
 
   test("should publish task event manually", async () => {
     const onTaskStatusChange = jest.fn();
-    const { result } = renderHook(() => useTaskEvents({ onTaskStatusChange }), {
-      wrapper,
-    });
+    const { result } = renderHook(() => useTaskEvents({ onTaskStatusChange }));
 
     const event: TaskEvent = {
       id: "1",
@@ -183,7 +199,7 @@ describe("useTaskEvents Hook", () => {
 
   test("should handle malformed messages gracefully", () => {
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-    renderHook(() => useTaskEvents(), { wrapper });
+    renderHook(() => useTaskEvents());
 
     act(() => {
       mockWebSocket.onopen();
@@ -195,7 +211,7 @@ describe("useTaskEvents Hook", () => {
   });
 
   test("should disconnect on unmount", () => {
-    const { unmount } = renderHook(() => useTaskEvents(), { wrapper });
+    const { unmount } = renderHook(() => useTaskEvents());
 
     unmount();
 
@@ -206,7 +222,7 @@ describe("useTaskEvents Hook", () => {
     jest.useFakeTimers();
     (window.WebSocket as jest.Mock).mockClear();
 
-    renderHook(() => useTaskEvents(), { wrapper });
+    renderHook(() => useTaskEvents());
 
     expect(window.WebSocket).toHaveBeenCalledTimes(1);
 

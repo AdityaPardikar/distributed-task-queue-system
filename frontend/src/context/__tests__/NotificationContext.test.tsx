@@ -6,6 +6,16 @@ import {
   useNotification,
 } from "../../context/NotificationContext";
 
+// Mock WebSocket
+(global as Record<string, unknown>).WebSocket = jest
+  .fn()
+  .mockImplementation(() => ({
+    close: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    readyState: 3,
+  }));
+
 // Test component that uses the notification context
 const TestNotificationComponent = () => {
   const {
@@ -36,6 +46,75 @@ const TestNotificationComponent = () => {
         <div key={n.id} data-testid={`notification-${n.type}`}>
           {n.message}
           <button onClick={() => removeNotification(n.id)}>Close</button>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Test component for persistent notification features
+const TestPersistentComponent = () => {
+  const {
+    persistent,
+    unreadCount,
+    addPersistent,
+    markRead,
+    markAllRead,
+    removePersistent,
+    clearPersistent,
+    activities,
+    addActivity,
+    clearActivities,
+    wsConnected,
+  } = useNotification();
+
+  return (
+    <div>
+      <div data-testid="unread-count">{unreadCount}</div>
+      <div data-testid="persistent-count">{persistent.length}</div>
+      <div data-testid="activity-count">{activities.length}</div>
+      <div data-testid="ws-connected">{wsConnected ? "yes" : "no"}</div>
+
+      <button
+        onClick={() =>
+          addPersistent({
+            title: "Test Persistent",
+            message: "Test persistent notification",
+            type: "info",
+            category: "system",
+          })
+        }
+      >
+        Add Persistent
+      </button>
+      <button onClick={markAllRead}>Mark All Read</button>
+      <button onClick={clearPersistent}>Clear Persistent</button>
+
+      <button
+        onClick={() =>
+          addActivity({
+            action: "created",
+            entity: "task",
+            actor: "test-user",
+            details: "Test activity event",
+          })
+        }
+      >
+        Add Activity
+      </button>
+      <button onClick={clearActivities}>Clear Activities</button>
+
+      {persistent.map((p) => (
+        <div key={p.id} data-testid={`persistent-${p.id}`}>
+          {p.title} ({p.read ? "read" : "unread"})
+          <button onClick={() => markRead(p.id)}>Mark Read</button>
+          <button onClick={() => removePersistent(p.id)}>Remove</button>
+        </div>
+      ))}
+
+      {activities.map((a) => (
+        <div key={a.id} data-testid={`activity-${a.id}`}>
+          {a.action} {a.entity}
         </div>
       ))}
     </div>
@@ -212,5 +291,148 @@ describe("NotificationContext", () => {
     });
 
     jest.useRealTimers();
+  });
+});
+
+/* ═══════════════════ Persistent & Activity Tests ═══════════════════ */
+
+describe("NotificationContext — Persistent Notifications", () => {
+  it("initializes with mock persistent notifications", () => {
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+    // Provider seeds 5 initial persistent notifications
+    const count = parseInt(
+      screen.getByTestId("persistent-count").textContent || "0",
+    );
+    expect(count).toBeGreaterThan(0);
+  });
+
+  it("tracks unread count", () => {
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+    const unread = parseInt(
+      screen.getByTestId("unread-count").textContent || "0",
+    );
+    expect(unread).toBeGreaterThan(0);
+  });
+
+  it("adds a new persistent notification", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+
+    const initialCount = parseInt(
+      screen.getByTestId("persistent-count").textContent || "0",
+    );
+
+    await user.click(screen.getByText("Add Persistent"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Test Persistent/)).toBeInTheDocument();
+      const newCount = parseInt(
+        screen.getByTestId("persistent-count").textContent || "0",
+      );
+      expect(newCount).toBe(initialCount + 1);
+    });
+  });
+
+  it("marks all as read", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+
+    await user.click(screen.getByText("Mark All Read"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("unread-count")).toHaveTextContent("0");
+    });
+  });
+
+  it("clears all persistent notifications", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+
+    await user.click(screen.getByText("Clear Persistent"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("persistent-count")).toHaveTextContent("0");
+    });
+  });
+});
+
+describe("NotificationContext — Activity Feed", () => {
+  it("initializes with mock activities", () => {
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+    const count = parseInt(
+      screen.getByTestId("activity-count").textContent || "0",
+    );
+    expect(count).toBeGreaterThan(0);
+  });
+
+  it("adds a new activity event", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+
+    const initialCount = parseInt(
+      screen.getByTestId("activity-count").textContent || "0",
+    );
+
+    await user.click(screen.getByText("Add Activity"));
+
+    await waitFor(() => {
+      const newCount = parseInt(
+        screen.getByTestId("activity-count").textContent || "0",
+      );
+      expect(newCount).toBe(initialCount + 1);
+    });
+  });
+
+  it("clears all activities", async () => {
+    const user = userEvent.setup();
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+
+    await user.click(screen.getByText("Clear Activities"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("activity-count")).toHaveTextContent("0");
+    });
+  });
+
+  it("exposes wsConnected state", () => {
+    render(
+      <NotificationProvider>
+        <TestPersistentComponent />
+      </NotificationProvider>,
+    );
+    // WebSocket mock is CLOSED (readyState 3), so wsConnected should be false
+    expect(screen.getByTestId("ws-connected")).toHaveTextContent("no");
   });
 });
