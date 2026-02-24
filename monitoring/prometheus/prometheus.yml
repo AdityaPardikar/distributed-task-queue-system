@@ -1,18 +1,35 @@
-"""Prometheus configuration"""
+# ─────────────────────────────────────────────────────────────────────────────
+# TaskFlow — Prometheus Configuration
+# ─────────────────────────────────────────────────────────────────────────────
 
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  scrape_timeout: 10s
+
+rule_files:
+  - "alert_rules.yml"
 
 scrape_configs:
-  - job_name: 'prometheus'
+  # ── Prometheus self-monitoring ─────────────────────────────────────────
+  - job_name: "prometheus"
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ["localhost:9090"]
 
-  - job_name: 'api'
+  # ── TaskFlow API (FastAPI + custom metrics) ────────────────────────────
+  - job_name: "taskflow-api"
+    metrics_path: /metrics
     static_configs:
-      - targets: ['localhost:8000']
+      - targets: ["backend:8000"]
+        labels:
+          service: "taskflow-api"
+          environment: "production"
 
-  - job_name: 'postgres'
+  # ── TaskFlow Worker (if running separately) ────────────────────────────
+  - job_name: "taskflow-worker"
+    metrics_path: /metrics
     static_configs:
-      - targets: ['localhost:5432']
+      - targets: ["worker:8001"]
+        labels:
+          service: "taskflow-worker"
+          environment: "production"

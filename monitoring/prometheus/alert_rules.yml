@@ -1,0 +1,130 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TaskFlow — Prometheus Alert Rules
+# ─────────────────────────────────────────────────────────────────────────────
+
+groups:
+  - name: taskflow_api
+    rules:
+      # ── High error rate ────────────────────────────────────────────────
+      - alert: HighErrorRate
+        expr: |
+          (
+            rate(http_requests_total{status=~"5.."}[5m])
+            / rate(http_requests_total[5m])
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: taskflow-api
+        annotations:
+          summary: "High HTTP error rate (> 5%)"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      # ── High latency ──────────────────────────────────────────────────
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          service: taskflow-api
+        annotations:
+          summary: "High API latency (p95 > 2s)"
+          description: "P95 latency is {{ $value }}s."
+
+      # ── API down ──────────────────────────────────────────────────────
+      - alert: APIDown
+        expr: up{job="taskflow-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: taskflow-api
+        annotations:
+          summary: "TaskFlow API is down"
+          description: "The taskflow-api target has been unreachable for 1 minute."
+
+  - name: taskflow_tasks
+    rules:
+      # ── Task failure spike ─────────────────────────────────────────────
+      - alert: TaskFailureSpike
+        expr: |
+          increase(taskflow_tasks_failed_total[15m]) > 20
+        for: 5m
+        labels:
+          severity: warning
+          service: taskflow-tasks
+        annotations:
+          summary: "Task failure spike (> 20 failures in 15 min)"
+          description: "{{ $value }} task failures in the last 15 minutes."
+
+      # ── Queue depth too high ───────────────────────────────────────────
+      - alert: QueueDepthHigh
+        expr: taskflow_tasks_pending > 100
+        for: 10m
+        labels:
+          severity: warning
+          service: taskflow-tasks
+        annotations:
+          summary: "Task queue depth high (> 100 pending)"
+          description: "{{ $value }} tasks are pending for over 10 minutes."
+
+      # ── DLQ growing ────────────────────────────────────────────────────
+      - alert: DeadLetterQueueGrowing
+        expr: increase(taskflow_dlq_entries_total[1h]) > 10
+        for: 15m
+        labels:
+          severity: warning
+          service: taskflow-tasks
+        annotations:
+          summary: "Dead letter queue growing (> 10 entries/hr)"
+          description: "{{ $value }} new DLQ entries in the last hour."
+
+  - name: taskflow_workers
+    rules:
+      # ── Worker offline ─────────────────────────────────────────────────
+      - alert: WorkerOffline
+        expr: taskflow_workers_active == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: taskflow-workers
+        annotations:
+          summary: "No active workers"
+          description: "All workers have been offline for 2 minutes."
+
+      # ── Worker overloaded ──────────────────────────────────────────────
+      - alert: WorkerOverloaded
+        expr: |
+          (taskflow_worker_current_load / taskflow_worker_capacity) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: taskflow-workers
+        annotations:
+          summary: "Worker at > 90% capacity"
+          description: "Worker {{ $labels.worker_id }} is at {{ $value | humanizePercentage }} capacity."
+
+  - name: infrastructure
+    rules:
+      # ── Redis down ────────────────────────────────────────────────────
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been unreachable for 1 minute."
+
+      # ── High Redis memory ─────────────────────────────────────────────
+      - alert: RedisHighMemory
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Redis memory usage > 85%"
+          description: "Redis is using {{ $value | humanizePercentage }} of max memory."
