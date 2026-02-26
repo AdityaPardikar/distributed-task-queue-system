@@ -8,13 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
-from src.api.middleware import add_request_id, rate_limit_middleware, request_timing_middleware
+from src.api.middleware import add_request_id, request_timing_middleware
+from src.api.security import SecurityHeadersMiddleware, tiered_rate_limit_middleware
 from src.api.routes import alerts, analytics, auth, campaigns, dashboard, debug, health, metrics, operations, performance, resilience, search, tasks, templates, workers, workflows, advanced_workflows, chaos, websocket
 from src.config import get_settings
+from src.config.security import get_security_config
 from src.core.event_bus import get_event_bus
 from src.performance.profiler import get_profiler
 
 settings = get_settings()
+security_config = get_security_config()
 
 
 @asynccontextmanager
@@ -44,23 +47,30 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Middleware - Order matters!
-    # Skip TrustedHostMiddleware in test environment
+    # Middleware - Order matters! (outermost runs first)
+    # 1. Security headers on every response
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    # 2. Trusted-host check (skip in test)
     if settings.APP_ENV != "test":
         try:
             app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts_list)
         except:
             pass
 
+    # 3. CORS — use hardened config from security module
+    cors = security_config.cors
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins_list,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=cors.allow_origins,
+        allow_credentials=cors.allow_credentials,
+        allow_methods=list(cors.allow_methods),
+        allow_headers=list(cors.allow_headers),
+        expose_headers=list(cors.expose_headers),
+        max_age=cors.max_age,
     )
 
-    # Custom middleware — request ID, timing, rate limiting
+    # Custom middleware — request ID, timing, tiered rate limiting
     @app.middleware("http")
     async def _request_id_mw(request: Request, call_next):
         return await add_request_id(request, call_next)
@@ -72,7 +82,7 @@ def create_app() -> FastAPI:
     if settings.RATE_LIMIT_ENABLED:
         @app.middleware("http")
         async def _rate_limit_mw(request: Request, call_next):
-            return await rate_limit_middleware(request, call_next)
+            return await tiered_rate_limit_middleware(request, call_next)
 
     # Custom middleware - performance tracking
     @app.middleware("http")

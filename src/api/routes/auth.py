@@ -3,17 +3,20 @@
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, ConfigDict, EmailStr
 from sqlalchemy.orm import Session
 
 from src.api.auth_deps import get_auth_service, get_current_user, require_admin
+from src.api.security import check_login_throttle, clear_login_throttle, record_failed_login
+from src.config.security import get_security_config
 from src.db.session import get_db
 from src.models import User
 from src.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
+security_config = get_security_config()
 
 
 # Pydantic schemas
@@ -78,6 +81,14 @@ async def register(
     user_data: UserCreate, db: Session = Depends(get_db), auth_service: AuthService = Depends(get_auth_service)
 ):
     """Register a new user."""
+    # Validate password complexity
+    password_errors = security_config.password_policy.validate(user_data.password)
+    if password_errors:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"password_errors": password_errors},
+        )
+
     try:
         user = auth_service.create_user(
             db=db,
@@ -96,18 +107,37 @@ async def register(
 
 @router.post("/login", response_model=Token)
 async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
     auth_service: AuthService = Depends(get_auth_service),
 ):
     """Login and receive access and refresh tokens."""
+    # Identify caller for throttling (by username + IP)
+    client_ip = request.client.host if request.client else "unknown"
+    throttle_key = f"{form_data.username}:{client_ip}"
+
+    # Check login throttle
+    is_allowed, remaining = await check_login_throttle(throttle_key)
+    if not is_allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many login attempts. Please try again in 15 minutes.",
+            headers={"Retry-After": "900"},
+        )
+
     user = auth_service.authenticate_user(db, form_data.username, form_data.password)
     if not user:
+        # Record the failed attempt
+        await record_failed_login(throttle_key)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    # Successful login — clear throttle counter
+    await clear_login_throttle(throttle_key)
 
     # Update last login
     auth_service.update_last_login(db, user.user_id)
