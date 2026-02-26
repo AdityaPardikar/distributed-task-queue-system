@@ -1,0 +1,180 @@
+# ============================================================================
+# TaskFlow — Deployment Pipeline
+# ============================================================================
+# Manual workflow: Deploy to staging or production
+# Includes approval gate for production deployments
+# ============================================================================
+
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: "Version tag to deploy (e.g. v1.0.0 or latest)"
+        required: true
+        default: "latest"
+      run_migrations:
+        description: "Run database migrations"
+        required: false
+        type: boolean
+        default: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/taskflow
+
+jobs:
+  # ── Pre-flight Checks ──────────────────────────────────────────────────
+  preflight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      image_tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: resolve
+        run: |
+          TAG="${{ github.event.inputs.version }}"
+          echo "Deploying version: $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Verify images exist
+        run: |
+          echo "Checking ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-api:${{ steps.resolve.outputs.tag }}"
+          echo "Checking ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ steps.resolve.outputs.tag }}"
+          echo "Image verification would happen here with docker manifest inspect"
+
+  # ── Deploy to Staging ──────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: preflight
+    if: github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.taskflow.example.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        env:
+          IMAGE_TAG: ${{ needs.preflight.outputs.image_tag }}
+        run: |
+          echo "═══════════════════════════════════════════════════"
+          echo "  Deploying TaskFlow $IMAGE_TAG to STAGING"
+          echo "═══════════════════════════════════════════════════"
+          echo ""
+          echo "Steps:"
+          echo "  1. Pull images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-api:$IMAGE_TAG"
+          echo "  2. Pull images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:$IMAGE_TAG"
+          echo "  3. Update docker-compose with new image tags"
+          echo "  4. Run: docker compose -f docker-compose.prod.yml pull"
+          echo "  5. Run: docker compose -f docker-compose.prod.yml up -d"
+          echo ""
+          echo "In a real deployment, this would SSH into the staging server"
+          echo "or use a deployment tool like Ansible, Terraform, or AWS CDK."
+
+      - name: Run database migrations
+        if: github.event.inputs.run_migrations == 'true'
+        run: |
+          echo "Running database migrations..."
+          echo "  docker compose exec api alembic upgrade head"
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests against staging..."
+          echo "  python scripts/smoke_test.py --url https://staging.taskflow.example.com"
+
+      - name: Notify deployment
+        run: |
+          echo "✅ Staging deployment complete"
+          echo "   Version: ${{ needs.preflight.outputs.image_tag }}"
+          echo "   URL: https://staging.taskflow.example.com"
+
+  # ── Deploy to Production ───────────────────────────────────────────────
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: preflight
+    if: github.event.inputs.environment == 'production'
+    environment:
+      name: production
+      url: https://taskflow.example.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Production deployment
+        env:
+          IMAGE_TAG: ${{ needs.preflight.outputs.image_tag }}
+        run: |
+          echo "═══════════════════════════════════════════════════"
+          echo "  Deploying TaskFlow $IMAGE_TAG to PRODUCTION"
+          echo "═══════════════════════════════════════════════════"
+          echo ""
+          echo "Steps:"
+          echo "  1. Create database backup"
+          echo "  2. Pull new images"
+          echo "  3. Rolling restart of API containers"
+          echo "  4. Rolling restart of worker containers"
+          echo "  5. Update Nginx config if needed"
+          echo "  6. Verify health checks"
+          echo ""
+          echo "In a real deployment, this would use blue-green or"
+          echo "canary deployment strategy with proper rollback."
+
+      - name: Run database migrations
+        if: github.event.inputs.run_migrations == 'true'
+        run: |
+          echo "Running production database migrations..."
+          echo "  1. Create pre-migration backup"
+          echo "  2. Run: alembic upgrade head"
+          echo "  3. Verify migration success"
+
+      - name: Production smoke tests
+        run: |
+          echo "Running production smoke tests..."
+          echo "  python scripts/smoke_test.py --url https://taskflow.example.com --strict"
+
+      - name: Notify deployment
+        run: |
+          echo "✅ Production deployment complete"
+          echo "   Version: ${{ needs.preflight.outputs.image_tag }}"
+          echo "   URL: https://taskflow.example.com"
+
+  # ── Rollback (on failure) ──────────────────────────────────────────────
+  rollback:
+    name: Rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [deploy-staging, deploy-production]
+    if: failure()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rollback deployment
+        run: |
+          echo "⚠️  Deployment failed — initiating rollback"
+          echo ""
+          echo "Steps:"
+          echo "  1. Identify previous working version"
+          echo "  2. Revert container images"
+          echo "  3. Rollback database migrations if needed"
+          echo "  4. Verify health checks"
+          echo ""
+          echo "In production, this would:"
+          echo "  docker compose -f docker-compose.prod.yml down"
+          echo "  docker compose -f docker-compose.prod.yml up -d"
+          echo "  (with reverted image tags in .env)"

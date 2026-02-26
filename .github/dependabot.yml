@@ -1,0 +1,109 @@
+# ============================================================================
+# Dependabot — Automated Dependency Updates
+# ============================================================================
+# Checks weekly for new versions of Python (pip) and JavaScript (npm)
+# dependencies and creates PRs automatically.
+# ============================================================================
+
+version: 2
+updates:
+  # ── Python (pip) ──────────────────────────────────────────────────────
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "taskflow-team"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps):"
+    groups:
+      fastapi:
+        patterns:
+          - "fastapi*"
+          - "uvicorn*"
+          - "pydantic*"
+          - "starlette*"
+      database:
+        patterns:
+          - "sqlalchemy*"
+          - "alembic*"
+          - "psycopg2*"
+          - "asyncpg*"
+      testing:
+        patterns:
+          - "pytest*"
+          - "coverage*"
+          - "faker*"
+      security:
+        patterns:
+          - "python-jose*"
+          - "passlib*"
+          - "bcrypt*"
+          - "pyjwt*"
+      monitoring:
+        patterns:
+          - "prometheus*"
+          - "opentelemetry*"
+          - "structlog*"
+
+  # ── JavaScript (npm) ──────────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "taskflow-team"
+    labels:
+      - "dependencies"
+      - "javascript"
+    commit-message:
+      prefix: "chore(deps):"
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      build-tools:
+        patterns:
+          - "vite*"
+          - "typescript*"
+          - "@vitejs/*"
+          - "tailwindcss*"
+          - "postcss*"
+      testing:
+        patterns:
+          - "jest*"
+          - "@jest/*"
+          - "ts-jest*"
+          - "@testing-library/*"
+      linting:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "prettier*"
+
+  # ── GitHub Actions ────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "chore(ci):"
