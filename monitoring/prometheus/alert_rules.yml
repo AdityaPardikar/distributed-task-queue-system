@@ -1,38 +1,82 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # TaskFlow — Prometheus Alert Rules
 # ─────────────────────────────────────────────────────────────────────────────
+# Metric names aligned with src/monitoring/metrics.py:
+#   - http_request_duration_seconds  (Histogram: method, path, status_code)
+#   - tasks_submitted_total          (Counter: task_name, priority)
+#   - tasks_completed_total          (Counter: task_name)
+#   - tasks_failed_total             (Counter: task_name)
+#   - queue_depth                    (Gauge)
+#   - active_workers                 (Gauge)
+#   - worker_capacity_utilization    (Gauge)
+#   - task_execution_duration_seconds (Histogram: task_name)
+#   - task_wait_time_seconds         (Histogram: task_name)
+# ─────────────────────────────────────────────────────────────────────────────
 
 groups:
+  # ═════════════════════════════════════════════════════════════════════════
+  # API Alerts
+  # ═════════════════════════════════════════════════════════════════════════
   - name: taskflow_api
     rules:
-      # ── High error rate ────────────────────────────────────────────────
+      # ── CRITICAL: High 5xx error rate (> 5% for 5 min) ────────────────
       - alert: HighErrorRate
         expr: |
           (
-            rate(http_requests_total{status=~"5.."}[5m])
-            / rate(http_requests_total[5m])
+            sum(rate(http_request_duration_seconds_count{status_code=~"5.."}[5m]))
+            / sum(rate(http_request_duration_seconds_count[5m]))
           ) > 0.05
         for: 5m
         labels:
           severity: critical
           service: taskflow-api
         annotations:
-          summary: "High HTTP error rate (> 5%)"
+          summary: "High HTTP 5xx error rate (> 5%)"
           description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+          runbook_url: "https://docs.taskflow.internal/runbooks/high-error-rate"
 
-      # ── High latency ──────────────────────────────────────────────────
+      # ── CRITICAL: Error rate > 10% — immediate action ─────────────────
+      - alert: CriticalErrorRate
+        expr: |
+          (
+            sum(rate(http_request_duration_seconds_count{status_code=~"5.."}[5m]))
+            / sum(rate(http_request_duration_seconds_count[5m]))
+          ) > 0.10
+        for: 2m
+        labels:
+          severity: critical
+          service: taskflow-api
+        annotations:
+          summary: "CRITICAL: HTTP error rate exceeds 10%"
+          description: "Error rate is {{ $value | humanizePercentage }}. Immediate investigation required."
+          runbook_url: "https://docs.taskflow.internal/runbooks/critical-error-rate"
+
+      # ── WARNING: High p95 latency (> 2s) ──────────────────────────────
       - alert: HighLatency
         expr: |
-          histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2.0
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 2.0
         for: 5m
         labels:
           severity: warning
           service: taskflow-api
         annotations:
           summary: "High API latency (p95 > 2s)"
-          description: "P95 latency is {{ $value }}s."
+          description: "P95 latency is {{ $value | humanize }}s."
 
-      # ── API down ──────────────────────────────────────────────────────
+      # ── WARNING: Very high p99 latency (> 5s) ─────────────────────────
+      - alert: VeryHighLatency
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 5.0
+        for: 5m
+        labels:
+          severity: warning
+          service: taskflow-api
+        annotations:
+          summary: "Very high API latency (p99 > 5s)"
+          description: "P99 latency is {{ $value | humanize }}s. Investigate slow endpoints."
+          runbook_url: "https://docs.taskflow.internal/runbooks/high-latency"
+
+      # ── CRITICAL: API target unreachable ──────────────────────────────
       - alert: APIDown
         expr: up{job="taskflow-api"} == 0
         for: 1m
@@ -40,15 +84,19 @@ groups:
           severity: critical
           service: taskflow-api
         annotations:
-          summary: "TaskFlow API is down"
+          summary: "TaskFlow API is DOWN"
           description: "The taskflow-api target has been unreachable for 1 minute."
+          runbook_url: "https://docs.taskflow.internal/runbooks/api-down"
 
+  # ═════════════════════════════════════════════════════════════════════════
+  # Task Processing Alerts
+  # ═════════════════════════════════════════════════════════════════════════
   - name: taskflow_tasks
     rules:
-      # ── Task failure spike ─────────────────────────────────────────────
+      # ── WARNING: Task failure spike ────────────────────────────────────
       - alert: TaskFailureSpike
         expr: |
-          increase(taskflow_tasks_failed_total[15m]) > 20
+          increase(tasks_failed_total[15m]) > 20
         for: 5m
         labels:
           severity: warning
@@ -57,9 +105,25 @@ groups:
           summary: "Task failure spike (> 20 failures in 15 min)"
           description: "{{ $value }} task failures in the last 15 minutes."
 
-      # ── Queue depth too high ───────────────────────────────────────────
+      # ── CRITICAL: Task error rate > 10% ────────────────────────────────
+      - alert: HighTaskErrorRate
+        expr: |
+          (
+            sum(rate(tasks_failed_total[5m]))
+            / (sum(rate(tasks_completed_total[5m])) + sum(rate(tasks_failed_total[5m])))
+          ) > 0.10
+        for: 5m
+        labels:
+          severity: critical
+          service: taskflow-tasks
+        annotations:
+          summary: "CRITICAL: Task error rate exceeds 10%"
+          description: "Task error rate is {{ $value | humanizePercentage }}."
+          runbook_url: "https://docs.taskflow.internal/runbooks/task-error-rate"
+
+      # ── WARNING: Queue depth > 100 ────────────────────────────────────
       - alert: QueueDepthHigh
-        expr: taskflow_tasks_pending > 100
+        expr: queue_depth > 100
         for: 10m
         labels:
           severity: warning
@@ -68,7 +132,31 @@ groups:
           summary: "Task queue depth high (> 100 pending)"
           description: "{{ $value }} tasks are pending for over 10 minutes."
 
-      # ── DLQ growing ────────────────────────────────────────────────────
+      # ── WARNING: Queue depth > 10,000 — severe backlog ────────────────
+      - alert: QueueDepthCritical
+        expr: queue_depth > 10000
+        for: 5m
+        labels:
+          severity: critical
+          service: taskflow-tasks
+        annotations:
+          summary: "CRITICAL: Queue depth exceeds 10,000"
+          description: "{{ $value }} tasks in queue. Workers may be stalled or overwhelmed."
+          runbook_url: "https://docs.taskflow.internal/runbooks/queue-backlog"
+
+      # ── WARNING: Task execution p99 latency > 60s ──────────────────────
+      - alert: SlowTaskExecution
+        expr: |
+          histogram_quantile(0.99, sum(rate(task_execution_duration_seconds_bucket[5m])) by (le)) > 60
+        for: 10m
+        labels:
+          severity: warning
+          service: taskflow-tasks
+        annotations:
+          summary: "Slow task execution (p99 > 60s)"
+          description: "P99 task execution is {{ $value | humanize }}s."
+
+      # ── WARNING: DLQ growing ──────────────────────────────────────────
       - alert: DeadLetterQueueGrowing
         expr: increase(taskflow_dlq_entries_total[1h]) > 10
         for: 15m
@@ -79,34 +167,85 @@ groups:
           summary: "Dead letter queue growing (> 10 entries/hr)"
           description: "{{ $value }} new DLQ entries in the last hour."
 
+  # ═════════════════════════════════════════════════════════════════════════
+  # Worker Alerts
+  # ═════════════════════════════════════════════════════════════════════════
   - name: taskflow_workers
     rules:
-      # ── Worker offline ─────────────────────────────────────────────────
-      - alert: WorkerOffline
-        expr: taskflow_workers_active == 0
-        for: 2m
+      # ── CRITICAL: All workers offline for > 5 min ─────────────────────
+      - alert: AllWorkersOffline
+        expr: active_workers == 0
+        for: 5m
         labels:
           severity: critical
           service: taskflow-workers
         annotations:
-          summary: "No active workers"
-          description: "All workers have been offline for 2 minutes."
+          summary: "CRITICAL: All workers offline for 5+ minutes"
+          description: "No active workers detected. Task processing is halted."
+          runbook_url: "https://docs.taskflow.internal/runbooks/workers-offline"
 
-      # ── Worker overloaded ──────────────────────────────────────────────
-      - alert: WorkerOverloaded
-        expr: |
-          (taskflow_worker_current_load / taskflow_worker_capacity) > 0.9
+      # ── WARNING: Low worker count ──────────────────────────────────────
+      - alert: LowWorkerCount
+        expr: active_workers < 2 and active_workers > 0
         for: 5m
         labels:
           severity: warning
           service: taskflow-workers
         annotations:
-          summary: "Worker at > 90% capacity"
-          description: "Worker {{ $labels.worker_id }} is at {{ $value | humanizePercentage }} capacity."
+          summary: "Low worker count (< 2 active)"
+          description: "Only {{ $value }} worker(s) active. Consider scaling up."
 
+      # ── WARNING: Worker utilization > 80% (sustained) ──────────────────
+      - alert: WorkerHighUtilization
+        expr: worker_capacity_utilization > 0.80
+        for: 10m
+        labels:
+          severity: warning
+          service: taskflow-workers
+        annotations:
+          summary: "Worker utilization > 80% for 10+ minutes"
+          description: "Worker utilization is {{ $value | humanizePercentage }}. Consider adding workers."
+
+      # ── CRITICAL: Worker utilization > 95% ─────────────────────────────
+      - alert: WorkerOverloaded
+        expr: worker_capacity_utilization > 0.95
+        for: 5m
+        labels:
+          severity: critical
+          service: taskflow-workers
+        annotations:
+          summary: "CRITICAL: Workers overloaded (> 95% utilization)"
+          description: "Worker utilization at {{ $value | humanizePercentage }}. Immediate scale-up needed."
+          runbook_url: "https://docs.taskflow.internal/runbooks/worker-overloaded"
+
+      # ── WARNING: High worker error rate ────────────────────────────────
+      - alert: WorkerHighErrorRate
+        expr: taskflow_worker_error_rate > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: taskflow-workers
+        annotations:
+          summary: "Worker error rate > 5%"
+          description: "Worker {{ $labels.instance }} error rate: {{ $value | humanizePercentage }}."
+
+      # ── INFO: Worker restarts ──────────────────────────────────────────
+      - alert: WorkerRestarting
+        expr: increase(taskflow_worker_restart_count[30m]) > 3
+        for: 5m
+        labels:
+          severity: warning
+          service: taskflow-workers
+        annotations:
+          summary: "Worker restarting frequently (> 3 restarts in 30 min)"
+          description: "{{ $value }} restarts detected. Check worker logs for crash loops."
+
+  # ═════════════════════════════════════════════════════════════════════════
+  # Infrastructure Alerts
+  # ═════════════════════════════════════════════════════════════════════════
   - name: infrastructure
     rules:
-      # ── Redis down ────────────────────────────────────────────────────
+      # ── CRITICAL: Redis unreachable ────────────────────────────────────
       - alert: RedisDown
         expr: redis_up == 0
         for: 1m
@@ -114,10 +253,11 @@ groups:
           severity: critical
           service: redis
         annotations:
-          summary: "Redis is down"
+          summary: "Redis is DOWN"
           description: "Redis has been unreachable for 1 minute."
+          runbook_url: "https://docs.taskflow.internal/runbooks/redis-down"
 
-      # ── High Redis memory ─────────────────────────────────────────────
+      # ── WARNING: High Redis memory ────────────────────────────────────
       - alert: RedisHighMemory
         expr: |
           (redis_memory_used_bytes / redis_memory_max_bytes) > 0.85
@@ -128,3 +268,38 @@ groups:
         annotations:
           summary: "Redis memory usage > 85%"
           description: "Redis is using {{ $value | humanizePercentage }} of max memory."
+
+      # ── WARNING: High Redis connection count ───────────────────────────
+      - alert: RedisHighConnections
+        expr: redis_connected_clients > 500
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "High Redis connection count (> 500)"
+          description: "{{ $value }} active Redis connections. Check for connection leaks."
+
+      # ── WARNING: Container high CPU ────────────────────────────────────
+      - alert: ContainerHighCPU
+        expr: |
+          rate(container_cpu_usage_seconds_total{name=~"taskflow.*"}[5m]) > 0.80
+        for: 10m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "Container {{ $labels.name }} CPU > 80%"
+          description: "Container {{ $labels.name }} has sustained CPU usage of {{ $value | humanizePercentage }}."
+
+      # ── WARNING: Container high memory ─────────────────────────────────
+      - alert: ContainerHighMemory
+        expr: |
+          (container_memory_usage_bytes{name=~"taskflow.*"} / container_spec_memory_limit_bytes{name=~"taskflow.*"}) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "Container {{ $labels.name }} memory > 85%"
+          description: "Container {{ $labels.name }} is at {{ $value | humanizePercentage }} memory utilization."

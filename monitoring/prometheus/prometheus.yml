@@ -6,9 +6,13 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
   scrape_timeout: 10s
+  external_labels:
+    cluster: "taskflow"
+    environment: "production"
 
 rule_files:
   - "alert_rules.yml"
+  - "recording_rules.yml"
 
 scrape_configs:
   # ── Prometheus self-monitoring ─────────────────────────────────────────
@@ -19,17 +23,45 @@ scrape_configs:
   # ── TaskFlow API (FastAPI + custom metrics) ────────────────────────────
   - job_name: "taskflow-api"
     metrics_path: /metrics
+    scrape_interval: 10s
     static_configs:
       - targets: ["backend:8000"]
         labels:
           service: "taskflow-api"
           environment: "production"
+    # Relabel to extract path segments for cleaner metric names
+    metric_relabel_configs:
+      - source_labels: [path]
+        regex: "/api/v1/([^/]+).*"
+        target_label: "api_module"
+        replacement: "$1"
 
   # ── TaskFlow Worker (if running separately) ────────────────────────────
   - job_name: "taskflow-worker"
     metrics_path: /metrics
+    scrape_interval: 10s
     static_configs:
       - targets: ["worker:8001"]
         labels:
           service: "taskflow-worker"
           environment: "production"
+
+  # ── cAdvisor (container resource metrics) ──────────────────────────────
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    metric_relabel_configs:
+      - source_labels: [container_label_com_docker_compose_service]
+        target_label: "compose_service"
+
+  # ── Node Exporter (host metrics, optional) ─────────────────────────────
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # ── Redis Exporter (optional) ──────────────────────────────────────────
+  - job_name: "redis-exporter"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+        labels:
+          service: "redis"

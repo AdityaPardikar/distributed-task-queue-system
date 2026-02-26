@@ -1,0 +1,83 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TaskFlow — Prometheus Recording Rules
+# ─────────────────────────────────────────────────────────────────────────────
+# Pre-computed metrics for efficient dashboard queries.
+# ─────────────────────────────────────────────────────────────────────────────
+
+groups:
+  - name: taskflow_recording_api
+    interval: 15s
+    rules:
+      # ── HTTP request rate (5m avg) ──────────────────────────────────────
+      - record: taskflow:http_request_rate:5m
+        expr: sum(rate(http_request_duration_seconds_count[5m]))
+
+      - record: taskflow:http_request_rate_by_method:5m
+        expr: sum by (method)(rate(http_request_duration_seconds_count[5m]))
+
+      - record: taskflow:http_request_rate_by_status:5m
+        expr: sum by (status_code)(rate(http_request_duration_seconds_count[5m]))
+
+      # ── HTTP error rate ─────────────────────────────────────────────────
+      - record: taskflow:http_error_rate_5xx:5m
+        expr: |
+          sum(rate(http_request_duration_seconds_count{status_code=~"5.."}[5m]))
+          / sum(rate(http_request_duration_seconds_count[5m]))
+
+      - record: taskflow:http_error_rate_4xx:5m
+        expr: |
+          sum(rate(http_request_duration_seconds_count{status_code=~"4.."}[5m]))
+          / sum(rate(http_request_duration_seconds_count[5m]))
+
+      # ── HTTP latency percentiles ────────────────────────────────────────
+      - record: taskflow:http_latency_p50:5m
+        expr: histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+
+      - record: taskflow:http_latency_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+
+      - record: taskflow:http_latency_p99:5m
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+
+  - name: taskflow_recording_tasks
+    interval: 15s
+    rules:
+      # ── Task throughput ─────────────────────────────────────────────────
+      - record: taskflow:task_completed_rate:5m
+        expr: sum(rate(tasks_completed_total[5m]))
+
+      - record: taskflow:task_failed_rate:5m
+        expr: sum(rate(tasks_failed_total[5m]))
+
+      - record: taskflow:task_submitted_rate:5m
+        expr: sum(rate(tasks_submitted_total[5m]))
+
+      # ── Task error ratio ───────────────────────────────────────────────
+      - record: taskflow:task_error_ratio:5m
+        expr: |
+          sum(rate(tasks_failed_total[5m]))
+          / (sum(rate(tasks_completed_total[5m])) + sum(rate(tasks_failed_total[5m])))
+
+      # ── Task execution latency percentiles ──────────────────────────────
+      - record: taskflow:task_duration_p50:5m
+        expr: histogram_quantile(0.50, sum(rate(task_execution_duration_seconds_bucket[5m])) by (le))
+
+      - record: taskflow:task_duration_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(task_execution_duration_seconds_bucket[5m])) by (le))
+
+      - record: taskflow:task_duration_p99:5m
+        expr: histogram_quantile(0.99, sum(rate(task_execution_duration_seconds_bucket[5m])) by (le))
+
+      # ── Queue wait time percentiles ─────────────────────────────────────
+      - record: taskflow:task_wait_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(task_wait_time_seconds_bucket[5m])) by (le))
+
+  - name: taskflow_recording_workers
+    interval: 15s
+    rules:
+      # ── Worker utilization ──────────────────────────────────────────────
+      - record: taskflow:worker_utilization
+        expr: worker_capacity_utilization
+
+      - record: taskflow:active_worker_count
+        expr: active_workers
