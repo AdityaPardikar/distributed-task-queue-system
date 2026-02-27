@@ -1,0 +1,5 @@
+# E2E test artifacts — do not commit
+test-results/
+playwright-report/
+.auth/
+blob-report/

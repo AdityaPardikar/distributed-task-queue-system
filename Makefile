@@ -3,7 +3,7 @@
 # ─────────────────────────────────────────────────────────────
 
 .PHONY: help install install-dev dev \
-        test test-cov test-frontend test-all \
+        test test-cov test-frontend test-e2e test-integration test-all \
         lint lint-backend lint-frontend type-check format \
         build build-frontend build-docker \
         deploy deploy-staging deploy-production \
@@ -29,7 +29,9 @@ help:
 	@echo "  make test               Run backend tests"
 	@echo "  make test-cov           Run backend tests with coverage"
 	@echo "  make test-frontend      Run frontend tests"
-	@echo "  make test-all           Run all tests (backend + frontend)"
+	@echo "  make test-e2e           Run Playwright E2E tests"
+	@echo "  make test-integration   Run integration tests only"
+	@echo "  make test-all           Run all tests (backend + frontend + e2e)"
 	@echo ""
 	@echo "Code Quality:"
 	@echo "  make lint               Run all linters (backend + frontend)"
@@ -103,7 +105,13 @@ test-cov:
 test-frontend:
 	cd frontend && npm test -- --watchAll=false --coverage
 
-test-all: test test-frontend
+test-e2e:
+	cd e2e && npx playwright test
+
+test-integration:
+	pytest tests/integration/ -v --tb=short
+
+test-all: test test-frontend test-integration
 
 # ── Code Quality ───────────────────────────────────────────────
 lint: lint-backend lint-frontend
