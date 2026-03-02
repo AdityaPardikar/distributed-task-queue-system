@@ -1,0 +1,2178 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TaskFlow — Distributed Task Queue System",
+    "description": "Production-grade distributed task queue system with email campaign engine, real-time monitoring, and advanced workflow orchestration.\n\n## Authentication\nAll endpoints (except `/health`, `/ready`, `/live`, `/info`, and auth registration/login) require a Bearer JWT token obtained via `POST /api/v1/auth/login`.\n\n## Rate Limiting\nTiered rate limiting is applied per-user and per-IP:\n- **Critical endpoints** (auth): 5 req/min\n- **Write endpoints** (POST/PUT/PATCH/DELETE): 30 req/min\n- **Read endpoints** (GET): 60 req/min\n\n## Pagination\nList endpoints support `skip` (offset) and `limit` (page size, default 20, max 100) query parameters.\n\n## Error Responses\nAll errors follow the format: `{ \"detail\": \"Error message\" }` with appropriate HTTP status codes.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "TaskFlow Team",
+      "email": "hello@taskflow.io"
+    },
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development"
+    },
+    {
+      "url": "http://localhost:80",
+      "description": "Docker (Nginx reverse proxy)"
+    }
+  ],
+  "tags": [
+    { "name": "auth", "description": "Authentication & user management" },
+    { "name": "tasks", "description": "Task lifecycle management" },
+    { "name": "workers", "description": "Worker registration & control" },
+    { "name": "campaigns", "description": "Email campaign management" },
+    { "name": "templates", "description": "Email template CRUD" },
+    { "name": "dashboard", "description": "Dashboard statistics & widgets" },
+    { "name": "analytics", "description": "Task analytics & trends" },
+    { "name": "search", "description": "Advanced search & bulk actions" },
+    { "name": "workflows", "description": "Workflow orchestration & DAG" },
+    {
+      "name": "advanced-workflows",
+      "description": "Advanced workflow engine with templates & chains"
+    },
+    { "name": "alerts", "description": "Alert management & evaluation" },
+    { "name": "metrics", "description": "Prometheus metrics & worker metrics" },
+    { "name": "resilience", "description": "Resilience controls & health" },
+    {
+      "name": "chaos-engineering",
+      "description": "Chaos experiments & DLQ management"
+    },
+    {
+      "name": "performance",
+      "description": "Performance profiling & database tuning"
+    },
+    {
+      "name": "operations",
+      "description": "Backup, maintenance & configuration"
+    },
+    { "name": "debug", "description": "Task debugging, replay & comparison" },
+    { "name": "health", "description": "Health, readiness & liveness probes" },
+    { "name": "websocket", "description": "Real-time WebSocket streams" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT access token obtained from POST /api/v1/auth/login"
+      }
+    },
+    "schemas": {
+      "TaskCreate": {
+        "type": "object",
+        "required": ["task_name", "task_function"],
+        "properties": {
+          "task_name": {
+            "type": "string",
+            "description": "Human-readable task name"
+          },
+          "task_function": {
+            "type": "string",
+            "description": "Python function reference (e.g., 'tasks.send_email')"
+          },
+          "task_args": {
+            "type": "object",
+            "description": "Arguments to pass to the task function"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+            "default": "MEDIUM"
+          },
+          "max_retries": { "type": "integer", "default": 3 },
+          "timeout_seconds": { "type": "integer", "default": 300 },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "depends_on": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Task IDs this task depends on"
+          }
+        }
+      },
+      "TaskResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "task_name": { "type": "string" },
+          "task_function": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "QUEUED",
+              "RUNNING",
+              "COMPLETED",
+              "FAILED",
+              "CANCELLED",
+              "RETRYING"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+          },
+          "worker_id": { "type": "string", "nullable": true },
+          "result": { "type": "object", "nullable": true },
+          "error": { "type": "string", "nullable": true },
+          "retry_count": { "type": "integer" },
+          "max_retries": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "WorkerResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "hostname": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "PAUSED", "DRAINING", "OFFLINE"]
+          },
+          "capacity": { "type": "integer" },
+          "current_tasks": { "type": "integer" },
+          "last_heartbeat": { "type": "string", "format": "date-time" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CampaignCreate": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "template_id": { "type": "string", "format": "uuid" },
+          "rate_limit": {
+            "type": "integer",
+            "description": "Emails per minute"
+          }
+        }
+      },
+      "CampaignResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED", "FAILED"]
+          },
+          "template_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "total_recipients": { "type": "integer" },
+          "sent_count": { "type": "integer" },
+          "failed_count": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TemplateCreate": {
+        "type": "object",
+        "required": ["name", "subject", "body"],
+        "properties": {
+          "name": { "type": "string" },
+          "subject": { "type": "string" },
+          "body": { "type": "string", "description": "Jinja2 template body" },
+          "variables": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "TemplateResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "subject": { "type": "string" },
+          "body": { "type": "string" },
+          "variables": { "type": "array", "items": { "type": "string" } },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UserRegister": {
+        "type": "object",
+        "required": ["username", "email", "password"],
+        "properties": {
+          "username": { "type": "string", "minLength": 3, "maxLength": 50 },
+          "email": { "type": "string", "format": "email" },
+          "full_name": { "type": "string" },
+          "password": { "type": "string", "minLength": 8 }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "refresh_token": { "type": "string" },
+          "token_type": { "type": "string", "example": "bearer" }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["healthy", "degraded", "unhealthy"]
+          },
+          "checks": {
+            "type": "object",
+            "properties": {
+              "database": { "type": "string" },
+              "redis": { "type": "string" }
+            }
+          },
+          "uptime_seconds": { "type": "number" }
+        }
+      },
+      "AlertResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "rule_name": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "critical"]
+          },
+          "message": { "type": "string" },
+          "acknowledged": { "type": "boolean" },
+          "fired_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "WorkflowCreate": {
+        "type": "object",
+        "required": ["name", "tasks"],
+        "properties": {
+          "name": { "type": "string" },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "task_name": { "type": "string" },
+                "task_function": { "type": "string" },
+                "depends_on": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        }
+      },
+      "PaginatedResponse": {
+        "type": "object",
+        "properties": {
+          "items": { "type": "array", "items": {} },
+          "total": { "type": "integer" },
+          "skip": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "has_more": { "type": "boolean" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "detail": { "type": "string" }
+        }
+      }
+    }
+  },
+  "security": [{ "BearerAuth": [] }],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Application status and version information",
+        "tags": ["health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Application info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "online" },
+                    "name": { "type": "string", "example": "TaskFlow" },
+                    "version": { "type": "string", "example": "1.0.0" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": ["health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service healthy",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthResponse" }
+              }
+            }
+          },
+          "503": { "description": "Service unhealthy" }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "summary": "Readiness check",
+        "description": "Checks database and Redis connectivity",
+        "tags": ["health"],
+        "security": [],
+        "responses": {
+          "200": { "description": "Service ready" },
+          "503": { "description": "Service not ready" }
+        }
+      }
+    },
+    "/live": {
+      "get": {
+        "summary": "Liveness probe",
+        "description": "Kubernetes liveness probe",
+        "tags": ["health"],
+        "security": [],
+        "responses": { "200": { "description": "Service alive" } }
+      }
+    },
+    "/info": {
+      "get": {
+        "summary": "Application info",
+        "tags": ["health"],
+        "security": [],
+        "responses": { "200": { "description": "Application metadata" } }
+      }
+    },
+    "/system/status": {
+      "get": {
+        "summary": "System status",
+        "description": "Comprehensive system status with health score",
+        "tags": ["health"],
+        "security": [],
+        "responses": {
+          "200": { "description": "System status with health score" }
+        }
+      }
+    },
+    "/system/resources": {
+      "get": {
+        "summary": "System resources",
+        "description": "Current CPU, memory, and disk usage",
+        "tags": ["health"],
+        "security": [],
+        "responses": { "200": { "description": "Resource usage metrics" } }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "Register user",
+        "tags": ["auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserRegister" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created" },
+          "409": { "description": "Username or email already exists" }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login",
+        "description": "OAuth2-compatible login returning JWT access and refresh tokens",
+        "tags": ["auth"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "password"],
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenResponse" }
+              }
+            }
+          },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "summary": "Refresh token",
+        "tags": ["auth"],
+        "responses": {
+          "200": { "description": "New access token" },
+          "401": { "description": "Invalid refresh token" }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Get current user",
+        "tags": ["auth"],
+        "responses": { "200": { "description": "Current user info" } }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "tags": ["auth"],
+        "responses": { "200": { "description": "Logged out" } }
+      }
+    },
+    "/api/v1/auth/users": {
+      "get": {
+        "summary": "List users (admin)",
+        "tags": ["auth"],
+        "responses": {
+          "200": { "description": "User list" },
+          "403": { "description": "Admin only" }
+        }
+      }
+    },
+    "/api/v1/auth/users/{user_id}": {
+      "get": {
+        "summary": "Get user by ID (admin)",
+        "tags": ["auth"],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "User details" } }
+      }
+    },
+    "/api/v1/auth/users/{user_id}/role": {
+      "patch": {
+        "summary": "Update user role (admin)",
+        "tags": ["auth"],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Role updated" } }
+      }
+    },
+    "/api/v1/auth/users/{user_id}/status": {
+      "patch": {
+        "summary": "Update user status (admin)",
+        "tags": ["auth"],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Status updated" } }
+      }
+    },
+    "/api/v1/tasks": {
+      "post": {
+        "summary": "Create task",
+        "description": "Create and enqueue a new task for processing",
+        "tags": ["tasks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TaskCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" }
+              }
+            }
+          },
+          "422": { "description": "Validation error" }
+        }
+      },
+      "get": {
+        "summary": "List tasks",
+        "description": "List tasks with filtering, pagination, and sorting",
+        "tags": ["tasks"],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "priority", "in": "query", "schema": { "type": "string" } },
+          {
+            "name": "worker_id",
+            "in": "query",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "schema": { "type": "integer", "default": 0 }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 20 }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "schema": { "type": "string", "default": "created_at" }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "default": "desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task list",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaginatedResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{task_id}": {
+      "get": {
+        "summary": "Get task",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TaskResponse" }
+              }
+            }
+          },
+          "404": { "description": "Task not found" }
+        }
+      },
+      "delete": {
+        "summary": "Cancel task",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Task cancelled" },
+          "404": { "description": "Task not found" },
+          "409": { "description": "Task already completed" }
+        }
+      },
+      "patch": {
+        "summary": "Update task",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task updated" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/retry": {
+      "post": {
+        "summary": "Retry task",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task retried" } }
+      }
+    },
+    "/api/v1/tasks/dlq": {
+      "get": {
+        "summary": "List dead letter queue",
+        "tags": ["tasks"],
+        "responses": { "200": { "description": "DLQ task list" } }
+      }
+    },
+    "/api/v1/tasks/dlq/{task_id}/retry": {
+      "post": {
+        "summary": "Retry DLQ task",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task requeued" } }
+      }
+    },
+    "/api/v1/tasks/dlq/{task_id}/discard": {
+      "post": {
+        "summary": "Discard DLQ task",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task discarded" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/dependencies": {
+      "get": {
+        "summary": "Get task dependencies",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Dependency list" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/children": {
+      "get": {
+        "summary": "Get task children",
+        "tags": ["tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Child tasks" } }
+      }
+    },
+    "/api/v1/workers": {
+      "post": {
+        "summary": "Register worker",
+        "tags": ["workers"],
+        "responses": { "201": { "description": "Worker registered" } }
+      },
+      "get": {
+        "summary": "List workers",
+        "tags": ["workers"],
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "skip", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Worker list" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}": {
+      "get": {
+        "summary": "Get worker",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Worker details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WorkerResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deregister worker",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Worker deregistered" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}/heartbeat": {
+      "post": {
+        "summary": "Worker heartbeat",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Heartbeat recorded" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}/tasks": {
+      "get": {
+        "summary": "Get worker tasks",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Tasks assigned to worker" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}/status": {
+      "patch": {
+        "summary": "Update worker status",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Status updated" } }
+      },
+      "get": {
+        "summary": "Get worker status",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Detailed worker status" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}/pause": {
+      "patch": {
+        "summary": "Pause worker",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Worker paused" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}/resume": {
+      "patch": {
+        "summary": "Resume worker",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Worker resumed" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}/drain": {
+      "post": {
+        "summary": "Drain worker",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Worker draining" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}/capacity": {
+      "patch": {
+        "summary": "Update worker capacity",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Capacity updated" } }
+      }
+    },
+    "/api/v1/workers/status/all": {
+      "get": {
+        "summary": "All workers status",
+        "tags": ["workers"],
+        "responses": { "200": { "description": "Status for all workers" } }
+      }
+    },
+    "/api/v1/workers/{worker_id}/history": {
+      "get": {
+        "summary": "Worker task history",
+        "tags": ["workers"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task execution history" } }
+      }
+    },
+    "/api/v1/campaigns": {
+      "post": {
+        "summary": "Create campaign",
+        "tags": ["campaigns"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CampaignCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Campaign created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CampaignResponse" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List campaigns",
+        "tags": ["campaigns"],
+        "responses": { "200": { "description": "Campaign list" } }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}": {
+      "get": {
+        "summary": "Get campaign",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Campaign details" } }
+      },
+      "patch": {
+        "summary": "Update campaign",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Campaign updated" } }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/start": {
+      "post": {
+        "summary": "Start campaign",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Campaign started" } }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/pause": {
+      "post": {
+        "summary": "Pause campaign",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Campaign paused" } }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/launch": {
+      "post": {
+        "summary": "Launch campaign",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Campaign launched" } }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/recipients": {
+      "post": {
+        "summary": "Add recipient",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "201": { "description": "Recipient added" } }
+      },
+      "get": {
+        "summary": "List recipients",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Recipient list" } }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/recipients/bulk": {
+      "post": {
+        "summary": "Bulk add recipients",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "201": { "description": "Recipients added" } }
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/status": {
+      "get": {
+        "summary": "Campaign status",
+        "tags": ["campaigns"],
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Campaign status details" } }
+      }
+    },
+    "/api/v1/templates": {
+      "post": {
+        "summary": "Create template",
+        "tags": ["templates"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TemplateCreate" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Template created" } }
+      },
+      "get": {
+        "summary": "List templates",
+        "tags": ["templates"],
+        "responses": { "200": { "description": "Template list" } }
+      }
+    },
+    "/api/v1/templates/{template_id}": {
+      "get": {
+        "summary": "Get template",
+        "tags": ["templates"],
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Template details" } }
+      },
+      "patch": {
+        "summary": "Update template",
+        "tags": ["templates"],
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Template updated" } }
+      },
+      "delete": {
+        "summary": "Delete template",
+        "tags": ["templates"],
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Template deleted" } }
+      }
+    },
+    "/api/v1/templates/{template_id}/preview": {
+      "post": {
+        "summary": "Preview template",
+        "tags": ["templates"],
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Rendered template preview" } }
+      }
+    },
+    "/api/v1/dashboard/stats": {
+      "get": {
+        "summary": "System statistics",
+        "tags": ["dashboard"],
+        "responses": {
+          "200": { "description": "Dashboard statistics overview" }
+        }
+      }
+    },
+    "/api/v1/dashboard/workers": {
+      "get": {
+        "summary": "Workers grid",
+        "tags": ["dashboard"],
+        "responses": { "200": { "description": "Worker data for dashboard" } }
+      }
+    },
+    "/api/v1/dashboard/recent-tasks": {
+      "get": {
+        "summary": "Recent tasks",
+        "tags": ["dashboard"],
+        "responses": { "200": { "description": "Recent task list" } }
+      }
+    },
+    "/api/v1/dashboard/queue-depth": {
+      "get": {
+        "summary": "Queue depth",
+        "tags": ["dashboard"],
+        "responses": { "200": { "description": "Queue metrics" } }
+      }
+    },
+    "/api/v1/dashboard/hourly-stats": {
+      "get": {
+        "summary": "Hourly statistics",
+        "tags": ["dashboard"],
+        "responses": { "200": { "description": "Hourly task stats" } }
+      }
+    },
+    "/api/v1/dashboard/daily-stats": {
+      "get": {
+        "summary": "Daily statistics",
+        "tags": ["dashboard"],
+        "responses": { "200": { "description": "Daily task stats" } }
+      }
+    },
+    "/api/v1/analytics/completion-rate-trend": {
+      "get": {
+        "summary": "Completion rate trend",
+        "tags": ["analytics"],
+        "responses": { "200": { "description": "Completion rate over time" } }
+      }
+    },
+    "/api/v1/analytics/wait-time-trend": {
+      "get": {
+        "summary": "Wait time trend",
+        "tags": ["analytics"],
+        "responses": { "200": { "description": "Average wait time trend" } }
+      }
+    },
+    "/api/v1/analytics/peak-loads": {
+      "get": {
+        "summary": "Peak loads",
+        "tags": ["analytics"],
+        "responses": { "200": { "description": "Peak load times" } }
+      }
+    },
+    "/api/v1/analytics/task-distribution": {
+      "get": {
+        "summary": "Task distribution",
+        "tags": ["analytics"],
+        "responses": { "200": { "description": "Task distribution by type" } }
+      }
+    },
+    "/api/v1/analytics/failure-patterns": {
+      "get": {
+        "summary": "Failure patterns",
+        "tags": ["analytics"],
+        "responses": { "200": { "description": "Common failure patterns" } }
+      }
+    },
+    "/api/v1/analytics/retry-success-rate": {
+      "get": {
+        "summary": "Retry success rate",
+        "tags": ["analytics"],
+        "responses": { "200": { "description": "Retry success statistics" } }
+      }
+    },
+    "/api/v1/analytics/performance-summary": {
+      "get": {
+        "summary": "Performance summary",
+        "tags": ["analytics"],
+        "responses": {
+          "200": { "description": "Comprehensive performance summary" }
+        }
+      }
+    },
+    "/api/v1/search/tasks": {
+      "get": {
+        "summary": "Search tasks",
+        "description": "Advanced task search with full-text filtering",
+        "tags": ["search"],
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "priority", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Search results" } }
+      }
+    },
+    "/api/v1/search/presets": {
+      "get": {
+        "summary": "Filter presets",
+        "tags": ["search"],
+        "responses": { "200": { "description": "Available filter presets" } }
+      }
+    },
+    "/api/v1/search/presets/{preset_name}": {
+      "get": {
+        "summary": "Apply preset",
+        "tags": ["search"],
+        "parameters": [
+          {
+            "name": "preset_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Filtered results using preset" }
+        }
+      }
+    },
+    "/api/v1/search/tasks/export/csv": {
+      "get": {
+        "summary": "Export CSV",
+        "tags": ["search"],
+        "responses": { "200": { "description": "CSV file download" } }
+      }
+    },
+    "/api/v1/search/tasks/bulk-action": {
+      "post": {
+        "summary": "Bulk action",
+        "description": "Retry, cancel, or boost priority for multiple tasks",
+        "tags": ["search"],
+        "responses": { "200": { "description": "Bulk action result" } }
+      }
+    },
+    "/api/v1/workflows": {
+      "post": {
+        "summary": "Create workflow",
+        "tags": ["workflows"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WorkflowCreate" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Workflow created" } }
+      }
+    },
+    "/api/v1/workflows/{workflow_id}": {
+      "get": {
+        "summary": "Get workflow status",
+        "tags": ["workflows"],
+        "parameters": [
+          {
+            "name": "workflow_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Workflow status" } }
+      }
+    },
+    "/api/v1/workflows/batch": {
+      "post": {
+        "summary": "Batch create tasks",
+        "tags": ["workflows"],
+        "responses": { "201": { "description": "Tasks created" } }
+      }
+    },
+    "/api/v1/workflows/advanced": {
+      "post": {
+        "summary": "Create advanced workflow",
+        "tags": ["advanced-workflows"],
+        "responses": { "201": { "description": "Advanced workflow created" } }
+      }
+    },
+    "/api/v1/workflows/advanced/{workflow_id}/visualization": {
+      "get": {
+        "summary": "Workflow visualization",
+        "tags": ["advanced-workflows"],
+        "parameters": [
+          {
+            "name": "workflow_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Visualization data (nodes, edges)" }
+        }
+      }
+    },
+    "/api/v1/workflows/advanced/templates": {
+      "post": {
+        "summary": "Create workflow template",
+        "tags": ["advanced-workflows"],
+        "responses": { "201": { "description": "Template created" } }
+      },
+      "get": {
+        "summary": "List workflow templates",
+        "tags": ["advanced-workflows"],
+        "responses": { "200": { "description": "Template list" } }
+      }
+    },
+    "/api/v1/workflows/advanced/templates/{template_id}": {
+      "get": {
+        "summary": "Get workflow template",
+        "tags": ["advanced-workflows"],
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Template details" } }
+      },
+      "delete": {
+        "summary": "Delete workflow template",
+        "tags": ["advanced-workflows"],
+        "parameters": [
+          {
+            "name": "template_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Template deleted" } }
+      }
+    },
+    "/api/v1/workflows/advanced/from-template": {
+      "post": {
+        "summary": "Workflow from template",
+        "tags": ["advanced-workflows"],
+        "responses": {
+          "201": { "description": "Workflow created from template" }
+        }
+      }
+    },
+    "/api/v1/workflows/advanced/chain": {
+      "post": {
+        "summary": "Create workflow chain",
+        "tags": ["advanced-workflows"],
+        "responses": { "201": { "description": "Workflow chain created" } }
+      }
+    },
+    "/api/v1/alerts": {
+      "get": {
+        "summary": "Active alerts",
+        "tags": ["alerts"],
+        "parameters": [
+          {
+            "name": "acknowledged",
+            "in": "query",
+            "schema": { "type": "boolean" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alert list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AlertResponse" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/alerts/history": {
+      "get": {
+        "summary": "Alert history",
+        "tags": ["alerts"],
+        "responses": { "200": { "description": "Historical alerts" } }
+      }
+    },
+    "/api/v1/alerts/{alert_id}/acknowledge": {
+      "post": {
+        "summary": "Acknowledge alert",
+        "tags": ["alerts"],
+        "parameters": [
+          {
+            "name": "alert_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Alert acknowledged" } }
+      }
+    },
+    "/api/v1/alerts/stats": {
+      "get": {
+        "summary": "Alert statistics",
+        "tags": ["alerts"],
+        "responses": { "200": { "description": "Alert stats summary" } }
+      }
+    },
+    "/api/v1/alerts/evaluate": {
+      "post": {
+        "summary": "Evaluate alert rules",
+        "tags": ["alerts"],
+        "responses": { "200": { "description": "Evaluated rules" } }
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "summary": "System metrics",
+        "tags": ["metrics"],
+        "responses": { "200": { "description": "Current metrics" } }
+      }
+    },
+    "/api/v1/metrics/prometheus": {
+      "get": {
+        "summary": "Prometheus scrape",
+        "tags": ["metrics"],
+        "security": [],
+        "responses": { "200": { "description": "Prometheus text format" } }
+      }
+    },
+    "/api/v1/metrics/stats": {
+      "get": {
+        "summary": "System stats",
+        "tags": ["metrics"],
+        "responses": { "200": { "description": "Task and worker counts" } }
+      }
+    },
+    "/api/v1/metrics/workers": {
+      "get": {
+        "summary": "All worker metrics",
+        "tags": ["metrics"],
+        "responses": { "200": { "description": "Workers performance data" } }
+      }
+    },
+    "/api/v1/metrics/workers/compare": {
+      "get": {
+        "summary": "Compare workers",
+        "tags": ["metrics"],
+        "responses": { "200": { "description": "Worker comparison data" } }
+      }
+    },
+    "/api/v1/metrics/workers/{worker_id}": {
+      "get": {
+        "summary": "Worker metrics",
+        "tags": ["metrics"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Worker performance metrics" } }
+      }
+    },
+    "/api/v1/metrics/workers/{worker_id}/history": {
+      "get": {
+        "summary": "Worker task history",
+        "tags": ["metrics"],
+        "parameters": [
+          {
+            "name": "worker_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task execution history" } }
+      }
+    },
+    "/api/v1/resilience/degradation/mark": {
+      "post": {
+        "summary": "Mark service degraded",
+        "tags": ["resilience"],
+        "responses": { "200": { "description": "Service marked degraded" } }
+      }
+    },
+    "/api/v1/resilience/degradation/status/{service_name}": {
+      "get": {
+        "summary": "Degradation status",
+        "tags": ["resilience"],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Service degradation status" } }
+      }
+    },
+    "/api/v1/resilience/degradation/clear/{service_name}": {
+      "post": {
+        "summary": "Clear degradation",
+        "tags": ["resilience"],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Degradation cleared" } }
+      }
+    },
+    "/api/v1/resilience/degradation/all": {
+      "get": {
+        "summary": "All degraded services",
+        "tags": ["resilience"],
+        "responses": { "200": { "description": "Degraded services list" } }
+      }
+    },
+    "/api/v1/resilience/throughput/limit": {
+      "post": {
+        "summary": "Set throughput limit",
+        "tags": ["resilience"],
+        "responses": { "200": { "description": "Limit set" } }
+      },
+      "get": {
+        "summary": "Get throughput limit",
+        "tags": ["resilience"],
+        "responses": { "200": { "description": "Current limit" } }
+      }
+    },
+    "/api/v1/resilience/health/check": {
+      "post": {
+        "summary": "Manual health check",
+        "tags": ["resilience"],
+        "responses": { "200": { "description": "Health check result" } }
+      }
+    },
+    "/api/v1/resilience/health/{component_name}": {
+      "get": {
+        "summary": "Component health",
+        "tags": ["resilience"],
+        "parameters": [
+          {
+            "name": "component_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Component health status" } }
+      }
+    },
+    "/api/v1/resilience/health/all": {
+      "get": {
+        "summary": "All health statuses",
+        "tags": ["resilience"],
+        "responses": { "200": { "description": "All component health" } }
+      }
+    },
+    "/api/v1/resilience/recovery/{component_name}/status": {
+      "get": {
+        "summary": "Recovery status",
+        "tags": ["resilience"],
+        "parameters": [
+          {
+            "name": "component_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Recovery status" } }
+      }
+    },
+    "/api/v1/resilience/recovery/history": {
+      "get": {
+        "summary": "Recovery history",
+        "tags": ["resilience"],
+        "responses": { "200": { "description": "Recovery attempt history" } }
+      }
+    },
+    "/api/v1/resilience/summary": {
+      "get": {
+        "summary": "Resilience summary",
+        "tags": ["resilience"],
+        "responses": { "200": { "description": "Overall system resilience" } }
+      }
+    },
+    "/api/v1/chaos/experiments": {
+      "post": {
+        "summary": "Start chaos experiment",
+        "tags": ["chaos-engineering"],
+        "responses": { "201": { "description": "Experiment started" } }
+      },
+      "get": {
+        "summary": "List experiments",
+        "tags": ["chaos-engineering"],
+        "responses": { "200": { "description": "Active experiments" } }
+      }
+    },
+    "/api/v1/chaos/experiments/{experiment_id}": {
+      "delete": {
+        "summary": "Stop experiment",
+        "tags": ["chaos-engineering"],
+        "parameters": [
+          {
+            "name": "experiment_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Experiment stopped" } }
+      },
+      "get": {
+        "summary": "Experiment status",
+        "tags": ["chaos-engineering"],
+        "parameters": [
+          {
+            "name": "experiment_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Experiment details" } }
+      }
+    },
+    "/api/v1/chaos/experiments/{experiment_id}/trigger": {
+      "post": {
+        "summary": "Trigger chaos injection",
+        "tags": ["chaos-engineering"],
+        "parameters": [
+          {
+            "name": "experiment_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Injection triggered" } }
+      }
+    },
+    "/api/v1/chaos/dlq": {
+      "get": {
+        "summary": "List DLQ items",
+        "tags": ["chaos-engineering"],
+        "responses": { "200": { "description": "DLQ items" } }
+      },
+      "post": {
+        "summary": "Add to DLQ",
+        "tags": ["chaos-engineering"],
+        "responses": { "201": { "description": "Added to DLQ" } }
+      },
+      "delete": {
+        "summary": "Clear DLQ",
+        "tags": ["chaos-engineering"],
+        "responses": { "200": { "description": "DLQ cleared" } }
+      }
+    },
+    "/api/v1/chaos/dlq/{task_id}/requeue": {
+      "post": {
+        "summary": "Requeue DLQ task",
+        "tags": ["chaos-engineering"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task requeued" } }
+      }
+    },
+    "/api/v1/chaos/dlq/{task_id}": {
+      "delete": {
+        "summary": "Remove from DLQ",
+        "tags": ["chaos-engineering"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Removed from DLQ" } }
+      }
+    },
+    "/api/v1/chaos/retry/config": {
+      "get": {
+        "summary": "Retry config",
+        "tags": ["chaos-engineering"],
+        "responses": { "200": { "description": "Retry configuration" } }
+      }
+    },
+    "/api/v1/chaos/retry/test": {
+      "post": {
+        "summary": "Test retry delays",
+        "tags": ["chaos-engineering"],
+        "responses": { "200": { "description": "Calculated retry delays" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/debug": {
+      "post": {
+        "summary": "Enable debug",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Debug enabled" } }
+      },
+      "get": {
+        "summary": "Debug status",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Debug mode status" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/execution-log": {
+      "get": {
+        "summary": "Execution log",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task execution log" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/replay": {
+      "post": {
+        "summary": "Replay task",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task replayed" } }
+      }
+    },
+    "/api/v1/tasks/test": {
+      "post": {
+        "summary": "Dry run task",
+        "tags": ["debug"],
+        "responses": { "200": { "description": "Dry run result" } }
+      }
+    },
+    "/api/v1/tasks/{task_id1}/compare/{task_id2}": {
+      "get": {
+        "summary": "Compare tasks",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_id1",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "task_id2",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Task comparison" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/timeline": {
+      "get": {
+        "summary": "Task timeline",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Execution timeline" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/similar": {
+      "get": {
+        "summary": "Similar tasks",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Similar tasks list" } }
+      }
+    },
+    "/api/v1/tasks/{task_id}/validate-replay": {
+      "post": {
+        "summary": "Validate replay",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Replay validation result" } }
+      }
+    },
+    "/api/v1/tasks/function/{task_name}/metrics": {
+      "get": {
+        "summary": "Function metrics",
+        "tags": ["debug"],
+        "parameters": [
+          {
+            "name": "task_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Aggregate metrics for function" }
+        }
+      }
+    },
+    "/api/v1/performance/stats": {
+      "get": {
+        "summary": "Performance stats",
+        "tags": ["performance"],
+        "responses": {
+          "200": { "description": "Application performance statistics" }
+        }
+      }
+    },
+    "/api/v1/performance/endpoints": {
+      "get": {
+        "summary": "Endpoint stats",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Per-endpoint performance" } }
+      }
+    },
+    "/api/v1/performance/database/info": {
+      "get": {
+        "summary": "Database info",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Database statistics" } }
+      }
+    },
+    "/api/v1/performance/database/tables": {
+      "get": {
+        "summary": "Table sizes",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Table size information" } }
+      }
+    },
+    "/api/v1/performance/database/indexes": {
+      "get": {
+        "summary": "Database indexes",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "All indexes" } }
+      }
+    },
+    "/api/v1/performance/database/suggestions": {
+      "get": {
+        "summary": "Index suggestions",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Missing index suggestions" } }
+      }
+    },
+    "/api/v1/performance/database/maintenance": {
+      "post": {
+        "summary": "Run DB maintenance",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Maintenance completed" } }
+      }
+    },
+    "/api/v1/performance/queries/slow": {
+      "get": {
+        "summary": "Slow queries",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Slow query list" } }
+      }
+    },
+    "/api/v1/performance/tasks/optimized": {
+      "get": {
+        "summary": "Tasks (optimized)",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Tasks with eager loading" } }
+      }
+    },
+    "/api/v1/performance/tasks/cursor": {
+      "get": {
+        "summary": "Tasks (cursor)",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Cursor-paginated tasks" } }
+      }
+    },
+    "/api/v1/performance/tasks/stats": {
+      "get": {
+        "summary": "Task stats",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Statistics by status" } }
+      }
+    },
+    "/api/v1/performance/tasks/batch/cancel-stale": {
+      "post": {
+        "summary": "Cancel stale tasks",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Stale tasks cancelled" } }
+      }
+    },
+    "/api/v1/performance/tasks/batch/requeue-failed": {
+      "post": {
+        "summary": "Requeue failed tasks",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Failed tasks requeued" } }
+      }
+    },
+    "/api/v1/performance/reset": {
+      "post": {
+        "summary": "Reset stats",
+        "tags": ["performance"],
+        "responses": { "200": { "description": "Stats reset" } }
+      }
+    },
+    "/api/v1/operations/backups": {
+      "post": {
+        "summary": "Create backup",
+        "tags": ["operations"],
+        "responses": { "201": { "description": "Backup created" } }
+      },
+      "get": {
+        "summary": "List backups",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Backup list" } }
+      }
+    },
+    "/api/v1/operations/backups/verify": {
+      "post": {
+        "summary": "Verify backup",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Backup verified" } }
+      }
+    },
+    "/api/v1/operations/backups/restore": {
+      "post": {
+        "summary": "Restore backup",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Backup restored" } }
+      }
+    },
+    "/api/v1/operations/backups/cleanup": {
+      "post": {
+        "summary": "Cleanup backups",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Old backups removed" } }
+      }
+    },
+    "/api/v1/operations/config/validate": {
+      "get": {
+        "summary": "Validate config",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Config validation result" } }
+      }
+    },
+    "/api/v1/operations/config/current": {
+      "get": {
+        "summary": "Current config",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Config with masked secrets" } }
+      }
+    },
+    "/api/v1/operations/maintenance/vacuum": {
+      "post": {
+        "summary": "VACUUM ANALYZE",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Vacuum completed" } }
+      }
+    },
+    "/api/v1/operations/maintenance/reindex": {
+      "post": {
+        "summary": "Reindex tables",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Reindex completed" } }
+      }
+    },
+    "/api/v1/operations/maintenance/analyze": {
+      "post": {
+        "summary": "ANALYZE tables",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Analyze completed" } }
+      }
+    },
+    "/api/v1/operations/maintenance/full": {
+      "post": {
+        "summary": "Full maintenance",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "All maintenance completed" } }
+      }
+    },
+    "/api/v1/operations/maintenance/cleanup-tasks": {
+      "post": {
+        "summary": "Cleanup old tasks",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Old tasks cleaned" } }
+      }
+    },
+    "/api/v1/operations/maintenance/cleanup-sessions": {
+      "post": {
+        "summary": "Cleanup sessions",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Expired sessions cleaned" } }
+      }
+    },
+    "/api/v1/operations/health": {
+      "get": {
+        "summary": "System health",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Comprehensive health" } }
+      }
+    },
+    "/api/v1/operations/tables/bloat": {
+      "get": {
+        "summary": "Table bloat",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Table bloat info" } }
+      }
+    },
+    "/api/v1/operations/queries/long-running": {
+      "get": {
+        "summary": "Long-running queries",
+        "tags": ["operations"],
+        "responses": { "200": { "description": "Long-running query list" } }
+      }
+    },
+    "/ws/metrics": {
+      "get": {
+        "summary": "Metrics WebSocket",
+        "description": "Stream system metrics, worker health, and alerts in real-time",
+        "tags": ["websocket"],
+        "responses": { "101": { "description": "WebSocket upgrade" } }
+      }
+    },
+    "/ws/tasks": {
+      "get": {
+        "summary": "Tasks WebSocket",
+        "description": "Stream task lifecycle events (created, started, completed, failed)",
+        "tags": ["websocket"],
+        "responses": { "101": { "description": "WebSocket upgrade" } }
+      }
+    },
+    "/ws/workers": {
+      "get": {
+        "summary": "Workers WebSocket",
+        "description": "Stream worker status-change events",
+        "tags": ["websocket"],
+        "responses": { "101": { "description": "WebSocket upgrade" } }
+      }
+    },
+    "/api/v1/ws/status": {
+      "get": {
+        "summary": "WebSocket status",
+        "tags": ["websocket"],
+        "responses": { "200": { "description": "Connection statistics" } }
+      }
+    }
+  }
+}
