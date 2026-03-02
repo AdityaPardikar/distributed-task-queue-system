@@ -22,4 +22,4 @@ sphinx-rtd-theme==2.0.0
 python-dotenv==1.0.0
 
 # Debugging
-debugpy==1.8.1
+debugpy==1.8.20
