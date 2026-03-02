@@ -1,354 +1,325 @@
-# 🚀 Distributed Task Queue System
+<div align="center">
 
-**Production-grade distributed task queue handling 100K+ tasks/hour**
+# TaskFlow — Distributed Task Queue System
 
-A complete, production-ready distributed task queue system with:
+**Production-grade distributed task queue with email campaign engine**
 
-- ✅ **Scalable**: Task processing across multiple workers
-- ✅ **Reliable**: Automatic retries, error handling, circuit breaker patterns
-- ✅ **Observable**: Prometheus metrics, OpenTelemetry tracing, structured logging
-- ✅ **Intelligent**: Task scheduling, dependencies, cron expressions
-- ✅ **Resilient**: Dead letter queue, graceful degradation, auto-recovery
-- ✅ **Searchable**: Advanced filtering, full-text search, presets
-- ✅ **Manageable**: Web dashboard, admin tools, health monitoring
-- ✅ **Documented**: 4,700+ lines of documentation, 45+ API endpoints
-- ✅ **Tested**: 100+ test cases, 80%+ code coverage
-- ✅ **Containerized**: Docker, Docker Compose, Kubernetes ready
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Python](https://img.shields.io/badge/python-3.13-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Tests](https://img.shields.io/badge/tests-503%2B-brightgreen)
+![Coverage](https://img.shields.io/badge/coverage-80%25%2B-brightgreen)
+![CI](https://img.shields.io/badge/CI-GitHub%20Actions-blue)
 
-## 📚 Documentation
+[Quick Start](#-quick-start) •
+[Features](#-features) •
+[API](#-api-overview) •
+[Architecture](#-architecture) •
+[Documentation](#-documentation) •
+[Contributing](#-contributing)
 
-**Quick Links** (see `docs/INDEX.md` for complete navigation):
+</div>
 
-| Need                | Link                                                                                                           |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **Getting Started** | [docs/setup/PROJECT_SETUP_SUMMARY.md](docs/setup/PROJECT_SETUP_SUMMARY.md)                                     |
-| **Installation**    | [docs/setup/REQUIREMENTS_AND_SETUP.md](docs/setup/REQUIREMENTS_AND_SETUP.md)                                   |
-| **API Reference**   | [docs/api/API_REFERENCE.md](docs/api/API_REFERENCE.md)                                                         |
-| **Deployment**      | [docs/deployment/DEPLOYMENT_GUIDE.md](docs/deployment/DEPLOYMENT_GUIDE.md)                                     |
-| **Docker**          | [docs/deployment/DOCKER_USAGE.md](docs/deployment/DOCKER_USAGE.md)                                             |
-| **Monitoring**      | [docs/operations/MONITORING_GUIDE.md](docs/operations/MONITORING_GUIDE.md)                                     |
-| **Troubleshooting** | [docs/operations/TROUBLESHOOTING_AND_BEST_PRACTICES.md](docs/operations/TROUBLESHOOTING_AND_BEST_PRACTICES.md) |
-| **Development**     | [docs/development/CONTRIBUTING.md](docs/development/CONTRIBUTING.md)                                           |
-| **Architecture**    | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)                                         |
+---
 
-## ⚡ Quick Start
+## Quick Start
 
-### Prerequisites
-
-- Python 3.9+
-- PostgreSQL 12+
-- Redis 6.0+
-- Docker (optional but recommended)
-
-### Installation
-
-1. **Clone the repository**
+Get the entire stack running in three steps:
 
 ```bash
-git clone https://github.com/yourusername/taskflow.git
-cd taskflow
+# 1. Clone and enter
+git clone https://github.com/yourusername/taskflow.git && cd taskflow
+
+# 2. Start everything (API, workers, Postgres, Redis, frontend)
+docker compose up -d --build
+
+# 3. Open the dashboard
+open http://localhost:5173          # Frontend
+open http://localhost:8000/docs     # Swagger UI
 ```
 
-2. **Create virtual environment**
+> **Without Docker:** See the [manual setup](#manual-setup) section below.
 
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies**
-
-```bash
-pip install -r requirements.txt
-pip install -r requirements-dev.txt  # For development
-```
-
-4. **Setup environment**
-
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-5. **Initialize database**
-
-```bash
-alembic upgrade head
-python scripts/seed_data.py
-```
-
-6. **Run services**
-
-Terminal 1 - API Server:
-
-```bash
-uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Terminal 2 - Worker:
-
-```bash
-python -m src.core.worker
-```
-
-Terminal 3 - Coordinator:
-
-```bash
-python -m src.core.coordinator
-```
-
-Terminal 4 - Dashboard:
-
-```bash
-cd dashboard
-npm install
-npm run dev
-```
-
-Visit http://localhost:3000 for the dashboard.
-
-## Project Structure
-
-```
-taskflow/
-├── src/
-│   ├── api/                    # FastAPI REST API
-│   ├── core/                   # Core task queue logic
-│   ├── tasks/                  # Task definitions
-│   ├── services/               # Business logic
-│   ├── models/                 # Database models
-│   ├── db/                     # Database layer
-│   ├── cache/                  # Redis integration
-│   ├── monitoring/             # Metrics & logging
-│   └── config/                 # Configuration
-├── dashboard/                  # React dashboard
-├── cli/                        # CLI tool
-├── tests/                      # Test suite
-├── deployment/                 # Docker & K8s
-├── monitoring/                 # Prometheus & Grafana
-└── scripts/                    # Utility scripts
-```
+---
 
 ## Features
 
-### Core Features
+### Task Queue Engine
 
-- **Task Queue**: FIFO with priority levels (CRITICAL, HIGH, MEDIUM, LOW)
-- **Worker Pool**: Auto-scaling workers with heartbeat monitoring
-- **Fault Tolerance**: Automatic retries with exponential backoff
-- **Task Dependencies**: Support for parent-child task relationships
-- **Scheduled Tasks**: Cron-like scheduling support
-- **Dead Letter Queue**: Failed tasks with 30-day retention
+- **Priority queues** — CRITICAL / HIGH / MEDIUM / LOW
+- **Automatic retries** — Exponential backoff with configurable jitter
+- **Task dependencies** — DAG-based execution with dependency resolution
+- **Scheduled tasks** — Cron expressions via built-in scheduler
+- **Dead letter queue** — Failed tasks with 30-day retention and replay
+- **Workflows** — Sequential chains, parallel fan-out, conditional branching
 
 ### Email Campaign Engine
 
-- **Campaign Management**: Create, schedule, and monitor campaigns
-- **Template Engine**: Jinja2-based email templates
-- **Bounce Handling**: Automatic bounce detection
-- **Unsubscribe Management**: GDPR-compliant unsubscribe handling
-- **Rate Limiting**: Per-campaign rate limiting
-- **Analytics**: Send statistics and bounce reports
+- **Campaign lifecycle** — Create, schedule, launch, pause, resume, cancel
+- **Jinja2 templates** — Variable extraction, preview rendering, versioning
+- **Recipient management** — Bulk import, deduplication, status tracking
+- **Rate limiting** — Per-campaign send rate controls
 
-### Monitoring
+### Real-Time Dashboard
 
-- **Prometheus Metrics**: Detailed system metrics
-- **Grafana Dashboards**: Pre-built visualization dashboards
-- **Health Checks**: Liveness and readiness probes
-- **Structured Logging**: JSON-formatted logs for easy parsing
+- **React 19 SPA** — TypeScript, Tailwind CSS, Recharts
+- **Live metrics** — WebSocket-powered task/worker/alert feeds
+- **Task management** — Search, filter, retry, cancel, export
+- **Campaign views** — Progress tracking, recipient lists, stats
+- **Alert management** — Severity-based alerts with acknowledgement
+- **Command palette** — Keyboard-driven navigation (Ctrl+K)
 
-### API
+### Observability
 
-- **REST API**: Full REST endpoints for task management
-- **WebSocket**: Real-time task status updates
-- **Authentication**: JWT-based authentication
-- **Rate Limiting**: User and IP-based rate limiting
+- **Prometheus metrics** — Task throughput, latency histograms, queue depth
+- **Grafana dashboards** — Pre-built panels for tasks, workers, system health
+- **Structured logging** — JSON via structlog with request correlation IDs
+- **OpenTelemetry** — Distributed tracing across services
+- **Health probes** — `/health`, `/ready`, `/live` for container orchestrators
 
-## API Endpoints
+### Security
 
-### Tasks
+- **JWT authentication** — Access tokens (15 min) + refresh tokens (7 days)
+- **RBAC** — Admin, operator, viewer roles
+- **Rate limiting** — Tiered: 5/min (critical), 30/min (write), 60/min (read)
+- **Security headers** — CSP, HSTS, X-Frame-Options, X-Content-Type-Options
+- **Input validation** — Pydantic v2 on all endpoints
 
-- `POST /api/v1/tasks` - Create a task
-- `GET /api/v1/tasks` - List tasks
-- `GET /api/v1/tasks/{task_id}` - Get task details
-- `DELETE /api/v1/tasks/{task_id}` - Cancel a task
-- `POST /api/v1/tasks/{task_id}/retry` - Retry a task
+---
 
-### Workers
+## Architecture
 
-- `GET /api/v1/workers` - List workers
-- `GET /api/v1/workers/{worker_id}` - Get worker details
-- `POST /api/v1/workers/{worker_id}/pause` - Pause a worker
+```
+Client (React SPA / REST / WebSocket / CLI)
+          │
+          ▼
+    ┌───────────┐
+    │   Nginx   │  ← TLS termination, rate limit, gzip
+    └─────┬─────┘
+          ▼
+   ┌──────────────┐
+   │ FastAPI (API) │ ← 137 endpoints, JWT auth, middleware stack
+   └──┬────────┬──┘
+      │        │
+      ▼        ▼
+┌──────────┐ ┌───────┐
+│PostgreSQL│ │ Redis │ ← Broker, cache, sessions
+│  (data)  │ │       │
+└──────────┘ └───────┘
+      │
+      ▼
+┌──────────────────────┐
+│ Prometheus + Grafana │ ← Metrics, dashboards, alerts
+└──────────────────────┘
+```
 
-### Campaigns
+| Component     | Technology         | Version |
+| ------------- | ------------------ | ------- |
+| API           | FastAPI + Uvicorn  | 0.104.1 |
+| Database      | PostgreSQL         | 15      |
+| Broker/Cache  | Redis              | 7       |
+| Frontend      | React + TypeScript | 19.2    |
+| Build         | Vite               | 7.3     |
+| Styling       | Tailwind CSS       | 4.1     |
+| Monitoring    | Prometheus/Grafana | —       |
+| Reverse Proxy | Nginx              | 1.25    |
+| CI/CD         | GitHub Actions     | —       |
 
-- `POST /api/v1/campaigns` - Create campaign
-- `GET /api/v1/campaigns` - List campaigns
-- `POST /api/v1/campaigns/{campaign_id}/start` - Start campaign
-- `POST /api/v1/campaigns/{campaign_id}/pause` - Pause campaign
+Full architecture docs: [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
 
-### Metrics
+---
 
-- `GET /api/v1/metrics` - Prometheus metrics
-- `GET /api/v1/stats` - System statistics
-- `GET /health` - Health check
-- `GET /ready` - Readiness check
+## API Overview
+
+**137 endpoints** across **19 resource groups** — full OpenAPI spec at [docs/api/openapi.json](docs/api/openapi.json).
+
+| Group           | Endpoints | Description                         |
+| --------------- | --------- | ----------------------------------- |
+| **Auth**        | 7         | Login, register, refresh, RBAC      |
+| **Tasks**       | 16        | CRUD, retry, cancel, bulk, DLQ      |
+| **Workers**     | 10        | Register, heartbeat, drain, pause   |
+| **Campaigns**   | 13        | Lifecycle, recipients, templates    |
+| **Templates**   | 7         | CRUD, preview, variable extraction  |
+| **Workflows**   | 12        | DAG creation, chains, conditionals  |
+| **Dashboard**   | 6         | Stats, widgets, activity feed       |
+| **Analytics**   | 8         | Trends, patterns, summaries         |
+| **Search**      | 8         | Full-text, filters, presets, export |
+| **Alerts**      | 10        | CRUD, evaluate, acknowledge         |
+| **Metrics**     | 5         | Prometheus, worker metrics          |
+| **Resilience**  | 7         | Degradation, throughput, health     |
+| **Chaos**       | 7         | Fault injection, experiment mgmt    |
+| **Performance** | 6         | Profiling, DB tuning, baselines     |
+| **Operations**  | 6         | Backup, restore, maintenance        |
+| **Debug**       | 5         | Replay, compare, timeline           |
+| **Health**      | 3         | Health, ready, live probes          |
+| **WebSocket**   | 3         | Metrics, tasks, workers streams     |
+
+Interactive documentation available at `http://localhost:8000/docs` (Swagger UI) or `http://localhost:8000/redoc`.
+
+---
+
+## Manual Setup
+
+### Prerequisites
+
+- Python 3.10+ (3.13 recommended)
+- PostgreSQL 15+
+- Redis 7+
+- Node.js 18+ (for frontend)
+
+### Backend
+
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate          # Linux/macOS
+# venv\Scripts\activate           # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-dev.txt  # Dev tools
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your database and Redis URLs
+
+# Initialize database
+python init_db.py
+
+# Start API server
+uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+# Open http://localhost:5173
+```
+
+---
+
+## Testing
+
+```bash
+# Backend tests (153 tests)
+pytest                              # All tests
+pytest --cov=src                    # With coverage
+pytest tests/unit/                  # Unit only
+pytest tests/integration/           # Integration only
+
+# Frontend tests (293+ tests)
+cd frontend
+npm test                            # Jest + Testing Library
+npm run test -- --coverage          # With coverage
+
+# E2E tests (57+ tests)
+cd frontend
+npx playwright test                 # Playwright
+npx playwright test --ui            # Interactive mode
+```
+
+| Suite     | Framework  | Count    | Coverage |
+| --------- | ---------- | -------- | -------- |
+| Backend   | pytest     | 153      | 80%+     |
+| Frontend  | Jest + RTL | 293      | 80%+     |
+| E2E       | Playwright | 57+      | —        |
+| **Total** |            | **503+** |          |
+
+---
+
+## Docker
+
+### Development
+
+```bash
+docker compose up -d --build
+docker compose logs -f              # Stream logs
+docker compose ps                   # Check status
+docker compose down                 # Stop
+```
+
+### Production
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Includes Nginx reverse proxy, Prometheus, Grafana (port 3001), and cAdvisor.
+
+---
 
 ## Configuration
 
-All configuration is managed through `.env` file. Key settings:
+All configuration via environment variables (`.env` file):
 
 ```ini
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/taskflow
+DATABASE_URL=postgresql://taskflow:taskflow@localhost:5432/taskflow
 
 # Redis
 REDIS_URL=redis://localhost:6379/0
 
-# Worker
+# Security
+SECRET_KEY=your-secret-key-here
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+
+# Workers
 WORKER_CAPACITY=5
 WORKER_TIMEOUT_SECONDS=300
 WORKER_MAX_RETRIES=5
 
-# Email
-SMTP_HOST=smtp.gmail.com
+# Email (optional)
+SMTP_HOST=smtp.example.com
 SMTP_PORT=587
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=app-password
-
-# Security
-SECRET_KEY=your-secret-key
-JWT_ALGORITHM=HS256
+SMTP_USERNAME=user
+SMTP_PASSWORD=pass
 ```
 
-## Development
+---
 
-### Running Tests
+## Documentation
 
-```bash
-# All tests
-pytest
+| Topic               | Link                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Architecture        | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)                                         |
+| API Reference       | [docs/api/API_REFERENCE.md](docs/api/API_REFERENCE.md)                                                         |
+| OpenAPI Spec        | [docs/api/openapi.json](docs/api/openapi.json)                                                                 |
+| Deployment Guide    | [docs/deployment/DEPLOYMENT_GUIDE.md](docs/deployment/DEPLOYMENT_GUIDE.md)                                     |
+| Docker Usage        | [docs/deployment/DOCKER_USAGE.md](docs/deployment/DOCKER_USAGE.md)                                             |
+| Operational Runbook | [docs/RUNBOOK.md](docs/RUNBOOK.md)                                                                             |
+| Monitoring Guide    | [docs/operations/MONITORING_GUIDE.md](docs/operations/MONITORING_GUIDE.md)                                     |
+| Troubleshooting     | [docs/operations/TROUBLESHOOTING_AND_BEST_PRACTICES.md](docs/operations/TROUBLESHOOTING_AND_BEST_PRACTICES.md) |
+| Changelog           | [docs/CHANGELOG.md](docs/CHANGELOG.md)                                                                         |
+| Contributing        | [docs/development/CONTRIBUTING.md](docs/development/CONTRIBUTING.md)                                           |
+| Code Style          | [docs/development/CODE_STYLE.md](docs/development/CODE_STYLE.md)                                               |
+| Setup Guide         | [docs/setup/PROJECT_SETUP_SUMMARY.md](docs/setup/PROJECT_SETUP_SUMMARY.md)                                     |
 
-# With coverage
-pytest --cov=src
-
-# Specific test file
-pytest tests/unit/test_broker.py
-
-# Specific test
-pytest tests/unit/test_broker.py::test_create_task
-```
-
-### Database Migrations
-
-```bash
-# Create new migration
-alembic revision --autogenerate -m "Add column"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback
-alembic downgrade -1
-```
-
-### Formatting & Linting
-
-```bash
-# Format code
-black src tests
-
-# Lint code
-flake8 src tests
-
-# Sort imports
-isort src tests
-
-# Type checking
-mypy src
-```
-
-## Docker
-
-Build and run with Docker:
-
-```bash
-# Build images
-docker-compose build
-
-# Run services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-For production:
-
-```bash
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-## Performance
-
-TaskFlow can handle:
-
-- **100K+ tasks/hour**
-- **1000+ concurrent tasks**
-- **99.9% success rate** with retries
-- **Sub-second task pickup** latency
-- **Horizontal scaling** with multiple workers
-
-## Monitoring
-
-### Prometheus Metrics
-
-- `taskflow_tasks_total` - Total tasks processed
-- `taskflow_tasks_duration_seconds` - Task execution time
-- `taskflow_tasks_failed_total` - Failed tasks
-- `taskflow_workers_active` - Active workers
-- `taskflow_queue_depth` - Queue length
-
-### Grafana Dashboards
-
-Available at http://localhost:3001
-
-- Tasks Dashboard
-- Workers Dashboard
-- Campaigns Dashboard
-- System Health Dashboard
+---
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Follow the [Code Style Guide](docs/development/CODE_STYLE.md)
+4. Add tests for new functionality
+5. Ensure all tests pass (`pytest && cd frontend && npm test`)
+6. Commit with conventional messages (`feat:`, `fix:`, `docs:`)
+7. Submit a pull request
 
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues, questions, or suggestions:
-
-- GitHub Issues: https://github.com/yourusername/taskflow/issues
-- Email: hello@taskflow.io
-- Documentation: https://taskflow.readthedocs.io
-
-## Roadmap
-
-- [ ] Kubernetes support with auto-scaling
-- [ ] GraphQL API
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics and reporting
-- [ ] Task webhooks
-- [ ] Multi-tenancy support
+See [CONTRIBUTING.md](docs/development/CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-Built with ❤️ by the TaskFlow Team
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+<sub>Built by the TaskFlow Team — v1.0.0</sub>
+</div>
