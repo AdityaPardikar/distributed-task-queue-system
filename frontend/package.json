@@ -15,7 +15,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "autoprefixer": "^10.4.23",
+    "autoprefixer": "^10.4.27",
     "axios": "^1.13.4",
     "lucide-react": "^0.563.0",
     "postcss": "^8.5.6",
