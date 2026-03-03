@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, AlertCircle, ClipboardList } from "lucide-react";
 import api from "../services/api";
 import AdvancedFilters from "../components/AdvancedFilters";
 import type { FilterCriteria } from "../components/AdvancedFilters";
 import { useFilterPresets } from "../services/FilterService";
+import StatusBadge from "../components/StatusBadge";
+import SkeletonLoader from "../components/SkeletonLoader";
+import EmptyState from "../components/EmptyState";
 
 interface Task {
   id: number | string;
@@ -19,6 +22,7 @@ interface Task {
 const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState<FilterCriteria>({
@@ -36,6 +40,7 @@ const TasksPage: React.FC = () => {
   const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const params: Record<string, unknown> = {
         page,
         per_page: 20,
@@ -53,8 +58,9 @@ const TasksPage: React.FC = () => {
       const response = await api.getTasks(params);
       setTasks(response.data || []);
       setTotalPages(Math.ceil((response.total || 0) / 20));
-    } catch (error) {
-      console.error("Failed to fetch tasks:", error);
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch tasks");
     } finally {
       setLoading(false);
     }
@@ -64,41 +70,29 @@ const TasksPage: React.FC = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const getStatusBadge = (status: Task["status"]) => {
-    const classes = {
-      completed: "bg-green-100 text-green-800",
-      failed: "bg-red-100 text-red-800",
-      running: "bg-blue-100 text-blue-800",
-      pending: "bg-gray-100 text-gray-800",
-    };
-    return (
-      <span
-        className={`px-2 py-1 text-xs font-semibold rounded ${classes[status]}`}
-      >
-        {status.toUpperCase()}
-      </span>
-    );
-  };
-
-  const getPriorityBadge = (priority: Task["priority"]) => {
-    const classes = {
-      critical: "bg-red-600 text-white",
-      high: "bg-orange-500 text-white",
-      medium: "bg-yellow-500 text-white",
-      low: "bg-gray-400 text-white",
-    };
-    return (
-      <span
-        className={`px-2 py-1 text-xs font-semibold rounded ${classes[priority]}`}
-      >
-        {priority.toUpperCase()}
-      </span>
-    );
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
+
+  if (error && tasks.length === 0) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+        <div className="flex items-center gap-3">
+          <AlertCircle className="text-red-600 flex-shrink-0" size={24} />
+          <div>
+            <h3 className="font-semibold text-red-900">Failed to load tasks</h3>
+            <p className="text-red-700 text-sm mt-1">{error}</p>
+            <button
+              onClick={fetchTasks}
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -168,16 +162,15 @@ const TasksPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {loading ? (
-                <tr>
-                  <td colSpan={7} className="text-center py-12">
-                    <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-2" />
-                    <p className="text-gray-600">Loading tasks...</p>
-                  </td>
-                </tr>
+                <SkeletonLoader.Table rows={8} cols={7} />
               ) : tasks.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-gray-500">
-                    No tasks found
+                  <td colSpan={7}>
+                    <EmptyState
+                      title="No tasks found"
+                      description="Try adjusting your filters, or create a new task to get started."
+                      icon={<ClipboardList className="w-8 h-8 text-gray-400" />}
+                    />
                   </td>
                 </tr>
               ) : (
@@ -189,9 +182,11 @@ const TasksPage: React.FC = () => {
                     <td className="py-3 px-4 text-sm text-gray-900">
                       {task.name}
                     </td>
-                    <td className="py-3 px-4">{getStatusBadge(task.status)}</td>
                     <td className="py-3 px-4">
-                      {getPriorityBadge(task.priority)}
+                      <StatusBadge value={task.status} variant="task" />
+                    </td>
+                    <td className="py-3 px-4">
+                      <StatusBadge value={task.priority} variant="priority" />
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-700">
                       {task.worker_id || "-"}

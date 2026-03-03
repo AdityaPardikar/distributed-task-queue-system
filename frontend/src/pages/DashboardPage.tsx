@@ -6,11 +6,14 @@ import {
   AlertCircle,
   LayoutDashboard,
   HeartPulse,
+  Cpu,
 } from "lucide-react";
 import MetricsCards from "../components/MetricsCards";
 import ChartsSection from "../components/ChartsSection";
 import RecentTasksList from "../components/RecentTasksList";
 import SystemHealthMonitor from "../components/SystemHealthMonitor";
+import SkeletonLoader from "../components/SkeletonLoader";
+import EmptyState from "../components/EmptyState";
 import { useMetrics } from "../hooks/useMetrics";
 
 type ViewTab = "dashboard" | "health";
@@ -30,11 +33,10 @@ const DashboardPage: React.FC = () => {
 
   if (isLoading && !metrics) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading dashboard...</p>
-        </div>
+      <div className="space-y-6">
+        <SkeletonLoader.MetricCards count={4} />
+        <SkeletonLoader.Chart height="h-72" />
+        <SkeletonLoader.Chart height="h-72" />
       </div>
     );
   }
@@ -182,9 +184,11 @@ const DashboardPage: React.FC = () => {
               ))}
             </div>
             {workers.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                No workers registered
-              </div>
+              <EmptyState
+                title="No workers registered"
+                description="Start a worker process to begin consuming tasks."
+                icon={<Cpu className="w-8 h-8 text-gray-400" />}
+              />
             )}
           </div>
 
