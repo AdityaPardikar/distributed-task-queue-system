@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 8 — The Final Week: Complete, Polish & Ship</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .pulse-dot {
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+            }
+        }
+
+        .glow {
+            animation: glow-pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .task-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+        }
+
+        .day-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .day-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .finish-line {
+            background: repeating-linear-gradient(45deg,
+                    #065f46, #065f46 10px,
+                    #047857 10px, #047857 20px);
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-slate-900 via-emerald-950 to-teal-950 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- HEADER                                                 -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div
+            class="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 rounded-2xl shadow-2xl p-10 mb-10 text-white relative overflow-hidden glow">
+            <div class="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2">
+            </div>
+            <div class="absolute bottom-0 left-0 w-56 h-56 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2">
+            </div>
+            <div class="absolute top-1/2 right-1/4 w-40 h-40 bg-white/5 rounded-full shimmer float"></div>
+            <div class="absolute top-4 right-8 float" style="animation-delay:1s">
+                <span style="font-size:4rem">🏁</span>
+            </div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="bg-white/25 px-3 py-1 rounded-full text-sm font-bold tracking-widest">WEEK 8</span>
+                    <span
+                        class="bg-yellow-400/90 px-3 py-1 rounded-full text-xs font-bold text-yellow-900 tracking-wide">★
+                        FINAL WEEK</span>
+                    <span class="pulse-dot inline-block w-2 h-2 bg-green-300 rounded-full"></span>
+                    <span class="text-sm text-green-200 font-medium">Ship It</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-3 tracking-tight">
+                    🚀 Complete, Polish &amp; Ship
+                </h1>
+                <p class="text-xl text-emerald-100 max-w-3xl leading-relaxed">
+                    The final sprint. Every feature reviewed, every bug squashed, every pixel polished.
+                    Backend perfected. Frontend beautiful. Tests complete. This is where we finish the project —
+                    from the database layer all the way to the deployed UI. <strong>Let's ship it.</strong>
+                </p>
+                <div class="mt-6 flex gap-3 flex-wrap">
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">7 Days</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">Full-Stack Polish</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">600+ Tests</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">UI/UX Perfection</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">🏆 v1.0.0 Final</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- STATS                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-emerald-600">519+</p>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Tests Currently Passing</p>
+            </div>
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-blue-600">137</p>
+                <p class="text-xs text-gray-500 mt-1 font-medium">API Endpoints</p>
+            </div>
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-purple-600">20</p>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Frontend Pages</p>
+            </div>
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-amber-600">7</p>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Weeks Completed</p>
+            </div>
+            <div class="glass rounded-xl p-5 shadow-lg border border-white/20 text-center">
+                <p class="text-3xl font-bold text-rose-600">v1.0</p>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Release Target</p>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- WEEK 8 PHILOSOPHY                                      -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="glass rounded-xl shadow-lg p-8 mb-10 border border-white/20">
+            <h2 class="text-2xl font-bold text-gray-900 mb-5">🎯 Week 8 Philosophy — "Bottom to Top"</h2>
+            <p class="text-gray-600 mb-6 text-sm leading-relaxed">
+                Week 8 is not about building new features. It is about reviewing everything that exists,
+                making it <strong>correct, complete, consistent, and beautiful</strong>.
+                We work systematically from the data layer up to the last pixel on screen.
+            </p>
+            <div class="grid md:grid-cols-3 gap-5">
+                <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200">
+                    <h4 class="font-bold text-emerald-900 mb-3 text-lg">🗄️ Days 1–2: The Foundation</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>• Full backend audit — routes, models, services</li>
+                        <li>• Fix all known bugs and edge cases</li>
+                        <li>• API response consistency (schemas, errors)</li>
+                        <li>• DB model completeness and indexes</li>
+                        <li>• Complete backend test coverage (target 90%+)</li>
+                    </ul>
+                </div>
+                <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
+                    <h4 class="font-bold text-blue-900 mb-3 text-lg">🎨 Days 3–4: The Interface</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>• Full frontend audit — all 20 pages</li>
+                        <li>• UI/UX polish — spacing, colors, typography</li>
+                        <li>• Loading, empty, error states on every view</li>
+                        <li>• Mobile responsiveness across all breakpoints</li>
+                        <li>• Animations, transitions, microinteractions</li>
+                    </ul>
+                </div>
+                <div class="bg-purple-50 p-5 rounded-xl border border-purple-200">
+                    <h4 class="font-bold text-purple-900 mb-3 text-lg">🏁 Days 5–7: The Finish</h4>
+                    <ul class="text-sm text-gray-700 space-y-2">
+                        <li>• Complete E2E test coverage (all critical flows)</li>
+                        <li>• Performance profiling and optimisation</li>
+                        <li>• Final integration testing end-to-end</li>
+                        <li>• Seed data &amp; demo mode for showcase</li>
+                        <li>• Production deploy, tag, release — done</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 1                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10 day-card">
+            <div class="bg-gradient-to-r from-slate-700 to-slate-800 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">DAY 1</span>
+                            <span class="text-slate-300 text-sm">Monday</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold">Full Codebase Audit &amp; Bug Triage</h2>
+                        <p class="text-slate-300 mt-1 text-sm">Read every file. Document every issue. Fix the critical
+                            ones.</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap">🔍
+                        Audit</span>
+                </div>
+            </div>
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-slate-600">
+                <div class="grid md:grid-cols-2 gap-6 mb-5">
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-900 mb-3">🗄️ Backend Audit Checklist</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ Review all 20 route files — missing endpoints, wrong status codes, inconsistent
+                                response shapes</li>
+                            <li>✦ Audit all SQLAlchemy models — missing indexes, FKs without cascade, nullable columns
+                                that shouldn't be</li>
+                            <li>✦ Review all Pydantic schemas — missing validators, wrong field types, incomplete
+                                examples</li>
+                            <li>✦ Audit all service files — N+1 queries, missing transaction wrapping, unhandled
+                                exceptions</li>
+                            <li>✦ Review middleware stack — ensure rate limiting, auth, security headers all active
+                                correctly</li>
+                            <li>✦ Check all error responses — standardise to
+                                <code>{"detail": "...", "code": "..."}</code> shape</li>
+                            <li>✦ Review WebSocket handlers — connection leak check, auth on WS, graceful disconnect
+                                handling</li>
+                            <li>✦ Verify all background tasks / event listeners are registered in lifespan</li>
+                        </ul>
+                    </div>
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-900 mb-3">🎨 Frontend Audit Checklist</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ Review all 20 pages — broken routes, missing page titles, console errors</li>
+                            <li>✦ Audit all API hooks / useApi calls — unhandled rejections, missing loading states</li>
+                            <li>✦ Verify all navigation links work — no dead links, 404 routes</li>
+                            <li>✦ Check all forms — validation messages, disabled states, submit feedback</li>
+                            <li>✦ Review AuthContext — token expiry handling, refresh flow, logout cleanup</li>
+                            <li>✦ Check all TypeScript errors — strict mode, no <code>any</code> leaks, prop types
+                                complete</li>
+                            <li>✦ Review all table/list components — empty state, pagination, sort/filter</li>
+                            <li>✦ Verify WebSocket reconnect logic — reconnects on disconnect, cleans up on unmount</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-4">
+                    <h5 class="font-semibold text-yellow-900 mb-2">📝 Deliverable: issue-tracker.md</h5>
+                    <p class="text-sm text-yellow-800">Create <code>docs/ISSUE_TRACKER.md</code> — a prioritised list of
+                        every discovered issue (P0 critical / P1 high / P2 medium / P3 low). Fix all P0 and P1 today.
+                        Track P2/P3 for Days 2–4.</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                    <h5 class="font-semibold text-red-900 mb-2">🔥 Common Issues to Expect &amp; Fix</h5>
+                    <div class="grid md:grid-cols-2 gap-3 text-xs text-gray-700">
+                        <ul class="space-y-1">
+                            <li>• 404 / 422 errors on undocumented edge cases</li>
+                            <li>• Missing pagination on list endpoints</li>
+                            <li>• Auth token not refreshed on expiry in frontend</li>
+                            <li>• Race conditions in concurrent task updates</li>
+                        </ul>
+                        <ul class="space-y-1">
+                            <li>• Stale WebSocket data after reconnect</li>
+                            <li>• Missing error boundaries in React components</li>
+                            <li>• Unhandled promise rejections in hooks</li>
+                            <li>• CORS issues with WebSocket on production URL</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 2                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10 day-card">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">DAY 2</span>
+                            <span class="text-blue-200 text-sm">Tuesday</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold">Backend Perfection</h2>
+                        <p class="text-blue-100 mt-1 text-sm">Fix all audit findings, complete missing APIs, harden
+                            error handling, boost test coverage to 90%+</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap">⚙️
+                        Backend</span>
+                </div>
+            </div>
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                <div class="grid md:grid-cols-2 gap-5 mb-5">
+                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
+                        <h4 class="font-bold text-blue-900 mb-3">🔧 API Completeness</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ Standardise all error responses — global exception handler with consistent JSON shape
+                            </li>
+                            <li>✦ Add missing pagination to any list endpoint that lacks it</li>
+                            <li>✦ Add <code>X-Total-Count</code> header to all paginated responses</li>
+                            <li>✦ Ensure all POST endpoints return 201, not 200</li>
+                            <li>✦ Ensure all DELETE endpoints return 204 with no body</li>
+                            <li>✦ Add <code>ETag</code> / <code>Last-Modified</code> to frequently-polled resources</li>
+                            <li>✦ Add missing field validations (string lengths, regex patterns, range checks)</li>
+                            <li>✦ Fix any route that returns 500 instead of a proper 4xx for bad input</li>
+                        </ul>
+                    </div>
+                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
+                        <h4 class="font-bold text-blue-900 mb-3">🗄️ Database &amp; Services</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ Add missing DB indexes — any column used in WHERE / ORDER BY without an index</li>
+                            <li>✦ Wrap all multi-step service operations in a single transaction</li>
+                            <li>✦ Fix all N+1 query patterns — use <code>selectinload()</code> or
+                                <code>joinedload()</code></li>
+                            <li>✦ Add DB connection pooling config (pool_size, max_overflow, pool_pre_ping)</li>
+                            <li>✦ Review Redis key expiry — any key that should expire but doesn't</li>
+                            <li>✦ Add <code>ON DELETE CASCADE</code> where foreign keys are orphaned on parent delete
+                            </li>
+                            <li>✦ Add Alembic migration for any schema fixes discovered in audit</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-5 rounded-xl border border-green-200 mb-4">
+                    <h4 class="font-bold text-green-900 mb-3">🧪 Backend Testing — Target: 90%+ Coverage</h4>
+                    <div class="grid md:grid-cols-3 gap-3 text-sm text-gray-700">
+                        <div>
+                            <p class="font-semibold text-green-800 mb-1">New Unit Tests</p>
+                            <ul class="space-y-1 text-xs">
+                                <li>• All service functions (happy + error paths)</li>
+                                <li>• All Pydantic schema validators</li>
+                                <li>• Retry logic (backoff, max attempts)</li>
+                                <li>• JWT token creation &amp; verification</li>
+                                <li>• Rate limiter logic</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-green-800 mb-1">New Integration Tests</p>
+                            <ul class="space-y-1 text-xs">
+                                <li>• Full task lifecycle (create → queue → complete)</li>
+                                <li>• Auth flow (register → login → refresh → logout)</li>
+                                <li>• Campaign launch flow end-to-end</li>
+                                <li>• Worker register → heartbeat → drain</li>
+                                <li>• DLQ failed task → review → replay</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-green-800 mb-1">API Route Tests</p>
+                            <ul class="space-y-1 text-xs">
+                                <li>• Every route tested for auth (401 without token)</li>
+                                <li>• Every POST tested for validation (422)</li>
+                                <li>• 404 for non-existent resources</li>
+                                <li>• 403 for unauthorized role actions</li>
+                                <li>• Pagination limits and offsets</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-3 rounded-lg text-xs text-gray-600">
+                    <strong>Target:</strong> pytest reports 90%+ coverage. No untested service functions. Run:
+                    <code
+                        class="ml-1 bg-white px-2 py-0.5 rounded">pytest --cov=src --cov-report=html --cov-fail-under=90</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 3                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10 day-card">
+            <div class="bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">DAY 3</span>
+                            <span class="text-purple-200 text-sm">Wednesday</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold">Frontend UI/UX Perfection</h2>
+                        <p class="text-purple-100 mt-1 text-sm">Make every page beautiful, consistent, responsive, and
+                            delightful to use</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap">🎨
+                        Frontend</span>
+                </div>
+            </div>
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-violet-500">
+
+                <div class="grid md:grid-cols-2 gap-5 mb-5">
+                    <div class="bg-violet-50 p-5 rounded-xl border border-violet-200">
+                        <h4 class="font-bold text-violet-900 mb-3">🖌️ Visual Polish — Every Page</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ <strong>Consistent spacing</strong> — audit every page for padding/margin
+                                inconsistencies, standardise to design tokens</li>
+                            <li>✦ <strong>Typography</strong> — font sizes hierarchy (4xl titles → xs captions), proper
+                                line-height, font-weight</li>
+                            <li>✦ <strong>Color system</strong> — ensure all text passes WCAG AA contrast, fix any
+                                low-contrast text</li>
+                            <li>✦ <strong>Card elevation</strong> — consistent shadow levels (shadow-sm for nested,
+                                shadow-md for cards, shadow-xl for modals)</li>
+                            <li>✦ <strong>Icon consistency</strong> — one icon library throughout (Heroicons / Lucide),
+                                no mixing</li>
+                            <li>✦ <strong>Button variants</strong> — primary, secondary, danger, ghost — consistent
+                                across every page</li>
+                            <li>✦ <strong>Badge / tag system</strong> — status badges (PENDING=yellow, RUNNING=blue,
+                                COMPLETED=green, FAILED=red) everywhere</li>
+                        </ul>
+                    </div>
+                    <div class="bg-violet-50 p-5 rounded-xl border border-violet-200">
+                        <h4 class="font-bold text-violet-900 mb-3">📱 Responsive &amp; Accessible</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ <strong>Mobile breakpoints</strong> — every page functional at 375px, 768px, 1280px,
+                                1920px</li>
+                            <li>✦ <strong>Sidebar collapse</strong> — hamburger menu on mobile, collapsible sidebar on
+                                tablet</li>
+                            <li>✦ <strong>Tables → cards</strong> — on mobile, data tables convert to card list views
+                            </li>
+                            <li>✦ <strong>Touch targets</strong> — all buttons/links minimum 44×44px on mobile</li>
+                            <li>✦ <strong>Focus rings</strong> — visible keyboard focus on all interactive elements</li>
+                            <li>✦ <strong>ARIA labels</strong> — all icon buttons, charts, and form elements have
+                                aria-label</li>
+                            <li>✦ <strong>Screen reader test</strong> — key flows navigable without mouse</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-4 mb-5">
+                    <div class="bg-pink-50 p-4 rounded-xl border border-pink-200">
+                        <h5 class="font-semibold text-pink-900 mb-2">✨ States on Every View</h5>
+                        <ul class="text-xs text-gray-700 space-y-1">
+                            <li>⬤ <strong>Loading</strong> — skeleton loaders (not spinners alone)</li>
+                            <li>⬤ <strong>Empty</strong> — illustration + helpful CTA message</li>
+                            <li>⬤ <strong>Error</strong> — user-friendly message + retry button</li>
+                            <li>⬤ <strong>Success</strong> — toast confirmation, visual feedback</li>
+                            <li>⬤ <strong>Partial</strong> — some data, some loading</li>
+                        </ul>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                        <h5 class="font-semibold text-amber-900 mb-2">⚡ Microinteractions</h5>
+                        <ul class="text-xs text-gray-700 space-y-1">
+                            <li>• Button press feedback (scale 0.97)</li>
+                            <li>• Table row hover highlight</li>
+                            <li>• Sidebar expand/collapse animation</li>
+                            <li>• Chart tooltip smooth entry</li>
+                            <li>• Page transitions (fade-in)</li>
+                            <li>• Real-time number counter animation</li>
+                        </ul>
+                    </div>
+                    <div class="bg-cyan-50 p-4 rounded-xl border border-cyan-200">
+                        <h5 class="font-semibold text-cyan-900 mb-2">🌙 Dark Mode Audit</h5>
+                        <ul class="text-xs text-gray-700 space-y-1">
+                            <li>• Verify all pages render correctly in dark</li>
+                            <li>• No hardcoded #fff / #000 colors</li>
+                            <li>• Charts readable in both modes</li>
+                            <li>• Modals / toasts correct in dark mode</li>
+                            <li>• Images / logos have dark mode variants</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 text-green-400 p-4 rounded-lg text-xs font-mono">
+                    <p class="text-gray-400 mb-2">// Pages to review — check every single one:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-1">
+                        <span>✓ DashboardPage</span><span>✓ TasksPage</span><span>✓ WorkersPage</span><span>✓
+                            CampaignListPage</span>
+                        <span>✓ CreateCampaignPage</span><span>✓ CampaignDetailPage</span><span>✓
+                            TemplateListPage</span><span>✓ AlertsPage</span>
+                        <span>✓ MonitoringPage</span><span>✓ WorkflowsPage</span><span>✓ AnalyticsPage</span><span>✓
+                            SearchResultsPage</span>
+                        <span>✓ SettingsPage</span><span>✓ LoginPage</span><span>✓ RegisterForm</span><span>✓
+                            Layout/Nav</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 4                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10 day-card">
+            <div class="bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">DAY 4</span>
+                            <span class="text-pink-200 text-sm">Thursday</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold">Complete Test Coverage</h2>
+                        <p class="text-pink-100 mt-1 text-sm">Fill every testing gap — frontend unit tests, E2E
+                            scenarios, component edge cases</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap">🧪
+                        Testing</span>
+                </div>
+            </div>
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-rose-500">
+
+                <div class="grid md:grid-cols-3 gap-5 mb-5">
+                    <div class="bg-rose-50 p-5 rounded-xl border border-rose-200">
+                        <h4 class="font-bold text-rose-900 mb-3">⚛️ Frontend Unit Tests</h4>
+                        <p class="text-xs text-gray-600 mb-2">Current: 293. Target: 350+</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>✦ Add tests for all UI state branches (loading / error / empty)</li>
+                            <li>✦ Test all form submission flows (valid + invalid)</li>
+                            <li>✦ Test all filter / search interactions</li>
+                            <li>✦ Test pagination navigation</li>
+                            <li>✦ Test all modal open / close behaviors</li>
+                            <li>✦ Test WebSocket hook reconnect logic</li>
+                            <li>✦ Test AuthContext token refresh flow</li>
+                            <li>✦ Test NotificationContext toast queue</li>
+                            <li>✦ Test command palette search filtering</li>
+                            <li>✦ Test all analytics chart data transformations</li>
+                        </ul>
+                    </div>
+                    <div class="bg-orange-50 p-5 rounded-xl border border-orange-200">
+                        <h4 class="font-bold text-orange-900 mb-3">🎭 E2E Test Scenarios</h4>
+                        <p class="text-xs text-gray-600 mb-2">Current: 57. Target: 100+</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>✦ Full auth lifecycle: register → login → use app → logout → login again</li>
+                            <li>✦ Create task → monitor status → cancel → retry</li>
+                            <li>✦ Create campaign → add recipients → launch → watch progress</li>
+                            <li>✦ Create email template → preview → attach to campaign</li>
+                            <li>✦ Create workflow → trigger → monitor DAG execution</li>
+                            <li>✦ Dashboard: verify real-time metric updates via WebSocket</li>
+                            <li>✦ Search: full-text search across tasks + campaigns</li>
+                            <li>✦ Settings: change config → verify applied</li>
+                            <li>✦ Alerts: trigger alert → acknowledge → verify cleared</li>
+                            <li>✦ Mobile: full user journey at 375px viewport</li>
+                        </ul>
+                    </div>
+                    <div class="bg-yellow-50 p-5 rounded-xl border border-yellow-200">
+                        <h4 class="font-bold text-yellow-900 mb-3">🎯 Test Quality</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ <strong>No flaky tests</strong> — fix any test that fails intermittently</li>
+                            <li>✦ <strong>Test isolation</strong> — each test independent, no shared state</li>
+                            <li>✦ <strong>Mock hygiene</strong> — review all mocks, remove over-mocking</li>
+                            <li>✦ <strong>Descriptive names</strong> — test names read as specs</li>
+                            <li>✦ <strong>Coverage gaps</strong> — use <code>coverage report</code> to find uncovered
+                                branches</li>
+                            <li>✦ <strong>CI green</strong> — all tests pass in GitHub Actions pipeline</li>
+                            <li>✦ <strong>Test duration</strong> — full suite under 3 minutes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 text-white p-5 rounded-xl">
+                    <h5 class="font-bold text-green-400 mb-3">📊 Test Coverage Targets</h5>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-white/10 rounded-lg p-3">
+                            <p class="text-2xl font-bold text-green-400">90%+</p>
+                            <p class="text-xs text-gray-400">Backend (pytest)</p>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-3">
+                            <p class="text-2xl font-bold text-blue-400">85%+</p>
+                            <p class="text-xs text-gray-400">Frontend (Jest)</p>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-3">
+                            <p class="text-2xl font-bold text-purple-400">100</p>
+                            <p class="text-xs text-gray-400">E2E Scenarios</p>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-3">
+                            <p class="text-2xl font-bold text-amber-400">650+</p>
+                            <p class="text-xs text-gray-400">Total Tests</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 5                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10 day-card">
+            <div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">DAY 5</span>
+                            <span class="text-amber-100 text-sm">Friday</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold">Integration, Performance &amp; Real Data</h2>
+                        <p class="text-amber-100 mt-1 text-sm">End-to-end integration with real data flows, performance
+                            profiling, and load testing</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap">⚡
+                        Performance</span>
+                </div>
+            </div>
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-amber-500">
+
+                <div class="grid md:grid-cols-2 gap-5 mb-5">
+                    <div class="bg-amber-50 p-5 rounded-xl border border-amber-200">
+                        <h4 class="font-bold text-amber-900 mb-3">🔗 Full Integration Testing</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ <strong>Complete task lifecycle</strong> with a real Docker stack — create task via
+                                API → Redis queue → worker picks up → DB status updates → WebSocket notifies frontend →
+                                frontend reflects COMPLETED</li>
+                            <li>✦ <strong>Campaign full flow</strong> — create template → create campaign → add
+                                recipients CSV → launch → verify each recipient task created in queue → monitor send
+                                progress in real-time dashboard</li>
+                            <li>✦ <strong>Retry and DLQ flow</strong> — inject a failing task → verify retry attempts
+                                with backoff → verify ends in DLQ → replay from DLQ → verify completes</li>
+                            <li>✦ <strong>Worker drain</strong> — shutdown signal → worker completes in-flight tasks →
+                                de-registers → verify no orphaned tasks</li>
+                            <li>✦ <strong>Multi-user isolation</strong> — two users, each sees only their own tasks
+                                (auth scoping)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-orange-50 p-5 rounded-xl border border-orange-200">
+                        <h4 class="font-bold text-orange-900 mb-3">⚡ Performance Profiling</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ <strong>API benchmarking</strong> — profile all endpoints with <code>locust</code> or
+                                <code>hey</code>, identify any &gt;100ms p95 outliers</li>
+                            <li>✦ <strong>DB query analysis</strong> — turn on <code>echo=True</code> in SQLAlchemy,
+                                capture all slow queries (>10ms), add indexes or rewrite</li>
+                            <li>✦ <strong>Frontend bundle audit</strong> — run <code>vite build --analyze</code>,
+                                identify large chunks, add dynamic imports for heavy pages</li>
+                            <li>✦ <strong>WebSocket load test</strong> — 100 simultaneous WS connections, verify no
+                                message loss, memory stable</li>
+                            <li>✦ <strong>Redis memory audit</strong> — verify no key accumulation, TTLs set on all
+                                temporary keys</li>
+                            <li>✦ <strong>Docker resource check</strong> — CPU/memory usage of all containers at steady
+                                state vs load</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-orange-900 text-amber-200 p-5 rounded-xl">
+                    <h5 class="font-bold text-amber-300 mb-3">🎯 Performance Acceptance Criteria</h5>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <ul class="space-y-1">
+                            <li>✓ <code>GET /health</code> responds in &lt;10ms always</li>
+                            <li>✓ <code>GET /api/v1/tasks</code> (page 1) &lt;50ms p95</li>
+                            <li>✓ <code>POST /api/v1/tasks</code> &lt;80ms p95</li>
+                            <li>✓ Frontend initial load &lt;2s on 3G throttle</li>
+                        </ul>
+                        <ul class="space-y-1">
+                            <li>✓ WebSocket message latency &lt;20ms event→client</li>
+                            <li>✓ Full JS bundle &lt;500KB gzipped</li>
+                            <li>✓ 100K tasks/hr sustained throughput</li>
+                            <li>✓ Zero memory leak over 1hr continuous operation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 6                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10 day-card">
+            <div class="bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl p-6 mb-4 shadow-lg">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">DAY 6</span>
+                            <span class="text-teal-100 text-sm">Saturday</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold">Final Polish, Seed Data &amp; Demo Mode</h2>
+                        <p class="text-teal-100 mt-1 text-sm">Add the demo experience, seed data, final security scan,
+                            and production deploy verification</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap">✨
+                        Polish</span>
+                </div>
+            </div>
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-teal-500">
+
+                <div class="grid md:grid-cols-2 gap-5 mb-5">
+                    <div class="bg-teal-50 p-5 rounded-xl border border-teal-200">
+                        <h4 class="font-bold text-teal-900 mb-3">🌱 Seed Data &amp; Demo Mode</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ <strong>scripts/seed_demo.py</strong> — populate the DB with realistic demo data:
+                                <ul class="ml-4 mt-1 space-y-1 text-xs text-gray-600">
+                                    <li>• 500+ tasks across all statuses and priorities</li>
+                                    <li>• 5 workers with varying load levels</li>
+                                    <li>• 3 campaigns (1 completed, 1 running, 1 scheduled)</li>
+                                    <li>• 10 email templates with real HTML content</li>
+                                    <li>• 20+ workflows (chains and parallel)</li>
+                                    <li>• 10+ alerts (active + resolved)</li>
+                                    <li>• 30 days of historical analytics data</li>
+                                    <li>• demo user: <code>demo@taskflow.io / Demo1234!</code></li>
+                                </ul>
+                            </li>
+                            <li>✦ <strong>Dashboard "demo mode" banner</strong> — visible indicator when running on seed
+                                data</li>
+                            <li>✦ <strong>Makefile target</strong> <code>make demo</code> — one command to reset + seed
+                                + open browser</li>
+                        </ul>
+                    </div>
+                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200">
+                        <h4 class="font-bold text-emerald-900 mb-3">🔒 Final Security Scan</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>✦ Run <code>pip-audit</code> — no critical CVEs in Python dependencies</li>
+                            <li>✦ Run <code>npm audit --production</code> — no critical CVEs in frontend dependencies
+                            </li>
+                            <li>✦ Run <code>trivy fs .</code> — container filesystem scan</li>
+                            <li>✦ Verify all environment secrets are in <code>.env</code> only, not in code or logs</li>
+                            <li>✦ Verify <code>.env</code> is in <code>.gitignore</code> (never committed)</li>
+                            <li>✦ Check all CORS origins — no wildcard <code>*</code> in production config</li>
+                            <li>✦ Final headers check — <code>curl -I https://localhost</code> and verify CSP, HSTS,
+                                X-Frame</li>
+                            <li>✦ Review auth: verify refresh tokens rotate on use, old tokens invalidated</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-4 mb-5">
+                    <div class="bg-green-50 p-4 rounded-xl border border-green-200">
+                        <h5 class="font-semibold text-green-900 mb-2">🐳 Docker Final Check</h5>
+                        <ul class="text-xs text-gray-700 space-y-1">
+                            <li>• <code>docker compose up --build</code> from scratch — zero errors</li>
+                            <li>• All health checks passing green in <code>docker ps</code></li>
+                            <li>• Smoke test passes against prod compose</li>
+                            <li>• Nginx serving frontend static files</li>
+                            <li>• Grafana dashboards fully loaded</li>
+                        </ul>
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-xl border border-sky-200">
+                        <h5 class="font-semibold text-sky-900 mb-2">📝 Documentation Final Pass</h5>
+                        <ul class="text-xs text-gray-700 space-y-1">
+                            <li>• README quick-start tested by a fresh clone</li>
+                            <li>• All doc links verified (no 404s)</li>
+                            <li>• OpenAPI spec matches actual routes</li>
+                            <li>• CHANGELOG updated with Week 8 changes</li>
+                            <li>• Code comments on complex logic blocks</li>
+                        </ul>
+                    </div>
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200">
+                        <h5 class="font-semibold text-indigo-900 mb-2">🎬 Screenshot / Demo Assets</h5>
+                        <ul class="text-xs text-gray-700 space-y-1">
+                            <li>• Screenshot of dashboard with live data</li>
+                            <li>• Screenshot of campaign view</li>
+                            <li>• Screenshot of analytics page</li>
+                            <li>• Screenshot of mobile view</li>
+                            <li>• Add screenshots to README</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-teal-700 text-white p-4 rounded-xl text-sm">
+                    <strong>Production Smoke Test:</strong> Run <code
+                        class="bg-white/20 px-2 py-0.5 rounded">python scripts/smoke_test.py --base-url http://localhost</code>
+                    against the production Docker compose stack. All 16 tests must pass with green checkmarks before Day
+                    7.
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- DAY 7                                                  -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="mb-10 day-card">
+            <div
+                class="bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white rounded-xl p-6 mb-4 shadow-2xl glow">
+                <div class="flex items-center justify-between flex-wrap gap-3">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="bg-white/25 px-3 py-1 rounded-full text-xs font-bold">DAY 7</span>
+                            <span class="text-green-100 text-sm">Sunday</span>
+                            <span
+                                class="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-black tracking-wide">🏁
+                                FINISH LINE</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-bold">Project Completion &amp; Final Release</h2>
+                        <p class="text-green-100 mt-1 text-sm">Final review, git tag, GitHub release, celebrate — the
+                            project is DONE.</p>
+                    </div>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap float">🏆
+                        DONE</span>
+                </div>
+            </div>
+            <div class="glass rounded-xl shadow-md p-6 border-l-4 border-emerald-500">
+
+                <div class="grid md:grid-cols-2 gap-5 mb-5">
+                    <div class="bg-green-50 p-5 rounded-xl border border-green-200">
+                        <h4 class="font-bold text-green-900 mb-3">✅ Final Completion Checklist</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>☐ All P0/P1/P2 issues from Day 1 audit resolved</li>
+                            <li>☐ Backend coverage ≥ 90% — <code>pytest --cov</code> green</li>
+                            <li>☐ Frontend coverage ≥ 85% — <code>npm test -- --coverage</code> green</li>
+                            <li>☐ All E2E tests passing — <code>npx playwright test</code> green</li>
+                            <li>☐ Smoke test 16/16 passing against production stack</li>
+                            <li>☐ <code>docker compose up --build</code> succeeds cleanly from a fresh clone</li>
+                            <li>☐ No TypeScript errors: <code>tsc --noEmit</code></li>
+                            <li>☐ No Python type errors: <code>mypy src</code></li>
+                            <li>☐ No lint errors: <code>ruff check src</code> + <code>eslint src</code></li>
+                            <li>☐ No dependency CVEs: <code>pip-audit</code> + <code>npm audit --production</code></li>
+                            <li>☐ Production build clean: <code>npm run build</code> — 0 errors, 0 warnings</li>
+                            <li>☐ README tested: fresh clone → <code>docker compose up</code> → site loads</li>
+                            <li>☐ Seed data loads correctly via <code>python scripts/seed_demo.py</code></li>
+                            <li>☐ All GitHub Actions CI pipelines green</li>
+                        </ul>
+                    </div>
+                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200">
+                        <h4 class="font-bold text-emerald-900 mb-3">🎖️ Release Process</h4>
+                        <div class="space-y-3">
+                            <div class="bg-white p-3 rounded-lg border border-green-200">
+                                <p class="text-xs font-bold text-green-800 mb-1">1. Final Commit</p>
+                                <code
+                                    class="text-xs text-gray-600">git commit -m "chore: Week 8 final polish — project complete"</code>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-green-200">
+                                <p class="text-xs font-bold text-green-800 mb-1">2. Git Tag</p>
+                                <code
+                                    class="text-xs text-gray-600">git tag -a v1.0.0-final -m "TaskFlow v1.0.0 — Final Release"</code>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-green-200">
+                                <p class="text-xs font-bold text-green-800 mb-1">3. Push with Tag</p>
+                                <code class="text-xs text-gray-600">git push origin master --tags</code>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-green-200">
+                                <p class="text-xs font-bold text-green-800 mb-1">4. GitHub Release</p>
+                                <p class="text-xs text-gray-600">Create GitHub Release from tag v1.0.0-final using
+                                    RELEASE_NOTES.md</p>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-green-200">
+                                <p class="text-xs font-bold text-green-800 mb-1">5. Update docs/WEEK8_COMPLETION.md</p>
+                                <p class="text-xs text-gray-600">Final project completion summary with all metrics</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-green-900 to-emerald-900 text-white p-6 rounded-xl">
+                    <h5 class="font-bold text-green-300 text-lg mb-4">🏆 Final Project Metrics (Target)</h5>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-4">
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black text-green-300">650+</p>
+                            <p class="text-xs text-gray-300">Total Tests</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black text-blue-300">137</p>
+                            <p class="text-xs text-gray-300">API Endpoints</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black text-purple-300">20</p>
+                            <p class="text-xs text-gray-300">Frontend Pages</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black text-amber-300">8</p>
+                            <p class="text-xs text-gray-300">Weeks of Work</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black text-rose-300">90%+</p>
+                            <p class="text-xs text-gray-300">Backend Coverage</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black text-cyan-300">85%+</p>
+                            <p class="text-xs text-gray-300">Frontend Coverage</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black text-yellow-300">100K+</p>
+                            <p class="text-xs text-gray-300">Tasks/Hour</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <p class="text-3xl font-black text-emerald-300">v1.0</p>
+                            <p class="text-xs text-gray-300">Final Release</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- FINISH LINE BANNER                                     -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="finish-line rounded-2xl p-1 mb-10 shadow-2xl">
+            <div class="bg-gradient-to-r from-emerald-900 to-teal-900 rounded-xl p-8 text-white text-center">
+                <div class="text-6xl mb-4">🏁🏆🎉</div>
+                <h2 class="text-3xl font-black text-white mb-2">TaskFlow — Project Complete</h2>
+                <p class="text-emerald-200 text-lg mb-4">
+                    8 weeks. Distributed task queue. Email campaign engine. Real-time dashboard.
+                    Full-stack production system. <strong>Built, tested, polished, shipped.</strong>
+                </p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">Python + FastAPI</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">React + TypeScript</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">PostgreSQL + Redis</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">Docker + Nginx</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">Prometheus + Grafana</span>
+                    <span class="bg-white/20 px-4 py-2 rounded-full text-sm font-medium">GitHub Actions</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- COMPRESSED DAILY SCHEDULE                             -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="glass rounded-xl shadow-lg p-6 mb-8 border border-white/20">
+            <h2 class="text-2xl font-bold text-gray-900 mb-5">📅 Daily Schedule at a Glance</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left py-3 pr-4 text-gray-500 font-semibold w-16">Day</th>
+                            <th class="text-left py-3 pr-4 text-gray-500 font-semibold">Theme</th>
+                            <th class="text-left py-3 pr-4 text-gray-500 font-semibold">Primary Focus</th>
+                            <th class="text-left py-3 pr-4 text-gray-500 font-semibold">Key Deliverable</th>
+                            <th class="text-left py-3 text-gray-500 font-semibold">Commit</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 pr-4 font-bold text-slate-700">1 Mon</td>
+                            <td class="py-3 pr-4">🔍 Audit</td>
+                            <td class="py-3 pr-4">Read every file (BE + FE), log all issues</td>
+                            <td class="py-3 pr-4">docs/ISSUE_TRACKER.md + P0/P1 fixes</td>
+                            <td class="py-3"><span class="task-badge bg-slate-200 text-slate-800">fix: audit
+                                    fixes</span></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 pr-4 font-bold text-blue-700">2 Tue</td>
+                            <td class="py-3 pr-4">⚙️ Backend</td>
+                            <td class="py-3 pr-4">Fix all API/DB issues, add backend tests → 90%</td>
+                            <td class="py-3 pr-4">90%+ pytest coverage, all routes correct</td>
+                            <td class="py-3"><span class="task-badge bg-blue-100 text-blue-800">fix: backend
+                                    perfection</span></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 pr-4 font-bold text-violet-700">3 Wed</td>
+                            <td class="py-3 pr-4">🎨 Frontend</td>
+                            <td class="py-3 pr-4">Polish all 20 pages — spacing, states, mobile</td>
+                            <td class="py-3 pr-4">All pages beautiful, responsive, accessible</td>
+                            <td class="py-3"><span class="task-badge bg-violet-100 text-violet-800">feat: ui
+                                    polish</span></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 pr-4 font-bold text-rose-700">4 Thu</td>
+                            <td class="py-3 pr-4">🧪 Tests</td>
+                            <td class="py-3 pr-4">Fill test gaps → 650+ total, E2E → 100 scenarios</td>
+                            <td class="py-3 pr-4">Full test suite green, no flaky tests</td>
+                            <td class="py-3"><span class="task-badge bg-rose-100 text-rose-800">test: complete
+                                    coverage</span></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 pr-4 font-bold text-amber-700">5 Fri</td>
+                            <td class="py-3 pr-4">⚡ Perf</td>
+                            <td class="py-3 pr-4">Integration testing, profiling, load testing</td>
+                            <td class="py-3 pr-4">All perf criteria met, no regressions</td>
+                            <td class="py-3"><span class="task-badge bg-amber-100 text-amber-800">perf:
+                                    optimization</span></td>
+                        </tr>
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-3 pr-4 font-bold text-teal-700">6 Sat</td>
+                            <td class="py-3 pr-4">✨ Polish</td>
+                            <td class="py-3 pr-4">Seed data, demo mode, security scan, Docker verify</td>
+                            <td class="py-3 pr-4">Demo runs perfectly, smoke test 16/16</td>
+                            <td class="py-3"><span class="task-badge bg-teal-100 text-teal-800">chore: final
+                                    polish</span></td>
+                        </tr>
+                        <tr class="hover:bg-emerald-50">
+                            <td class="py-3 pr-4 font-black text-emerald-700">7 Sun</td>
+                            <td class="py-3 pr-4">🏁 Ship</td>
+                            <td class="py-3 pr-4">Final checklist, tag, GitHub release, push</td>
+                            <td class="py-3 pr-4">v1.0.0-final tagged &amp; published</td>
+                            <td class="py-3"><span class="task-badge bg-emerald-200 text-emerald-900 font-bold">🎉
+                                    v1.0.0-final</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- FOOTER                                                 -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="text-center text-slate-400 text-sm py-4">
+            <p>TaskFlow — Week 8 Roadmap &nbsp;•&nbsp; The Final Sprint &nbsp;•&nbsp; v1.0.0</p>
+        </div>
+
+    </div>
+</body>
+
+</html>
