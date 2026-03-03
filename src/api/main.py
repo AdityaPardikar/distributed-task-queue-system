@@ -1,9 +1,12 @@
 """FastAPI application setup"""
 
+import logging
 import time
+import traceback
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -16,6 +19,8 @@ from src.config.security import get_security_config
 from src.core.event_bus import get_event_bus
 from src.performance.profiler import get_profiler
 
+logger = logging.getLogger(__name__)
+
 settings = get_settings()
 security_config = get_security_config()
 
@@ -23,7 +28,7 @@ security_config = get_security_config()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan context"""
-    print(f"Starting {settings.APP_NAME} v{settings.VERSION}")
+    logger.info("Starting %s v%s", settings.APP_NAME, settings.VERSION)
 
     # Register the WebSocket connection manager with the event bus
     from src.api.routes.websocket import get_connection_manager
@@ -34,7 +39,7 @@ async def lifespan(app: FastAPI):
 
     # Cleanup
     manager.unregister_from_event_bus()
-    print(f"Shutting down {settings.APP_NAME}")
+    logger.info("Shutting down %s", settings.APP_NAME)
 
 
 def create_app() -> FastAPI:
@@ -46,6 +51,51 @@ def create_app() -> FastAPI:
         description="Production-grade distributed task queue system",
         lifespan=lifespan,
     )
+
+    # ------------------------------------------------------------------ #
+    # Global exception handlers — consistent JSON error envelope          #
+    # ------------------------------------------------------------------ #
+    @app.exception_handler(HTTPException)
+    async def http_exception_handler(request: Request, exc: HTTPException):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "error": True,
+                "detail": exc.detail,
+                "status_code": exc.status_code,
+            },
+            headers=getattr(exc, "headers", None),
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request: Request, exc: RequestValidationError):
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": True,
+                "detail": "Validation error",
+                "errors": exc.errors(),
+                "status_code": 422,
+            },
+        )
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        logger.error(
+            "Unhandled exception on %s %s: %s",
+            request.method,
+            request.url.path,
+            exc,
+            exc_info=True,
+        )
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": True,
+                "detail": "Internal server error",
+                "status_code": 500,
+            },
+        )
 
     # Middleware - Order matters! (outermost runs first)
     # 1. Security headers on every response
@@ -104,26 +154,30 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(websocket.router)  # WebSocket endpoints (no prefix — /ws/*)
 
-    try:
-        app.include_router(tasks.router, prefix="/api/v1", tags=["tasks"])
-        app.include_router(workers.router, prefix="/api/v1", tags=["workers"])
-        app.include_router(campaigns.router, prefix="/api/v1", tags=["campaigns"])
-        app.include_router(templates.router, prefix="/api/v1", tags=["templates"])
-        app.include_router(analytics.router, prefix="/api/v1", tags=["analytics"])
-        app.include_router(dashboard.router, prefix="/api/v1", tags=["dashboard"])
-        app.include_router(search.router, prefix="/api/v1", tags=["search"])
-        app.include_router(workflows.router, prefix="/api/v1", tags=["workflows"])
-        app.include_router(alerts.router, prefix="/api/v1", tags=["alerts"])
-        app.include_router(metrics.router, prefix="/api/v1", tags=["metrics"])
-        app.include_router(resilience.router, prefix="/api/v1", tags=["resilience"])
-        app.include_router(debug.router, prefix="/api/v1", tags=["debug"])
-        app.include_router(auth.router, prefix="/api/v1", tags=["auth"])
-        app.include_router(advanced_workflows.router, prefix="/api/v1", tags=["advanced-workflows"])
-        app.include_router(chaos.router, prefix="/api/v1", tags=["chaos-engineering"])
-        app.include_router(performance.router, prefix="/api/v1", tags=["performance"])
-        app.include_router(operations.router, prefix="/api/v1", tags=["operations"])
-    except Exception as e:
-        print(f"Warning: Could not load some routers: {e}")
+    _routers = [
+        (tasks.router,             "/api/v1", ["tasks"]),
+        (workers.router,           "/api/v1", ["workers"]),
+        (campaigns.router,         "/api/v1", ["campaigns"]),
+        (templates.router,         "/api/v1", ["templates"]),
+        (analytics.router,         "/api/v1", ["analytics"]),
+        (dashboard.router,         "/api/v1", ["dashboard"]),
+        (search.router,            "/api/v1", ["search"]),
+        (workflows.router,         "/api/v1", ["workflows"]),
+        (alerts.router,            "/api/v1", ["alerts"]),
+        (metrics.router,           "/api/v1", ["metrics"]),
+        (resilience.router,        "/api/v1", ["resilience"]),
+        (debug.router,             "/api/v1", ["debug"]),
+        (auth.router,              "/api/v1", ["auth"]),
+        (advanced_workflows.router,"/api/v1", ["advanced-workflows"]),
+        (chaos.router,             "/api/v1", ["chaos-engineering"]),
+        (performance.router,       "/api/v1", ["performance"]),
+        (operations.router,        "/api/v1", ["operations"]),
+    ]
+    for router, prefix, tags in _routers:
+        try:
+            app.include_router(router, prefix=prefix, tags=tags)
+        except Exception as exc:  # pragma: no cover
+            logger.error("Failed to load router %s: %s", tags, exc, exc_info=True)
     
     # Root endpoint
     @app.get("/")
