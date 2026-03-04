@@ -17,6 +17,7 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 ## Week 7 — Production Readiness & Release
 
 ### Added
+
 - **Environment & Docker Hardening (Day 1)**
   - `.env.example` with all configuration variables documented
   - `scripts/validate_env.py` for environment validation
@@ -69,6 +70,7 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 ## Week 6 — Frontend Completion & Real-Time Integration
 
 ### Added
+
 - Workers management page with live status indicators and filtering
 - System monitoring dashboard with CPU/memory/disk metrics and charts
 - WebSocket integration — real-time task/worker/metrics streaming
@@ -81,10 +83,12 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 - Search results page with advanced filtering
 
 ### Changed
+
 - Layout component enhanced with sidebar navigation for all new pages
 - Route configuration updated with protected routes for all features
 
 ### Tests
+
 - 70 new frontend tests across 10 test files
 - Total frontend tests: 293 (29 suites, all passing)
 - Build stabilization with proper mock isolation
@@ -94,6 +98,7 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 ## Week 5 — Backend Hardening & Advanced Features
 
 ### Added
+
 - **JWT Authentication (Day 1)**
   - Complete OAuth2 password flow with access + refresh tokens
   - Role-based access control (RBAC) — admin, operator, viewer roles
@@ -137,6 +142,7 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 ## Week 4 — Real-Time Features & API Polish
 
 ### Added
+
 - **Real-Time Updates (Day 1)**
   - WebSocket endpoints (`/ws/metrics`, `/ws/tasks`, `/ws/workers`)
   - Connection manager with subscription channels
@@ -175,6 +181,7 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 ## Week 3 — Email Campaign Engine & Frontend
 
 ### Added
+
 - **Campaign Models (Day 1)**
   - Campaign, Recipient, and Template SQLAlchemy models
   - Campaign CRUD API endpoints
@@ -216,6 +223,7 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 ## Week 2 — Worker System & Task Processing
 
 ### Added
+
 - Worker registration and heartbeat tracking
 - Worker pool management with capacity limits
 - Task assignment and execution pipeline
@@ -231,6 +239,7 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 ## Week 1 — Foundation & Core Architecture
 
 ### Added
+
 - Project initialization and structure
 - SQLAlchemy database models (Task, Worker)
 - PostgreSQL database configuration with Alembic migrations
@@ -250,22 +259,22 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 
 ### Tech Stack
 
-| Layer           | Technology                                        |
-| --------------- | ------------------------------------------------- |
-| **Backend**     | Python 3.13, FastAPI 0.104.1, SQLAlchemy 2.0.23   |
-| **Frontend**    | React 19.2, TypeScript 5.9, Vite 7.3, Tailwind 4  |
-| **Database**    | PostgreSQL 15, Alembic 1.13                        |
-| **Cache/Broker**| Redis 7, redis-py 5.0.1                           |
-| **Auth**        | JWT (python-jose), bcrypt, OAuth2                  |
-| **Monitoring**  | Prometheus, Grafana 10, OpenTelemetry              |
-| **Testing**     | pytest 7.4, Jest 30.2, Playwright 1.52             |
-| **CI/CD**       | GitHub Actions, Docker, Nginx                      |
+| Layer            | Technology                                       |
+| ---------------- | ------------------------------------------------ |
+| **Backend**      | Python 3.13, FastAPI 0.104.1, SQLAlchemy 2.0.23  |
+| **Frontend**     | React 19.2, TypeScript 5.9, Vite 7.3, Tailwind 4 |
+| **Database**     | PostgreSQL 15, Alembic 1.13                      |
+| **Cache/Broker** | Redis 7, redis-py 5.0.1                          |
+| **Auth**         | JWT (python-jose), bcrypt, OAuth2                |
+| **Monitoring**   | Prometheus, Grafana 10, OpenTelemetry            |
+| **Testing**      | pytest 7.4, Jest 30.2, Playwright 1.52           |
+| **CI/CD**        | GitHub Actions, Docker, Nginx                    |
 
 ### Test Summary (v1.0.0)
 
-| Suite          | Tests | Status |
-| -------------- | ----- | ------ |
-| Backend Unit   | 153   | ✅ Pass |
-| Frontend Jest  | 293   | ✅ Pass |
-| E2E Playwright | ~57   | ✅ Pass |
+| Suite          | Tests    | Status        |
+| -------------- | -------- | ------------- |
+| Backend Unit   | 153      | ✅ Pass       |
+| Frontend Jest  | 293      | ✅ Pass       |
+| E2E Playwright | ~57      | ✅ Pass       |
 | **Total**      | **503+** | **All Green** |
