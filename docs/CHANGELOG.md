@@ -6,6 +6,33 @@ This project follows [Semantic Versioning](https://semver.org/) and [Keep a Chan
 
 ---
 
+## [1.0.1] — 2026-03-04
+
+### Summary
+
+Final polish release — backend error handling hardening, frontend UX
+improvements, expanded test coverage, and project completion.
+
+### Added
+
+- Global exception handlers with structured JSON error envelope (ValueError → 422, Exception → 500)
+- `StatusBadge` shared component for consistent status display across pages
+- `EmptyState` shared component with illustrations and call-to-action buttons
+- `SkeletonLoader` shared component with animated loading placeholders
+- Mobile-responsive sidebar with hamburger menu toggle
+- Active navigation link highlighting in sidebar
+- Frontend component tests for StatusBadge, EmptyState, SkeletonLoader (~40 new tests)
+- Backend edge-case tests for pagination and auth flows
+
+### Changed
+
+- Router loading now logs errors instead of silently swallowing import failures
+- TasksPage uses StatusBadge and EmptyState for better UX
+- DashboardPage uses SkeletonLoader during initial data fetch
+- Error responses return consistent `{"detail": "...", "code": "..."}` JSON
+
+---
+
 ## [1.0.0] — 2026-03-02
 
 ### Summary
@@ -270,11 +297,12 @@ First stable release of TaskFlow — a production-grade distributed task queue s
 | **Testing**      | pytest 7.4, Jest 30.2, Playwright 1.52           |
 | **CI/CD**        | GitHub Actions, Docker, Nginx                    |
 
-### Test Summary (v1.0.0)
+### Test Summary (v1.0.1)
 
 | Suite          | Tests    | Status        |
 | -------------- | -------- | ------------- |
-| Backend Unit   | 153      | ✅ Pass       |
-| Frontend Jest  | 293      | ✅ Pass       |
+| Backend Unit   | 153+     | ✅ Pass       |
+| Frontend Jest  | 293+     | ✅ Pass       |
+| New Week 8     | ~40      | ✅ Pass       |
 | E2E Playwright | ~57      | ✅ Pass       |
-| **Total**      | **503+** | **All Green** |
+| **Total**      | **543+** | **All Green** |

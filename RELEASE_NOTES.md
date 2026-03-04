@@ -1,23 +1,35 @@
-# Release Notes — TaskFlow v1.0.0
+# Release Notes — TaskFlow v1.0.1
 
-**Release Date:** 2026-03-02  
-**Tag:** `v1.0.0`
+**Release Date:** 2026-03-04  
+**Tag:** `v1.0.1`  
+**Previous Release:** v1.0.0 (2026-03-02)
 
 ---
 
 ## Overview
 
-TaskFlow v1.0.0 is the first production release of the distributed task queue
-system with integrated email campaign engine. This release represents 7 weeks
-of development across core engine, API, frontend dashboard, monitoring,
-security, testing, and documentation.
+TaskFlow v1.0.1 is the final polish release, completing Week 8 — the "Complete,
+Polish & Ship" sprint. This release hardens backend error handling, improves
+frontend UX with shared components and mobile responsiveness, and expands test
+coverage across both stacks.
+
+---
+
+## What's New in v1.0.1
+
+- **Structured error responses** — Global exception handlers return consistent JSON (`detail` + `code`)
+- **Mobile-responsive sidebar** — Hamburger menu toggle with overlay for small viewports
+- **Shared UI components** — StatusBadge, EmptyState, SkeletonLoader for consistent UX
+- **Active navigation** — Sidebar highlights the current page
+- **~40 new tests** — Component tests and backend edge-case coverage
+- **543+ total automated tests** (up from 503+)
 
 ---
 
 ## Highlights
 
 - **137 REST API endpoints** across 19 resource groups
-- **503+ automated tests** (backend, frontend, E2E)
+- **543+ automated tests** (backend, frontend, E2E)
 - **Real-time dashboard** with WebSocket-powered live updates
 - **Production monitoring** with Prometheus, Grafana, and structured logging
 - **Security hardened** with JWT auth, RBAC, rate limiting, security headers
