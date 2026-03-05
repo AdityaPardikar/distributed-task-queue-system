@@ -20,17 +20,17 @@ import type { Worker, WorkerStatus } from "../types/worker";
 /* ────────────────────────────────────────────── helpers ─── */
 
 const STATUS_COLORS: Record<WorkerStatus, string> = {
-  ACTIVE: "bg-green-100 text-green-800",
-  DRAINING: "bg-yellow-100 text-yellow-800",
-  OFFLINE: "bg-red-100 text-red-800",
-  PAUSED: "bg-gray-200 text-gray-700",
+  ACTIVE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  DRAINING: "bg-amber-50 text-amber-700 border border-amber-200",
+  OFFLINE: "bg-red-50 text-red-700 border border-red-200",
+  PAUSED: "bg-slate-100 text-slate-600 border border-slate-200",
 };
 
 const STATUS_DOT: Record<WorkerStatus, string> = {
-  ACTIVE: "bg-green-500",
-  DRAINING: "bg-yellow-500",
+  ACTIVE: "bg-emerald-500",
+  DRAINING: "bg-amber-500",
   OFFLINE: "bg-red-500",
-  PAUSED: "bg-gray-400",
+  PAUSED: "bg-slate-400",
 };
 
 const formatDate = (d: string | null) =>
@@ -151,31 +151,31 @@ const WorkersPage: React.FC = () => {
 
   /* ═══════════════════════════════════════════ Render ════ */
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Worker Management
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Workers
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-slate-500 mt-0.5">
             Monitor and manage task processing workers
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+          <label className="flex items-center gap-2 text-sm text-slate-500 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={autoRefresh}
               onChange={() => setAutoRefresh(!autoRefresh)}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
             />
             Auto-refresh
           </label>
           <button
             onClick={fetchWorkers}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm shadow-primary-600/20"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
@@ -184,12 +184,12 @@ const WorkersPage: React.FC = () => {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <StatCard
-          icon={<Server className="w-5 h-5 text-blue-600" />}
-          label="Total Workers"
+          icon={<Server className="w-5 h-5 text-primary-600" />}
+          title="Total Workers"
           value={workers.length}
-          bg="bg-blue-50"
+          bg="bg-primary-50"
         />
         <StatCard
           icon={<Activity className="w-5 h-5 text-green-600" />}
@@ -218,19 +218,21 @@ const WorkersPage: React.FC = () => {
       </div>
 
       {/* Capacity Bar */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex justify-between text-sm text-gray-600 mb-1">
-          <span>Overall Capacity Utilization</span>
-          <span>
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5">
+        <div className="flex justify-between text-sm mb-2">
+          <span className="font-semibold text-slate-700">
+            Overall Capacity Utilization
+          </span>
+          <span className="font-bold text-slate-900">
             {stats.totalCapacity > 0
               ? Math.round((stats.totalLoad / stats.totalCapacity) * 100)
               : 0}
             %
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="w-full bg-slate-100 rounded-full h-2.5">
           <div
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-500"
+            className="bg-gradient-to-r from-primary-500 to-violet-500 h-2.5 rounded-full transition-all duration-500"
             style={{
               width: `${stats.totalCapacity > 0 ? Math.min(100, Math.round((stats.totalLoad / stats.totalCapacity) * 100)) : 0}%`,
             }}
@@ -239,15 +241,15 @@ const WorkersPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 flex flex-wrap gap-4 items-center">
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-4 flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search by hostname…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
           />
         </div>
         <select
@@ -256,7 +258,7 @@ const WorkersPage: React.FC = () => {
             setStatusFilter(e.target.value as WorkerStatus | "");
             setPage(1);
           }}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all bg-white"
         >
           <option value="">All Statuses</option>
           <option value="ACTIVE">Active</option>
@@ -267,12 +269,14 @@ const WorkersPage: React.FC = () => {
 
       {/* Error Banner */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <span className="text-sm text-red-700">{error}</span>
+        <div className="bg-white border border-red-200 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+          <div className="w-9 h-9 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-4 h-4 text-red-600" />
+          </div>
+          <span className="text-sm text-red-700 font-medium">{error}</span>
           <button
             onClick={() => setError(null)}
-            className="ml-auto text-red-500 hover:text-red-700 text-sm"
+            className="ml-auto text-slate-400 hover:text-slate-600 text-sm font-semibold transition-colors"
           >
             Dismiss
           </button>
@@ -280,34 +284,36 @@ const WorkersPage: React.FC = () => {
       )}
 
       {/* Worker Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <th className="px-6 py-3">Worker</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3 text-center">Load / Capacity</th>
-                <th className="px-6 py-3">Utilization</th>
-                <th className="px-6 py-3">Last Heartbeat</th>
-                <th className="px-6 py-3">Registered</th>
-                <th className="px-6 py-3 text-right">Actions</th>
+              <tr className="text-left text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                <th className="px-6 py-3.5">Worker</th>
+                <th className="px-6 py-3.5">Status</th>
+                <th className="px-6 py-3.5 text-center">Load / Capacity</th>
+                <th className="px-6 py-3.5">Utilization</th>
+                <th className="px-6 py-3.5">Last Heartbeat</th>
+                <th className="px-6 py-3.5">Registered</th>
+                <th className="px-6 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-slate-100">
               {loading && workers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-16 text-center">
-                    <RefreshCw className="w-6 h-6 text-gray-400 animate-spin mx-auto mb-2" />
-                    <span className="text-gray-500">Loading workers…</span>
+                    <RefreshCw className="w-6 h-6 text-slate-300 animate-spin mx-auto mb-2" />
+                    <span className="text-slate-500">Loading workers…</span>
                   </td>
                 </tr>
               ) : workers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-16 text-center">
-                    <Server className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-500">No workers found</p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <Server className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="text-slate-500 font-semibold">
+                      No workers found
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
                       Workers will appear here once they register
                     </p>
                   </td>
@@ -316,19 +322,19 @@ const WorkersPage: React.FC = () => {
                 workers.map((w) => (
                   <tr
                     key={w.worker_id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className="hover:bg-slate-50/50 transition-colors"
                   >
                     {/* Worker Info */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${STATUS_DOT[w.status] ?? "bg-gray-300"}`}
+                          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${STATUS_DOT[w.status] ?? "bg-slate-300"}`}
                         />
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-semibold text-slate-900">
                             {w.hostname}
                           </p>
-                          <p className="text-xs text-gray-400 font-mono">
+                          <p className="text-xs text-slate-400 font-mono">
                             {w.worker_id.slice(0, 8)}…
                           </p>
                         </div>
@@ -338,7 +344,7 @@ const WorkersPage: React.FC = () => {
                     {/* Status Badge */}
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full ${STATUS_COLORS[w.status] ?? "bg-gray-100 text-gray-600"}`}
+                        className={`inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full ${STATUS_COLORS[w.status] ?? "bg-slate-100 text-slate-600"}`}
                       >
                         {w.status}
                       </span>
@@ -352,21 +358,21 @@ const WorkersPage: React.FC = () => {
                     {/* Utilization Bar */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
+                        <div className="flex-1 bg-slate-100 rounded-full h-2 max-w-[100px]">
                           <div
                             className={`h-2 rounded-full transition-all ${
                               utilPercent(w) > 80
                                 ? "bg-red-500"
                                 : utilPercent(w) > 50
-                                  ? "bg-yellow-500"
-                                  : "bg-green-500"
+                                  ? "bg-amber-500"
+                                  : "bg-emerald-500"
                             }`}
                             style={{
                               width: `${Math.min(100, utilPercent(w))}%`,
                             }}
                           />
                         </div>
-                        <span className="text-xs text-gray-500 w-9 text-right">
+                        <span className="text-xs text-slate-500 font-semibold w-9 text-right">
                           {utilPercent(w)}%
                         </span>
                       </div>
@@ -375,15 +381,15 @@ const WorkersPage: React.FC = () => {
                     {/* Heartbeat */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-gray-600">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        <span className="text-slate-600">
                           {timeAgo(w.last_heartbeat)}
                         </span>
                       </div>
                     </td>
 
                     {/* Registered */}
-                    <td className="px-6 py-4 text-gray-500 text-xs">
+                    <td className="px-6 py-4 text-slate-500 text-xs">
                       {formatDate(w.created_at)}
                     </td>
 
@@ -469,26 +475,29 @@ const WorkersPage: React.FC = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-3 border-t bg-gray-50">
-            <span className="text-sm text-gray-500">
-              Showing {(page - 1) * pageSize + 1}–
-              {Math.min(page * pageSize, total)} of {total}
+          <div className="flex items-center justify-between px-6 py-3.5 border-t border-slate-100">
+            <span className="text-sm text-slate-500">
+              Showing{" "}
+              <span className="font-semibold text-slate-700">
+                {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)}
+              </span>{" "}
+              of <span className="font-semibold text-slate-700">{total}</span>
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-40"
+                className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-40 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-sm font-medium">
+              <span className="text-sm font-semibold text-slate-700">
                 {page} / {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-1.5 rounded hover:bg-gray-200 disabled:opacity-40"
+                className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-40 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -520,11 +529,15 @@ const StatCard: React.FC<{
   value: string | number;
   bg: string;
 }> = ({ icon, label, value, bg }) => (
-  <div className={`${bg} rounded-lg p-4 flex items-center gap-3`}>
-    <div className="p-2 bg-white rounded-lg shadow-sm">{icon}</div>
+  <div
+    className={`${bg} rounded-2xl p-4 flex items-center gap-3 border border-slate-200/60`}
+  >
+    <div className="p-2 bg-white/80 rounded-xl shadow-sm">{icon}</div>
     <div>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-2xl font-bold text-slate-900 tracking-tight">
+        {value}
+      </p>
+      <p className="text-xs text-slate-500 font-medium">{label}</p>
     </div>
   </div>
 );
@@ -540,7 +553,7 @@ const ActionBtn: React.FC<{
     onClick={onClick}
     disabled={loading}
     title={title}
-    className={`p-1.5 rounded-lg ${color} transition-colors disabled:opacity-40`}
+    className={`p-1.5 rounded-xl ${color} transition-all disabled:opacity-40`}
   >
     {icon}
   </button>
@@ -554,32 +567,33 @@ const ConfirmDialog: React.FC<{
 }> = ({ action, onConfirm, onCancel, loading }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center">
     <div
-      className="absolute inset-0 bg-black/40"
+      className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
       onClick={onCancel}
       role="presentation"
     />
-    <div className="relative bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4 animate-in fade-in">
-      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+    <div className="relative bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 animate-fade-in">
+      <h3 className="text-lg font-bold text-slate-900 mb-2">
         Confirm {action.charAt(0).toUpperCase() + action.slice(1)}
       </h3>
-      <p className="text-sm text-gray-600 mb-6">
-        Are you sure you want to <strong>{action}</strong> this worker? This
+      <p className="text-sm text-slate-500 mb-6">
+        Are you sure you want to{" "}
+        <strong className="text-slate-700">{action}</strong> this worker? This
         action may affect running tasks.
       </p>
       <div className="flex justify-end gap-3">
         <button
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          className="px-4 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={onConfirm}
           disabled={loading}
-          className={`px-4 py-2 text-sm text-white rounded-lg transition-colors disabled:opacity-50 ${
+          className={`px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors disabled:opacity-50 ${
             action === "remove"
               ? "bg-red-600 hover:bg-red-700"
-              : "bg-blue-600 hover:bg-blue-700"
+              : "bg-primary-600 hover:bg-primary-700"
           }`}
         >
           {loading ? "Processing…" : `Yes, ${action}`}

@@ -22,21 +22,21 @@ const MetricCard: React.FC<MetricCardProps> = ({
   trend,
 }) => {
   const colorClasses = {
-    blue: "bg-blue-50 text-blue-600",
-    green: "bg-green-50 text-green-600",
-    yellow: "bg-yellow-50 text-yellow-600",
+    blue: "bg-primary-50 text-primary-600",
+    green: "bg-emerald-50 text-emerald-600",
+    yellow: "bg-amber-50 text-amber-600",
     red: "bg-red-50 text-red-600",
     purple: "bg-purple-50 text-purple-600",
-    indigo: "bg-indigo-50 text-indigo-600",
+    indigo: "bg-primary-50 text-primary-600",
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+    <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>{icon}</div>
+        <div className={`p-3 rounded-xl ${colorClasses[color]}`}>{icon}</div>
         {trend && (
           <div
-            className={`text-sm font-semibold ${trend.isPositive ? "text-green-600" : "text-red-600"}`}
+            className={`text-sm font-bold ${trend.isPositive ? "text-emerald-600" : "text-red-600"}`}
           >
             {trend.isPositive ? "+" : ""}
             {trend.value}%
@@ -44,9 +44,11 @@ const MetricCard: React.FC<MetricCardProps> = ({
         )}
       </div>
       <div>
-        <p className="text-sm text-gray-500 font-medium mb-1">{title}</p>
-        <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
-        {subtitle && <p className="text-xs text-gray-400 mt-1">{subtitle}</p>}
+        <p className="text-sm text-slate-500 font-medium mb-1">{title}</p>
+        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
+          {value}
+        </h3>
+        {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
       </div>
     </div>
   );

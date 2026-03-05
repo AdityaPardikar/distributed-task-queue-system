@@ -86,19 +86,19 @@ export const CampaignListPage: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "draft":
-        return "bg-gray-100 text-gray-800";
+        return "bg-slate-100 text-slate-700";
       case "scheduled":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary-50 text-primary-700";
       case "running":
-        return "bg-green-100 text-green-800";
+        return "bg-emerald-50 text-emerald-700";
       case "paused":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-amber-50 text-amber-700";
       case "completed":
-        return "bg-purple-100 text-purple-800";
+        return "bg-violet-50 text-violet-700";
       case "failed":
-        return "bg-red-100 text-red-800";
+        return "bg-red-50 text-red-700";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-slate-100 text-slate-700";
     }
   };
 
@@ -106,25 +106,29 @@ export const CampaignListPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading campaigns...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-slate-500">Loading campaigns...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="space-y-6 animate-fade-in">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Campaigns</h1>
-            <p className="text-gray-600 mt-2">Manage email campaigns</p>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Campaigns
+            </h1>
+            <p className="text-slate-500 mt-0.5 text-sm">
+              Manage email campaigns
+            </p>
           </div>
           <button
             onClick={() => navigate("/campaigns/new")}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+            className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm shadow-primary-600/20"
           >
             + New Campaign
           </button>
@@ -132,46 +136,46 @@ export const CampaignListPage: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">{error}</p>
+          <div className="mb-6 p-4 bg-white border border-red-200 rounded-2xl shadow-sm">
+            <p className="text-red-700">{error}</p>
           </div>
         )}
 
         {/* Campaigns Table */}
         {campaigns.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <div className="text-gray-400 mb-2">📧</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200/60 shadow-sm">
+            <div className="text-slate-400 mb-2">📧</div>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">
               No campaigns yet
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-500 mb-6">
               Create your first email campaign to get started
             </p>
             <button
               onClick={() => navigate("/campaigns/new")}
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+              className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm shadow-primary-600/20"
             >
               Create Campaign
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900">
+                <tr className="border-b border-slate-100">
+                  <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900">
+                  <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900">
+                  <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Progress
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900">
+                  <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Created
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-900">
+                  <th className="px-6 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -196,16 +200,16 @@ export const CampaignListPage: React.FC = () => {
                   return (
                     <tr
                       key={campaign.id}
-                      className="border-b border-gray-200 hover:bg-gray-50"
+                      className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <button
                           onClick={() => navigate(`/campaigns/${campaign.id}`)}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-primary-600 hover:text-primary-700 font-semibold"
                         >
                           {campaign.name}
                         </button>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-slate-400 mt-1">
                           {campaign.description}
                         </p>
                       </td>
@@ -219,17 +223,17 @@ export const CampaignListPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-slate-100 rounded-full h-2">
                           <div
-                            className="bg-blue-600 h-2 rounded-full transition"
+                            className="bg-primary-600 h-2 rounded-full transition"
                             style={{ width: `${progress}%` }}
                           ></div>
                         </div>
-                        <p className="text-xs text-gray-600 mt-2">
+                        <p className="text-xs text-slate-500 mt-2">
                           {status.completed_tasks}/{status.total_tasks} sent
                         </p>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-slate-500">
                         {new Date(campaign.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
@@ -237,7 +241,7 @@ export const CampaignListPage: React.FC = () => {
                           {campaign.status === "draft" && (
                             <button
                               onClick={() => handleLaunch(campaign.id)}
-                              className="text-green-600 hover:text-green-800 text-sm font-medium"
+                              className="text-emerald-600 hover:text-emerald-700 text-sm font-semibold"
                             >
                               Launch
                             </button>
@@ -245,7 +249,7 @@ export const CampaignListPage: React.FC = () => {
                           {campaign.status === "running" && (
                             <button
                               onClick={() => handlePause(campaign.id)}
-                              className="text-yellow-600 hover:text-yellow-800 text-sm font-medium"
+                              className="text-amber-600 hover:text-amber-700 text-sm font-semibold"
                             >
                               Pause
                             </button>
@@ -254,13 +258,13 @@ export const CampaignListPage: React.FC = () => {
                             onClick={() =>
                               navigate(`/campaigns/${campaign.id}`)
                             }
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            className="text-primary-600 hover:text-primary-700 text-sm font-semibold"
                           >
                             View
                           </button>
                           <button
                             onClick={() => handleDelete(campaign.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                            className="text-red-600 hover:text-red-700 text-sm font-semibold"
                           >
                             Delete
                           </button>

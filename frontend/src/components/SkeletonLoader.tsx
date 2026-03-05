@@ -10,7 +10,7 @@ interface SkeletonProps {
 
 /** A single animated shimmer block */
 const Block: React.FC<SkeletonProps> = ({ className = "" }) => (
-  <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+  <div className={`bg-slate-200 rounded-lg animate-pulse ${className}`} />
 );
 
 /** A table-row skeleton (n cells) */
@@ -38,7 +38,7 @@ const Table: React.FC<{ rows?: number; cols?: number }> = ({
 
 /** A metric/stat card skeleton */
 const Card: React.FC = () => (
-  <div className="bg-white rounded-xl shadow-sm p-6 space-y-3">
+  <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 space-y-3">
     <Block className="h-3 w-24" />
     <Block className="h-8 w-32" />
     <Block className="h-3 w-20" />
@@ -56,7 +56,9 @@ const MetricCards: React.FC<{ count?: number }> = ({ count = 4 }) => (
 
 /** A chart area skeleton */
 const Chart: React.FC<{ height?: string }> = ({ height = "h-64" }) => (
-  <div className={`bg-white rounded-xl shadow-sm p-6 ${height}`}>
+  <div
+    className={`bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 ${height}`}
+  >
     <Block className="h-4 w-32 mb-6" />
     <Block className="h-full w-full" />
   </div>

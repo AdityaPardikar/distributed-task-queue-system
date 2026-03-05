@@ -49,25 +49,27 @@ export const TemplateListPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="space-y-6 animate-fade-in">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               Email Templates
             </h1>
-            <p className="text-gray-600 mt-2">Manage email templates</p>
+            <p className="text-slate-500 mt-0.5 text-sm">
+              Manage email templates
+            </p>
           </div>
           <button
             onClick={() => navigate("/templates/new")}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+            className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm shadow-primary-600/20"
           >
             + New Template
           </button>
@@ -75,24 +77,24 @@ export const TemplateListPage: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-6 p-4 bg-white border border-red-200 rounded-2xl shadow-sm">
             <p className="text-red-800">{error}</p>
           </div>
         )}
 
         {/* Templates Grid */}
         {templates.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-            <div className="text-gray-400 text-4xl mb-4">📧</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="text-center py-12 bg-white rounded-2xl border border-slate-200/60 shadow-sm">
+            <div className="text-slate-400 text-4xl mb-4">📧</div>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">
               No templates yet
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-slate-500 mb-6">
               Create your first email template to get started
             </p>
             <button
               onClick={() => navigate("/templates/new")}
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition"
+              className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm shadow-primary-600/20"
             >
               Create Template
             </button>
@@ -102,32 +104,32 @@ export const TemplateListPage: React.FC = () => {
             {templates.map((template) => (
               <div
                 key={template.id}
-                className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition"
+                className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden hover:shadow-md transition-all shadow-sm"
               >
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">
                     {template.name}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <p className="text-slate-500 text-sm mb-4 line-clamp-2">
                     {template.subject}
                   </p>
 
                   {/* Template Preview */}
-                  <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-700 line-clamp-3">
+                  <div className="mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 line-clamp-3">
                     {template.body}
                   </div>
 
                   {/* Variables */}
                   {template.variables.length > 0 && (
                     <div className="mb-4">
-                      <p className="text-xs font-semibold text-gray-600 mb-2">
+                      <p className="text-xs font-semibold text-slate-500 mb-2">
                         Variables:
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {template.variables.map((variable) => (
                           <span
                             key={variable}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium"
+                            className="px-2 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-medium"
                           >
                             {variable}
                           </span>
@@ -137,7 +139,7 @@ export const TemplateListPage: React.FC = () => {
                   )}
 
                   {/* Version */}
-                  <p className="text-xs text-gray-500 mb-4">
+                  <p className="text-xs text-slate-400 mb-4">
                     Version {template.version} • Created{" "}
                     {new Date(template.created_at).toLocaleDateString()}
                   </p>
@@ -146,13 +148,13 @@ export const TemplateListPage: React.FC = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => navigate(`/templates/${template.id}`)}
-                      className="flex-1 text-blue-600 hover:text-blue-800 font-medium text-sm py-2 px-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition"
+                      className="flex-1 text-primary-600 hover:text-primary-700 font-semibold text-sm py-2 px-3 border border-primary-200 rounded-xl hover:bg-primary-50 transition-all"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(template.id)}
-                      className="flex-1 text-red-600 hover:text-red-800 font-medium text-sm py-2 px-3 border border-red-200 rounded-lg hover:bg-red-50 transition"
+                      className="flex-1 text-red-600 hover:text-red-700 font-semibold text-sm py-2 px-3 border border-red-200 rounded-xl hover:bg-red-50 transition-all"
                     >
                       Delete
                     </button>

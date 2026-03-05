@@ -150,38 +150,38 @@ const categoryMeta: Record<
   task: {
     label: "Tasks",
     icon: <FileText className="w-4 h-4" />,
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-primary-100 text-primary-700",
   },
   worker: {
     label: "Workers",
     icon: <Server className="w-4 h-4" />,
-    color: "bg-indigo-100 text-indigo-700",
+    color: "bg-violet-100 text-violet-700",
   },
   campaign: {
     label: "Campaigns",
     icon: <Megaphone className="w-4 h-4" />,
-    color: "bg-purple-100 text-purple-700",
+    color: "bg-amber-100 text-amber-700",
   },
   setting: {
     label: "Settings",
     icon: <Settings className="w-4 h-4" />,
-    color: "bg-gray-100 text-gray-700",
+    color: "bg-slate-100 text-slate-700",
   },
 };
 
 const statusBadge = (status?: string) => {
   if (!status) return null;
   const colors: Record<string, string> = {
-    running: "bg-green-100 text-green-800",
-    completed: "bg-blue-100 text-blue-800",
-    failed: "bg-red-100 text-red-800",
-    active: "bg-green-100 text-green-800",
-    idle: "bg-gray-100 text-gray-600",
+    running: "bg-emerald-50 text-emerald-700",
+    completed: "bg-primary-50 text-primary-700",
+    failed: "bg-red-50 text-red-700",
+    active: "bg-emerald-50 text-emerald-700",
+    idle: "bg-slate-100 text-slate-600",
   };
   return (
     <span
       className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-        colors[status] ?? "bg-gray-100 text-gray-600"
+        colors[status] ?? "bg-slate-100 text-slate-600"
       }`}
     >
       {status}
@@ -254,14 +254,16 @@ const SearchResultsPage: React.FC = () => {
   }, [query]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-1">
-          <Search className="w-7 h-7 text-gray-700" />
-          <h1 className="text-2xl font-bold text-gray-900">Search</h1>
+          <Search className="w-7 h-7 text-slate-700" />
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Search
+          </h1>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-slate-500">
           Find tasks, workers, campaigns, and settings across the system
         </p>
       </div>
@@ -269,19 +271,19 @@ const SearchResultsPage: React.FC = () => {
       {/* Search bar */}
       <div className="flex gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             type="text"
             placeholder="Search everything..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl text-sm
-                       focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl text-sm
+                       focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
               <X className="w-4 h-4" />
             </button>
@@ -289,10 +291,10 @@ const SearchResultsPage: React.FC = () => {
         </div>
         <button
           onClick={() => setShowFilters((v) => !v)}
-          className={`flex items-center gap-2 px-4 py-3 border rounded-xl text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-3 border rounded-xl text-sm font-semibold transition-all ${
             showFilters
-              ? "bg-blue-50 border-blue-200 text-blue-700"
-              : "border-gray-300 text-gray-600 hover:bg-gray-50"
+              ? "bg-primary-50 border-primary-200 text-primary-700"
+              : "border-slate-200 text-slate-600 hover:bg-slate-50"
           }`}
         >
           <SlidersHorizontal className="w-4 h-4" />
@@ -306,7 +308,7 @@ const SearchResultsPage: React.FC = () => {
           <div className="w-56 flex-shrink-0 space-y-6">
             {/* Category filter */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                 Category
               </h3>
               <ul className="space-y-1">
@@ -322,10 +324,10 @@ const SearchResultsPage: React.FC = () => {
                   <li key={cat}>
                     <button
                       onClick={() => setCategory(cat)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors ${
                         category === cat
-                          ? "bg-blue-50 text-blue-700 font-medium"
-                          : "text-gray-600 hover:bg-gray-50"
+                          ? "bg-primary-50 text-primary-700 font-semibold"
+                          : "text-slate-600 hover:bg-slate-50"
                       }`}
                     >
                       <span className="flex items-center gap-2">
@@ -336,7 +338,7 @@ const SearchResultsPage: React.FC = () => {
                         )}
                         {cat === "all" ? "All" : categoryMeta[cat].label}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-slate-400">
                         {facetCounts[cat] ?? 0}
                       </span>
                     </button>
@@ -347,14 +349,14 @@ const SearchResultsPage: React.FC = () => {
 
             {/* Sort */}
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                 Sort By
               </h3>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortBy)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm
+                           focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
               >
                 <option value="relevance">Relevance</option>
                 <option value="date">Most Recent</option>
@@ -367,7 +369,7 @@ const SearchResultsPage: React.FC = () => {
         {/* Results */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-slate-600">
               <span className="font-semibold">{results.length}</span> result
               {results.length !== 1 ? "s" : ""}
               {query.trim() && (
@@ -380,7 +382,7 @@ const SearchResultsPage: React.FC = () => {
           </div>
 
           {results.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-slate-400">
               <Search className="w-10 h-10 mx-auto mb-3 opacity-40" />
               <p className="text-sm">No results found</p>
               <p className="text-xs mt-1">
@@ -395,13 +397,13 @@ const SearchResultsPage: React.FC = () => {
                   <div
                     key={r.id}
                     onClick={() => navigate(r.url)}
-                    className="flex items-start gap-4 p-4 bg-white border border-gray-200
-                               rounded-xl hover:shadow-md hover:border-blue-200
+                    className="flex items-start gap-4 p-4 bg-white border border-slate-200/60
+                               rounded-xl hover:shadow-md hover:border-primary-200
                                cursor-pointer transition-all group"
                   >
                     {/* Icon */}
                     <div
-                      className={`flex items-center justify-center w-10 h-10 rounded-lg ${meta.color}`}
+                      className={`flex items-center justify-center w-10 h-10 rounded-xl ${meta.color}`}
                     >
                       {meta.icon}
                     </div>
@@ -409,15 +411,15 @@ const SearchResultsPage: React.FC = () => {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        <h3 className="text-sm font-semibold text-slate-900 group-hover:text-primary-600 transition-colors">
                           {r.title}
                         </h3>
                         {statusBadge(r.status)}
                       </div>
-                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                         {r.description}
                       </p>
-                      <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-400">
+                      <div className="flex items-center gap-3 mt-2 text-[10px] text-slate-400">
                         <span
                           className={`px-1.5 py-0.5 rounded font-medium ${meta.color}`}
                         >
@@ -432,7 +434,7 @@ const SearchResultsPage: React.FC = () => {
                     </div>
 
                     {/* Arrow */}
-                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-blue-400 flex-shrink-0 mt-2 transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-primary-400 flex-shrink-0 mt-2 transition-colors" />
                   </div>
                 );
               })}

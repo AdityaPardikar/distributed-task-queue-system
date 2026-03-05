@@ -246,7 +246,7 @@ const SettingsPage: React.FC = () => {
     disabled?: boolean;
   }> = ({ label, value, onChange, type = "text", hint, disabled }) => (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-slate-700 mb-1">
         {label}
       </label>
       <input
@@ -254,11 +254,11 @@ const SettingsPage: React.FC = () => {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-                   disabled:bg-gray-100 disabled:cursor-not-allowed"
+        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm
+                   focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all
+                   disabled:bg-slate-100 disabled:cursor-not-allowed"
       />
-      {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
     </div>
   );
 
@@ -270,8 +270,8 @@ const SettingsPage: React.FC = () => {
   }> = ({ label, checked, onChange, hint }) => (
     <div className="flex items-center justify-between py-2">
       <div>
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-        {hint && <p className="text-xs text-gray-500 mt-0.5">{hint}</p>}
+        <span className="text-sm font-medium text-slate-700">{label}</span>
+        {hint && <p className="text-xs text-slate-500 mt-0.5">{hint}</p>}
       </div>
       <button
         type="button"
@@ -279,7 +279,7 @@ const SettingsPage: React.FC = () => {
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-          checked ? "bg-blue-600" : "bg-gray-300"
+          checked ? "bg-primary-600" : "bg-slate-300"
         }`}
       >
         <span
@@ -298,14 +298,14 @@ const SettingsPage: React.FC = () => {
     onChange: (v: string) => void;
   }> = ({ label, value, options, onChange }) => (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-slate-700 mb-1">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                   focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm
+                   focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
       >
         {options.map((o) => (
           <option key={o} value={o}>
@@ -519,50 +519,50 @@ const SettingsPage: React.FC = () => {
 
         {/* Alert Rules table */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-800 mb-3">
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">
             Alert Rules
           </h3>
-          <div className="overflow-x-auto rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200/60">
+            <table className="min-w-full divide-y divide-slate-100 text-sm">
+              <thead className="border-b border-slate-100">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">
+                  <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">
+                  <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">
+                  <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Severity
                   </th>
-                  <th className="px-4 py-3 text-right font-medium text-gray-600">
+                  <th className="px-4 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Threshold
                   </th>
-                  <th className="px-4 py-3 text-right font-medium text-gray-600">
+                  <th className="px-4 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Cooldown
                   </th>
-                  <th className="px-4 py-3 text-center font-medium text-gray-600">
+                  <th className="px-4 py-3.5 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
                     Enabled
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 bg-white">
+              <tbody className="divide-y divide-slate-100 bg-white">
                 {alerts.rules.map((rule) => (
-                  <tr key={rule.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-900">
+                  <tr key={rule.id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 font-medium text-slate-900">
                       {rule.name}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{rule.type}</td>
+                    <td className="px-4 py-3 text-slate-600">{rule.type}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                           rule.severity === "critical"
-                            ? "bg-red-100 text-red-800"
+                            ? "bg-red-50 text-red-700"
                             : rule.severity === "error"
-                              ? "bg-orange-100 text-orange-800"
+                              ? "bg-orange-50 text-orange-700"
                               : rule.severity === "warning"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-blue-100 text-blue-800"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-primary-50 text-primary-700"
                         }`}
                       >
                         {rule.severity}
@@ -590,7 +590,7 @@ const SettingsPage: React.FC = () => {
                           });
                         }}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                          rule.enabled ? "bg-blue-600" : "bg-gray-300"
+                          rule.enabled ? "bg-primary-600" : "bg-slate-300"
                         }`}
                       >
                         <span
@@ -616,7 +616,7 @@ const SettingsPage: React.FC = () => {
       <div className="space-y-8">
         {/* Connection settings */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-800 mb-3">
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">
             Connection Pool
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -652,7 +652,7 @@ const SettingsPage: React.FC = () => {
 
         {/* Maintenance settings */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-800 mb-3">
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">
             Maintenance
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -688,7 +688,7 @@ const SettingsPage: React.FC = () => {
 
         {/* Maintenance Operations */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-800 mb-3">
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">
             Maintenance Operations
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -742,9 +742,9 @@ const SettingsPage: React.FC = () => {
                 onClick={() => runMaintenance(op.key, op.fn)}
                 disabled={maintenanceLoading !== null}
                 className="flex items-center justify-center gap-2 px-4 py-2.5
-                           bg-white border border-gray-300 rounded-lg text-sm font-medium
-                           text-gray-700 hover:bg-gray-50 disabled:opacity-50
-                           disabled:cursor-not-allowed transition-colors"
+                           bg-white border border-slate-200 rounded-xl text-sm font-semibold
+                           text-slate-700 hover:bg-slate-50 disabled:opacity-50
+                           disabled:cursor-not-allowed transition-all"
               >
                 {maintenanceLoading === op.key ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -762,9 +762,9 @@ const SettingsPage: React.FC = () => {
               {maintenanceLog.map((entry, i) => (
                 <div
                   key={i}
-                  className={`flex items-start gap-2 p-3 rounded-lg text-sm ${
+                  className={`flex items-start gap-2 p-3 rounded-xl text-sm ${
                     entry.success
-                      ? "bg-green-50 text-green-800"
+                      ? "bg-emerald-50 text-emerald-800"
                       : "bg-red-50 text-red-800"
                   }`}
                 >
@@ -775,9 +775,9 @@ const SettingsPage: React.FC = () => {
                   )}
                   <div className="flex-1">
                     <span className="font-medium">{entry.operation}</span>
-                    <span className="ml-2 text-gray-600">{entry.message}</span>
+                    <span className="ml-2 text-slate-600">{entry.message}</span>
                   </div>
-                  <span className="text-xs text-gray-500 tabular-nums whitespace-nowrap">
+                  <span className="text-xs text-slate-500 tabular-nums whitespace-nowrap">
                     {entry.duration_ms}ms
                   </span>
                 </div>
@@ -789,31 +789,31 @@ const SettingsPage: React.FC = () => {
         {/* Table Bloat */}
         {tableBloat.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-3">
+            <h3 className="text-sm font-semibold text-slate-800 mb-3">
               Table Bloat
             </h3>
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto rounded-2xl border border-slate-200/60">
+              <table className="min-w-full divide-y divide-slate-100 text-sm">
+                <thead className="border-b border-slate-100">
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-gray-600">
+                    <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                       Table
                     </th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-600">
+                    <th className="px-4 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                       Live Tuples
                     </th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-600">
+                    <th className="px-4 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                       Dead Tuples
                     </th>
-                    <th className="px-4 py-3 text-right font-medium text-gray-600">
+                    <th className="px-4 py-3.5 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">
                       Bloat %
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 bg-white">
+                <tbody className="divide-y divide-slate-100 bg-white">
                   {tableBloat.map((t) => (
-                    <tr key={t.table_name} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-900">
+                    <tr key={t.table_name} className="hover:bg-slate-50/50">
+                      <td className="px-4 py-3 font-medium text-slate-900">
                         {t.table_name}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">
@@ -826,10 +826,10 @@ const SettingsPage: React.FC = () => {
                         <span
                           className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                             t.bloat_ratio > 20
-                              ? "bg-red-100 text-red-800"
+                              ? "bg-red-50 text-red-700"
                               : t.bloat_ratio > 5
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-green-100 text-green-800"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-emerald-50 text-emerald-700"
                           }`}
                         >
                           {t.bloat_ratio.toFixed(1)}%
@@ -846,24 +846,24 @@ const SettingsPage: React.FC = () => {
         {/* Long-Running Queries */}
         {longQueries.length > 0 && (
           <div>
-            <h3 className="text-sm font-semibold text-gray-800 mb-3">
+            <h3 className="text-sm font-semibold text-slate-800 mb-3">
               Long-Running Queries
             </h3>
             <div className="space-y-2">
               {longQueries.map((q) => (
                 <div
                   key={q.pid}
-                  className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+                  className="p-3 bg-amber-50 border border-amber-200 rounded-xl"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium text-yellow-800">
+                    <span className="text-xs font-medium text-amber-800">
                       PID {q.pid}
                     </span>
-                    <span className="text-xs text-yellow-700 tabular-nums">
+                    <span className="text-xs text-amber-700 tabular-nums">
                       {q.duration_seconds.toFixed(0)}s &middot; {q.state}
                     </span>
                   </div>
-                  <code className="text-xs text-gray-700 break-all">
+                  <code className="text-xs text-slate-700 break-all">
                     {q.query}
                   </code>
                 </div>
@@ -875,13 +875,13 @@ const SettingsPage: React.FC = () => {
         {/* Backups */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-800">Backups</h3>
+            <h3 className="text-sm font-semibold text-slate-800">Backups</h3>
             <button
               onClick={handleCreateBackup}
               disabled={backupLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium
-                         bg-blue-600 text-white rounded-lg hover:bg-blue-700
-                         disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold
+                         bg-primary-600 text-white rounded-xl hover:bg-primary-700
+                         disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-primary-600/20"
             >
               {backupLoading ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -892,7 +892,7 @@ const SettingsPage: React.FC = () => {
             </button>
           </div>
           {backups.length === 0 ? (
-            <p className="text-sm text-gray-500 py-4 text-center">
+            <p className="text-sm text-slate-500 py-4 text-center">
               No backups found.
             </p>
           ) : (
@@ -900,21 +900,21 @@ const SettingsPage: React.FC = () => {
               {backups.map((b) => (
                 <div
                   key={b.filename}
-                  className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-white border border-slate-200/60 rounded-xl"
                 >
                   <div className="flex items-center gap-3">
-                    <HardDrive className="w-4 h-4 text-gray-400" />
+                    <HardDrive className="w-4 h-4 text-slate-400" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-slate-900">
                         {b.filename}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-slate-500">
                         {formatDate(b.created_at)} &middot;{" "}
                         {formatBytes(b.size_bytes)}
                       </p>
                     </div>
                   </div>
-                  <Download className="w-4 h-4 text-gray-400 cursor-pointer hover:text-blue-600" />
+                  <Download className="w-4 h-4 text-slate-400 cursor-pointer hover:text-primary-600" />
                 </div>
               ))}
             </div>
@@ -997,7 +997,7 @@ const SettingsPage: React.FC = () => {
 
         {/* CORS Origins */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
             CORS Origins
           </label>
           <div className="space-y-2">
@@ -1011,8 +1011,8 @@ const SettingsPage: React.FC = () => {
                     updated[i] = e.target.value;
                     setSecurity({ ...security, corsOrigins: updated });
                   }}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm
-                             focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 px-3 py-2 border border-slate-200 rounded-xl text-sm
+                             focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all"
                 />
                 <button
                   type="button"
@@ -1024,7 +1024,7 @@ const SettingsPage: React.FC = () => {
                       ),
                     })
                   }
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -1038,7 +1038,7 @@ const SettingsPage: React.FC = () => {
                   corsOrigins: [...security.corsOrigins, ""],
                 })
               }
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              className="text-sm text-primary-600 hover:text-primary-800 font-semibold"
             >
               + Add Origin
             </button>
@@ -1051,7 +1051,7 @@ const SettingsPage: React.FC = () => {
   const renderTabContent = () => {
     if (loading) {
       return (
-        <div className="flex items-center justify-center py-20 text-gray-400">
+        <div className="flex items-center justify-center py-20 text-slate-400">
           <RefreshCw className="w-6 h-6 animate-spin mr-3" />
           Loading settings...
         </div>
@@ -1074,14 +1074,16 @@ const SettingsPage: React.FC = () => {
   /* ═══════════════════════════ Main render ═ */
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Settings className="w-7 h-7 text-gray-700" />
+          <Settings className="w-7 h-7 text-slate-700" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Settings
+            </h1>
+            <p className="text-sm text-slate-500">
               Manage application configuration and admin operations
             </p>
           </div>
@@ -1090,9 +1092,9 @@ const SettingsPage: React.FC = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={handleValidate}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium
-                       border border-gray-300 rounded-lg text-gray-700
-                       hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold
+                       border border-slate-200 rounded-xl text-slate-700
+                       hover:bg-slate-50 transition-all"
           >
             <Activity className="w-4 h-4" />
             Validate Config
@@ -1100,9 +1102,9 @@ const SettingsPage: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-medium
-                       bg-blue-600 text-white rounded-lg hover:bg-blue-700
-                       disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold
+                       bg-primary-600 text-white rounded-xl hover:bg-primary-700
+                       disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm shadow-primary-600/20"
           >
             {saving ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
@@ -1117,9 +1119,9 @@ const SettingsPage: React.FC = () => {
       {/* Save message */}
       {saveMessage && (
         <div
-          className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm ${
+          className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-sm ${
             saveMessage.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
+              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
               : "bg-red-50 text-red-800 border border-red-200"
           }`}
         >
@@ -1135,22 +1137,22 @@ const SettingsPage: React.FC = () => {
       {/* Validation report */}
       {validation && (
         <div
-          className={`p-4 rounded-lg border ${
+          className={`p-4 rounded-2xl border ${
             validation.valid
-              ? "bg-green-50 border-green-200"
+              ? "bg-emerald-50 border-emerald-200"
               : "bg-red-50 border-red-200"
           }`}
         >
           <div className="flex items-center gap-2 mb-2">
             {validation.valid ? (
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             ) : (
               <XCircle className="w-5 h-5 text-red-600" />
             )}
             <span className="font-semibold text-sm">
               Configuration {validation.valid ? "Valid" : "Invalid"}
             </span>
-            <span className="text-xs text-gray-600 ml-2">
+            <span className="text-xs text-slate-600 ml-2">
               {validation.passed}/{validation.total_checks} checks passed
               {validation.warnings > 0 &&
                 ` · ${validation.warnings} warning(s)`}
@@ -1163,7 +1165,7 @@ const SettingsPage: React.FC = () => {
                   {e.severity === "error" ? (
                     <XCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                   ) : (
-                    <AlertTriangle className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
                   )}
                   <span>
                     <code className="text-xs font-mono bg-white/50 px-1 rounded">
@@ -1179,18 +1181,18 @@ const SettingsPage: React.FC = () => {
       )}
 
       {/* Tab bar + content */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
         {/* Tab strip */}
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b border-slate-200">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-medium
+              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-semibold
                           border-b-2 transition-colors ${
                             activeTab === t.id
-                              ? "border-blue-600 text-blue-600"
-                              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                              ? "border-primary-600 text-primary-600"
+                              : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
                           }`}
             >
               {t.icon}
@@ -1204,7 +1206,7 @@ const SettingsPage: React.FC = () => {
       </div>
 
       {/* Quick-info footer */}
-      <div className="flex items-center gap-2 text-xs text-gray-400">
+      <div className="flex items-center gap-2 text-xs text-slate-400">
         <Info className="w-3.5 h-3.5" />
         Changes are applied after clicking Save. Some settings require a service
         restart to take effect.

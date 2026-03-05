@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Eye, EyeOff, Zap, Shield, BarChart3, ArrowRight } from "lucide-react";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -30,151 +32,153 @@ const LoginPage = () => {
     }
   };
 
+  const features = [
+    {
+      icon: <Zap className="w-5 h-5" />,
+      title: "Lightning Fast",
+      desc: "Process 100K+ tasks per hour with distributed workers",
+    },
+    {
+      icon: <Shield className="w-5 h-5" />,
+      title: "Enterprise Secure",
+      desc: "JWT authentication, RBAC & encrypted communications",
+    },
+    {
+      icon: <BarChart3 className="w-5 h-5" />,
+      title: "Real-time Insights",
+      desc: "Live monitoring, analytics & smart alerting",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Left side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-start pr-12">
-        <div className="mb-12">
-          <div className="text-5xl font-black text-white mb-4 flex items-center gap-3">
-            <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center">
-              <svg
-                className="w-8 h-8 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
+    <div className="min-h-screen flex">
+      {/* Left Panel — Branding */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 flex-col justify-between p-12">
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -right-32 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-16 left-1/3 w-72 h-72 bg-cyan-500/8 rounded-full blur-3xl" />
+          {/* Grid pattern overlay */}
+          <div
+            className="absolute inset-0 opacity-[0.04]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
+            }}
+          />
+        </div>
+
+        {/* Logo */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-11 h-11 bg-gradient-to-br from-primary-400 to-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/25">
+              <Zap className="w-6 h-6 text-white" />
             </div>
-            TaskFlow
+            <span className="text-2xl font-bold text-white tracking-tight">
+              TaskFlow
+            </span>
           </div>
-          <p className="text-xl text-blue-200 font-light">
+          <p className="text-sm text-slate-400 ml-14">
             Distributed Task Queue System
           </p>
         </div>
 
-        <div className="space-y-8">
-          <div className="flex gap-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold text-lg">Scalable</h3>
-              <p className="text-blue-200 text-sm">
-                Process 100K+ tasks per hour
-              </p>
-            </div>
-          </div>
+        {/* Hero text */}
+        <div className="relative z-10 max-w-lg">
+          <h1 className="text-4xl xl:text-5xl font-extrabold text-white leading-tight tracking-tight mb-6">
+            Orchestrate tasks <span className="text-gradient">at scale</span>
+          </h1>
+          <p className="text-lg text-slate-300 leading-relaxed mb-12">
+            A production-grade distributed task queue built for reliability,
+            visibility, and speed. Monitor, manage, and scale your workloads
+            with confidence.
+          </p>
 
-          <div className="flex gap-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          {/* Feature list */}
+          <div className="space-y-6">
+            {features.map((f, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-4 animate-fade-in"
+                style={{ animationDelay: `${i * 150}ms` }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold text-lg">Secure</h3>
-              <p className="text-blue-200 text-sm">JWT authentication & CORS</p>
-            </div>
+                <div className="w-10 h-10 rounded-lg bg-white/[0.07] border border-white/[0.08] flex items-center justify-center text-primary-400 flex-shrink-0">
+                  {f.icon}
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-sm mb-0.5">
+                    {f.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    {f.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div className="flex gap-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-6 h-6 text-blue-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
+        {/* Bottom stats */}
+        <div className="relative z-10 flex gap-8">
+          {[
+            { label: "Tasks/hr", value: "100K+" },
+            { label: "Uptime", value: "99.9%" },
+            { label: "Latency", value: "<50ms" },
+          ].map((stat, i) => (
+            <div key={i}>
+              <div className="text-2xl font-extrabold text-white">
+                {stat.value}
+              </div>
+              <div className="text-xs text-slate-500 uppercase tracking-wider mt-0.5">
+                {stat.label}
+              </div>
             </div>
-            <div>
-              <h3 className="text-white font-semibold text-lg">Reliable</h3>
-              <p className="text-blue-200 text-sm">
-                Auto-retry & error handling
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Right side - Login Form */}
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10">
-          {/* Logo for mobile */}
-          <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
-              <svg
-                className="w-7 h-7 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
+      {/* Right Panel — Login Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-slate-50">
+        <div className="w-full max-w-[420px]">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary-500 to-violet-600 rounded-xl mb-4 shadow-lg shadow-primary-500/25">
+              <Zap className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-3xl font-black text-slate-900">TaskFlow</h1>
-            <p className="text-slate-500 mt-1">Task Queue System</p>
+            <h1 className="text-2xl font-bold text-slate-900">TaskFlow</h1>
+            <p className="text-slate-500 text-sm mt-1">
+              Distributed Task Queue
+            </p>
           </div>
 
-          {/* Desktop heading */}
-          <div className="hidden lg:block text-center mb-10">
-            <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
-            <p className="text-slate-500 mt-1">Sign in to your account</p>
+          {/* Heading */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Welcome back
+            </h2>
+            <p className="text-slate-500 mt-1.5">
+              Sign in to continue to your dashboard
+            </p>
           </div>
 
-          {/* Error Message */}
+          {/* Error */}
           {error && (
-            <div className="mb-6 bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-lg font-medium">
-              {error}
+            <div className="mb-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3.5 rounded-xl text-sm">
+              <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-red-600 text-xs font-bold">!</span>
+              </div>
+              <span className="font-medium">{error}</span>
             </div>
           )}
 
-          {/* Login Form */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username Field */}
             <div>
               <label
                 htmlFor="username"
-                className="block text-sm font-semibold text-slate-800 mb-2"
+                className="block text-sm font-semibold text-slate-700 mb-2"
               >
                 Username
               </label>
@@ -183,96 +187,118 @@ const LoginPage = () => {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition text-slate-900 font-medium placeholder-slate-400"
-                placeholder="admin"
+                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400
+                           focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                placeholder="Enter your username"
                 required
+                autoComplete="username"
               />
             </div>
 
-            {/* Password Field */}
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-semibold text-slate-800 mb-2"
+                className="block text-sm font-semibold text-slate-700 mb-2"
               >
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition text-slate-900 font-medium placeholder-slate-400"
-                placeholder="••••••••"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400
+                             focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all"
+                  placeholder="Enter your password"
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
-            {/* Login Button - VERY VISIBLE */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-lg font-bold text-lg transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl mt-8"
+              className="w-full bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800
+                         text-white py-3.5 rounded-xl font-semibold text-[15px] transition-all duration-200
+                         disabled:opacity-60 disabled:cursor-not-allowed
+                         shadow-lg shadow-primary-600/25 hover:shadow-xl hover:shadow-primary-600/30
+                         flex items-center justify-center gap-2 mt-2"
             >
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="w-5 h-5 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
+                <>
+                  <div
+                    className="loading-spinner"
+                    style={{ width: 20, height: 20, margin: 0 }}
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Signing in...
-                </span>
+                    <div className="spinner-ring" />
+                    <div className="spinner-ring" />
+                  </div>
+                  Signing in…
+                </>
               ) : (
-                "Sign in"
+                <>
+                  Sign in
+                  <ArrowRight size={18} />
+                </>
               )}
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-8 p-4 bg-slate-50 border-l-4 border-blue-500 rounded-lg">
-            <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-              Demo Credentials
-            </p>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600 text-sm font-medium">
-                  Username:
+          {/* Demo credentials */}
+          <div className="mt-8 bg-white border border-slate-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary-500" />
+              <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                Demo Credentials
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-xs text-slate-400 block mb-1">
+                  Username
                 </span>
-                <code className="bg-slate-200 text-slate-900 px-2 py-1 rounded font-mono text-sm">
+                <code className="text-sm font-mono font-semibold text-slate-800 bg-slate-50 px-2.5 py-1 rounded-lg block text-center">
                   admin
                 </code>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-slate-600 text-sm font-medium">
-                  Password:
+              <div>
+                <span className="text-xs text-slate-400 block mb-1">
+                  Password
                 </span>
-                <code className="bg-slate-200 text-slate-900 px-2 py-1 rounded font-mono text-sm">
+                <code className="text-sm font-mono font-semibold text-slate-800 bg-slate-50 px-2.5 py-1 rounded-lg block text-center">
                   admin123
                 </code>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <p className="text-center text-slate-400 text-xs mt-6">
-          © 2026 TaskFlow. Built with React, TypeScript & Tailwind CSS
-        </p>
+          {/* Register link */}
+          <p className="text-center text-sm text-slate-500 mt-6">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
+            >
+              Create one
+            </Link>
+          </p>
+
+          {/* Footer */}
+          <p className="text-center text-slate-400 text-xs mt-8">
+            &copy; {new Date().getFullYear()} TaskFlow &middot; Built with
+            React, TypeScript &amp; FastAPI
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -105,47 +105,47 @@ const MonitoringPage: React.FC = () => {
 
   /* ═══════════════════════════════ Render ═══ */
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             System Monitoring
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-slate-500 mt-0.5">
             Real-time system health, metrics &amp; alerts
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* Time Range */}
-          <div className="flex bg-gray-100 rounded-lg p-0.5">
+          <div className="flex bg-slate-100 rounded-xl p-0.5">
             {(["1h", "6h", "24h", "7d"] as TimeRange[]).map((r) => (
               <button
                 key={r}
                 onClick={() => setTimeRange(r)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                   timeRange === r
-                    ? "bg-white text-blue-700 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-white text-primary-700 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
                 }`}
               >
                 {r}
               </button>
             ))}
           </div>
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={autoRefresh}
               onChange={() => setAutoRefresh(!autoRefresh)}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
             />
             Auto
           </label>
           <button
             onClick={fetchData}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm shadow-primary-600/20"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
@@ -154,16 +154,16 @@ const MonitoringPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-slate-200">
         <nav className="flex gap-6 -mb-px">
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 pb-3 px-1 text-sm font-semibold border-b-2 transition-colors ${
                 tab === t.key
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  ? "border-primary-600 text-primary-600"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
               {t.icon}
@@ -208,8 +208,8 @@ const OverviewTab: React.FC<{
         : "unhealthy";
 
   const healthColor = {
-    healthy: "text-green-600 bg-green-50 border-green-200",
-    degraded: "text-yellow-600 bg-yellow-50 border-yellow-200",
+    healthy: "text-emerald-600 bg-emerald-50 border-emerald-200",
+    degraded: "text-amber-600 bg-amber-50 border-amber-200",
     unhealthy: "text-red-600 bg-red-50 border-red-200",
   }[healthScore];
 
@@ -217,7 +217,7 @@ const OverviewTab: React.FC<{
     <div className="space-y-6">
       {/* Health Banner */}
       <div
-        className={`rounded-lg border p-4 flex items-center gap-4 ${healthColor}`}
+        className={`rounded-2xl border p-4 flex items-center gap-4 ${healthColor}`}
       >
         {healthScore === "healthy" ? (
           <CheckCircle2 className="w-8 h-8" />
@@ -239,11 +239,11 @@ const OverviewTab: React.FC<{
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MetricCard
           label="Total Tasks"
           value={metrics.total_tasks.toLocaleString()}
-          icon={<Activity className="w-5 h-5 text-blue-600" />}
+          icon={<Activity className="w-5 h-5 text-primary-600" />}
         />
         <MetricCard
           label="Queue Depth"
@@ -253,7 +253,7 @@ const OverviewTab: React.FC<{
         <MetricCard
           label="Success Rate"
           value={`${metrics.success_rate.toFixed(1)}%`}
-          icon={<CheckCircle2 className="w-5 h-5 text-green-600" />}
+          icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />}
         />
         <MetricCard
           label="Avg Latency"
@@ -278,14 +278,14 @@ const OverviewTab: React.FC<{
         <MetricCard
           label="Pending Tasks"
           value={metrics.pending_tasks}
-          icon={<Clock className="w-5 h-5 text-gray-500" />}
+          icon={<Clock className="w-5 h-5 text-slate-500" />}
         />
       </div>
 
       {/* Tasks Trend Chart */}
       {trends.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+          <h3 className="text-sm font-semibold text-slate-700 mb-4">
             Task Activity Over Time
           </h3>
           <ResponsiveContainer width="100%" height={280}>
@@ -346,8 +346,8 @@ const OverviewTab: React.FC<{
 
       {/* Mini Worker Health */}
       {workers.length > 0 && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+          <h3 className="text-sm font-semibold text-slate-700 mb-4">
             Worker Health Snapshot
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -366,9 +366,9 @@ const OverviewTab: React.FC<{
 const WorkersTab: React.FC<{ workers: WorkerHealthInfo[] }> = ({ workers }) => {
   if (workers.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-12 text-center">
-        <Server className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500">No workers connected</p>
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-12 text-center">
+        <Server className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+        <p className="text-slate-500">No workers connected</p>
       </div>
     );
   }
@@ -394,14 +394,14 @@ const AlertsTab: React.FC<{ alerts: SystemAlert[] }> = ({ alerts }) => {
 
   const SEVERITY_STYLE: Record<string, string> = {
     critical: "border-l-red-500 bg-red-50",
-    warning: "border-l-yellow-500 bg-yellow-50",
-    info: "border-l-blue-500 bg-blue-50",
+    warning: "border-l-amber-500 bg-amber-50",
+    info: "border-l-primary-500 bg-primary-50",
   };
 
   const SEVERITY_BADGE: Record<string, string> = {
     critical: "bg-red-100 text-red-800",
-    warning: "bg-yellow-100 text-yellow-800",
-    info: "bg-blue-100 text-blue-800",
+    warning: "bg-amber-100 text-amber-700",
+    info: "bg-primary-100 text-primary-700",
   };
 
   return (
@@ -412,10 +412,10 @@ const AlertsTab: React.FC<{ alerts: SystemAlert[] }> = ({ alerts }) => {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors capitalize ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors capitalize ${
               filter === f
-                ? "bg-blue-600 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-primary-600 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             {f}
@@ -430,16 +430,16 @@ const AlertsTab: React.FC<{ alerts: SystemAlert[] }> = ({ alerts }) => {
 
       {/* Alert List */}
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No alerts</p>
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-12 text-center">
+          <Bell className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+          <p className="text-slate-500">No alerts</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filtered.map((alert) => (
             <div
               key={alert.id}
-              className={`bg-white rounded-lg shadow border-l-4 p-4 ${SEVERITY_STYLE[alert.severity] ?? ""}`}
+              className={`bg-white rounded-2xl shadow-sm border border-slate-200/60 border-l-4 p-4 ${SEVERITY_STYLE[alert.severity] ?? ""}`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -449,21 +449,21 @@ const AlertsTab: React.FC<{ alerts: SystemAlert[] }> = ({ alerts }) => {
                     >
                       {alert.severity}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-slate-400">
                       {alert.source}
                     </span>
                     {alert.resolved && (
-                      <span className="text-xs text-green-600 font-semibold">
+                      <span className="text-xs text-emerald-600 font-semibold">
                         Resolved
                       </span>
                     )}
                   </div>
-                  <h4 className="font-semibold text-gray-900 text-sm">
+                  <h4 className="font-semibold text-slate-900 text-sm">
                     {alert.title}
                   </h4>
-                  <p className="text-sm text-gray-600 mt-1">{alert.message}</p>
+                  <p className="text-sm text-slate-600 mt-1">{alert.message}</p>
                 </div>
-                <span className="text-xs text-gray-400 whitespace-nowrap ml-4">
+                <span className="text-xs text-slate-400 whitespace-nowrap ml-4">
                   {new Date(alert.timestamp).toLocaleString()}
                 </span>
               </div>
@@ -482,9 +482,9 @@ const PerformanceTab: React.FC<{ data: PerformanceDataPoint[] }> = ({
 }) => {
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-12 text-center">
-        <TrendingUp className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500">No performance data available</p>
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-12 text-center">
+        <TrendingUp className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+        <p className="text-slate-500">No performance data available</p>
       </div>
     );
   }
@@ -492,8 +492,8 @@ const PerformanceTab: React.FC<{ data: PerformanceDataPoint[] }> = ({
   return (
     <div className="space-y-6">
       {/* Throughput Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-slate-700 mb-4">
           Throughput (tasks/min)
         </h3>
         <ResponsiveContainer width="100%" height={260}>
@@ -527,8 +527,8 @@ const PerformanceTab: React.FC<{ data: PerformanceDataPoint[] }> = ({
       </div>
 
       {/* Latency Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-slate-700 mb-4">
           Response Latency (ms)
         </h3>
         <ResponsiveContainer width="100%" height={260}>
@@ -579,8 +579,8 @@ const PerformanceTab: React.FC<{ data: PerformanceDataPoint[] }> = ({
       </div>
 
       {/* Error Rate Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">
+      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-slate-700 mb-4">
           Error Rate (%)
         </h3>
         <ResponsiveContainer width="100%" height={200}>
@@ -623,11 +623,11 @@ const MetricCard: React.FC<{
   value: string | number;
   icon: React.ReactNode;
 }> = ({ label, value, icon }) => (
-  <div className="bg-white rounded-lg shadow p-4 flex items-center gap-3">
-    <div className="p-2 bg-gray-50 rounded-lg">{icon}</div>
+  <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-4 flex items-center gap-3">
+    <div className="p-2 bg-slate-50 rounded-xl">{icon}</div>
     <div>
-      <p className="text-xl font-bold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-xl font-bold text-slate-900">{value}</p>
+      <p className="text-xs text-slate-500">{label}</p>
     </div>
   </div>
 );
@@ -636,22 +636,22 @@ const MiniWorkerCard: React.FC<{ worker: WorkerHealthInfo }> = ({ worker }) => {
   const isOnline = worker.status !== "OFFLINE";
   return (
     <div
-      className={`rounded-lg border p-3 ${isOnline ? "bg-white" : "bg-gray-50 opacity-60"}`}
+      className={`rounded-xl border p-3 ${isOnline ? "bg-white" : "bg-slate-50 opacity-60"}`}
     >
       <div className="flex items-center gap-2 mb-2">
         {isOnline ? (
-          <Wifi className="w-3.5 h-3.5 text-green-500" />
+          <Wifi className="w-3.5 h-3.5 text-emerald-500" />
         ) : (
           <WifiOff className="w-3.5 h-3.5 text-red-400" />
         )}
-        <span className="text-xs font-semibold text-gray-800 truncate">
+        <span className="text-xs font-semibold text-slate-800 truncate">
           {worker.hostname.split(".")[0]}
         </span>
       </div>
       <div className="space-y-1.5">
         <MiniGauge label="CPU" value={worker.cpu_usage} />
         <MiniGauge label="MEM" value={worker.memory_usage} />
-        <p className="text-[10px] text-gray-400">
+        <p className="text-[10px] text-slate-400">
           Load: {worker.current_load}/{worker.capacity}
         </p>
       </div>
@@ -664,20 +664,20 @@ const MiniGauge: React.FC<{ label: string; value: number }> = ({
   value,
 }) => (
   <div className="flex items-center gap-1.5">
-    <span className="text-[10px] text-gray-500 w-6">{label}</span>
-    <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+    <span className="text-[10px] text-slate-500 w-6">{label}</span>
+    <div className="flex-1 bg-slate-200 rounded-full h-1.5">
       <div
         className={`h-1.5 rounded-full ${
           value > 80
             ? "bg-red-500"
             : value > 60
-              ? "bg-yellow-500"
-              : "bg-green-500"
+              ? "bg-amber-500"
+              : "bg-emerald-500"
         }`}
         style={{ width: `${Math.min(100, value)}%` }}
       />
     </div>
-    <span className="text-[10px] text-gray-500 w-7 text-right">
+    <span className="text-[10px] text-slate-500 w-7 text-right">
       {Math.round(value)}%
     </span>
   </div>
@@ -697,27 +697,27 @@ const WorkerCard: React.FC<{ worker: WorkerHealthInfo }> = ({ worker }) => {
   })();
 
   const statusColor: Record<string, string> = {
-    ACTIVE: "bg-green-100 text-green-800",
-    DRAINING: "bg-yellow-100 text-yellow-800",
-    OFFLINE: "bg-red-100 text-red-800",
-    PAUSED: "bg-gray-200 text-gray-700",
+    ACTIVE: "bg-emerald-50 text-emerald-700",
+    DRAINING: "bg-amber-100 text-amber-700",
+    OFFLINE: "bg-red-50 text-red-700",
+    PAUSED: "bg-slate-200 text-slate-700",
   };
 
   return (
     <div
-      className={`bg-white rounded-lg shadow border p-5 ${
+      className={`bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5 ${
         !isOnline ? "opacity-60" : ""
       }`}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Server className="w-5 h-5 text-gray-400" />
+          <Server className="w-5 h-5 text-slate-400" />
           <div>
-            <p className="font-semibold text-gray-900 text-sm">
+            <p className="font-semibold text-slate-900 text-sm">
               {worker.hostname}
             </p>
-            <p className="text-[11px] text-gray-400 font-mono">
+            <p className="text-[11px] text-slate-400 font-mono">
               {worker.worker_id.slice(0, 8)}
             </p>
           </div>
@@ -734,23 +734,23 @@ const WorkerCard: React.FC<{ worker: WorkerHealthInfo }> = ({ worker }) => {
         <Gauge
           label="CPU Usage"
           value={worker.cpu_usage}
-          icon={<Cpu className="w-4 h-4 text-gray-400" />}
+          icon={<Cpu className="w-4 h-4 text-slate-400" />}
         />
         <Gauge
           label="Memory"
           value={worker.memory_usage}
-          icon={<HardDrive className="w-4 h-4 text-gray-400" />}
+          icon={<HardDrive className="w-4 h-4 text-slate-400" />}
         />
         <Gauge
           label="Load"
           value={utilPct}
-          icon={<Activity className="w-4 h-4 text-gray-400" />}
+          icon={<Activity className="w-4 h-4 text-slate-400" />}
           suffix={`${worker.current_load}/${worker.capacity}`}
         />
       </div>
 
       {/* Footer */}
-      <div className="flex justify-between text-[11px] text-gray-400 pt-3 border-t">
+      <div className="flex justify-between text-[11px] text-slate-400 pt-3 border-t border-slate-100">
         <span>Uptime: {uptimeStr}</span>
         <span>
           HB:{" "}
@@ -770,20 +770,20 @@ const Gauge: React.FC<{
   suffix?: string;
 }> = ({ label, value, icon, suffix }) => (
   <div>
-    <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+    <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
       <span className="flex items-center gap-1.5">
         {icon} {label}
       </span>
       <span className="font-mono">{suffix ?? `${Math.round(value)}%`}</span>
     </div>
-    <div className="w-full bg-gray-200 rounded-full h-2">
+    <div className="w-full bg-slate-200 rounded-full h-2">
       <div
         className={`h-2 rounded-full transition-all ${
           value > 80
             ? "bg-red-500"
             : value > 60
-              ? "bg-yellow-500"
-              : "bg-green-500"
+              ? "bg-amber-500"
+              : "bg-emerald-500"
         }`}
         style={{ width: `${Math.min(100, value)}%` }}
       />

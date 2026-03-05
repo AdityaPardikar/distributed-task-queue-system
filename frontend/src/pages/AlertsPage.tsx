@@ -52,9 +52,9 @@ const SEVERITY_CONFIG: Record<
   },
   info: {
     label: "Info",
-    color: "text-blue-700",
-    bg: "bg-blue-50 border-blue-200",
-    icon: <Info className="w-4 h-4 text-blue-600" />,
+    color: "text-primary-700",
+    bg: "bg-primary-50 border-primary-200",
+    icon: <Info className="w-4 h-4 text-primary-600" />,
   },
 };
 
@@ -170,36 +170,36 @@ const AlertsPage: React.FC = () => {
   const activeCount = alerts.filter((a) => !a.acknowledged).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Bell className="w-7 h-7 text-amber-600" />
             Alerts
             {activeCount > 0 && (
-              <span className="ml-2 px-2.5 py-0.5 bg-red-100 text-red-700 text-sm font-bold rounded-full">
+              <span className="ml-2 px-2.5 py-0.5 bg-red-50 text-red-700 text-sm font-bold rounded-full border border-red-200">
                 {activeCount}
               </span>
             )}
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-0.5 text-sm text-slate-500">
             Monitor and manage system alerts
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-slate-500 cursor-pointer">
             <input
               type="checkbox"
               checked={showAcknowledged}
               onChange={(e) => setShowAcknowledged(e.target.checked)}
-              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
             />
             Show acknowledged
           </label>
           <button
             onClick={fetchAlerts}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 hover:bg-slate-50 transition-all"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
@@ -209,42 +209,42 @@ const AlertsPage: React.FC = () => {
 
       {/* Stat Cards */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4">
-            <div className="rounded-lg p-2.5 bg-red-50 text-red-700">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-4 flex items-center gap-4">
+            <div className="rounded-xl p-2.5 bg-red-50 text-red-700">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Active Alerts</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-slate-500">Active Alerts</p>
+              <p className="text-2xl font-bold text-slate-900">
                 {stats.active_alerts}
               </p>
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4">
-            <div className="rounded-lg p-2.5 bg-green-50 text-green-700">
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-4 flex items-center gap-4">
+            <div className="rounded-xl p-2.5 bg-emerald-50 text-emerald-700">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Acknowledged</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-slate-500">Acknowledged</p>
+              <p className="text-2xl font-bold text-slate-900">
                 {stats.acknowledged_alerts}
               </p>
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4 flex items-center gap-4">
-            <div className="rounded-lg p-2.5 bg-amber-50 text-amber-700">
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-4 flex items-center gap-4">
+            <div className="rounded-xl p-2.5 bg-amber-50 text-amber-700">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total (All Time)</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-slate-500">Total (All Time)</p>
+              <p className="text-2xl font-bold text-slate-900">
                 {stats.total_alerts}
               </p>
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <p className="text-sm text-gray-500 mb-2">By Severity</p>
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-4">
+            <p className="text-sm text-slate-500 mb-2">By Severity</p>
             <div className="flex items-center gap-3">
               {SEVERITY_ORDER.map((sev) => (
                 <span
@@ -261,7 +261,7 @@ const AlertsPage: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-slate-200">
         <nav className="flex gap-6">
           {(
             [
@@ -288,10 +288,10 @@ const AlertsPage: React.FC = () => {
                 setActiveTab(tab.key);
                 if (tab.key === "history") fetchHistory();
               }}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`pb-3 text-sm font-semibold border-b-2 transition-colors ${
                 activeTab === tab.key
-                  ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  ? "border-primary-600 text-primary-600"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
               <span className="flex items-center gap-1.5">
@@ -307,15 +307,15 @@ const AlertsPage: React.FC = () => {
         <>
           {/* Severity filter */}
           <div className="flex items-center gap-3">
-            <Filter className="w-4 h-4 text-gray-400" />
+            <Filter className="w-4 h-4 text-slate-400" />
             {(["all", ...SEVERITY_ORDER] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setSeverityFilter(s)}
-                className={`px-3 py-1.5 text-xs rounded-full font-medium transition-colors ${
+                className={`px-3 py-1.5 text-xs rounded-full font-semibold transition-colors ${
                   severityFilter === s
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-primary-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
                 {s === "all" ? "All" : SEVERITY_CONFIG[s].label}
@@ -328,9 +328,9 @@ const AlertsPage: React.FC = () => {
               <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
             </div>
           ) : sorted.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-slate-400">
               <CheckCircle2 className="w-12 h-12 mx-auto mb-3 opacity-40" />
-              <p className="font-medium">No alerts</p>
+              <p className="font-semibold">No alerts</p>
               <p className="text-sm mt-1">All clear — the system is healthy.</p>
             </div>
           ) : (
@@ -342,7 +342,7 @@ const AlertsPage: React.FC = () => {
                 return (
                   <div
                     key={alert.alert_id}
-                    className={`rounded-lg border p-4 transition-colors ${cfg.bg} ${
+                    className={`rounded-xl border p-4 transition-colors ${cfg.bg} ${
                       alert.acknowledged ? "opacity-60" : ""
                     }`}
                   >
@@ -356,7 +356,7 @@ const AlertsPage: React.FC = () => {
                             >
                               {cfg.label}
                             </span>
-                            <span className="text-xs text-gray-400 font-mono">
+                            <span className="text-xs text-slate-400 font-mono">
                               {alert.alert_type}
                             </span>
                             {alert.acknowledged && (
@@ -365,10 +365,10 @@ const AlertsPage: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-800 mt-1">
+                          <p className="text-sm text-slate-700 mt-1">
                             {alert.description}
                           </p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                          <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {timeAgo(alert.created_at)}
@@ -386,7 +386,7 @@ const AlertsPage: React.FC = () => {
                               {Object.entries(alert.metadata).map(([k, v]) => (
                                 <span
                                   key={k}
-                                  className="px-2 py-0.5 text-xs font-mono bg-white/60 rounded border border-gray-200 text-gray-600"
+                                  className="px-2 py-0.5 text-xs font-mono bg-white/60 rounded-lg border border-slate-200 text-slate-600"
                                 >
                                   {k}: {String(v)}
                                 </span>
@@ -401,7 +401,7 @@ const AlertsPage: React.FC = () => {
                         <button
                           onClick={() => handleAcknowledge(alert.alert_id)}
                           disabled={acknowledging === alert.alert_id}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 disabled:opacity-50 transition-colors whitespace-nowrap"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-200 hover:bg-emerald-100 disabled:opacity-50 transition-colors whitespace-nowrap"
                         >
                           {acknowledging === alert.alert_id ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -422,34 +422,34 @@ const AlertsPage: React.FC = () => {
 
       {/* ── History Tab ── */}
       {activeTab === "history" && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="border-b border-slate-100">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Severity
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Description
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Time
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3.5 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Status
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-100">
               {history.map((h) => {
                 const cfg =
                   SEVERITY_CONFIG[h.severity as AlertSeverity] ??
                   SEVERITY_CONFIG.info;
                 return (
-                  <tr key={h.alert_id} className="hover:bg-gray-50">
+                  <tr key={h.alert_id} className="hover:bg-slate-50/50">
                     <td className="px-4 py-3">
                       <span
                         className={`flex items-center gap-1.5 text-xs font-medium ${cfg.color}`}
@@ -457,13 +457,13 @@ const AlertsPage: React.FC = () => {
                         {cfg.icon} {cfg.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                    <td className="px-4 py-3 font-mono text-xs text-slate-600">
                       {h.alert_type}
                     </td>
-                    <td className="px-4 py-3 text-gray-700 max-w-md truncate">
+                    <td className="px-4 py-3 text-slate-700 max-w-md truncate">
                       {h.description}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                    <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
                       {timeAgo(h.created_at)}
                     </td>
                     <td className="px-4 py-3">
@@ -472,7 +472,7 @@ const AlertsPage: React.FC = () => {
                           <Check className="w-3 h-3" /> Ack'd
                         </span>
                       ) : (
-                        <span className="text-gray-400 text-xs">Active</span>
+                        <span className="text-slate-400 text-xs">Active</span>
                       )}
                     </td>
                   </tr>
@@ -487,8 +487,8 @@ const AlertsPage: React.FC = () => {
       {activeTab === "stats" && stats && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* By severity */}
-          <div className="bg-white rounded-lg border border-gray-200 p-5">
-            <h3 className="font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5">
+            <h3 className="font-semibold text-slate-900 mb-4">
               Alerts by Severity
             </h3>
             <div className="space-y-3">
@@ -507,9 +507,9 @@ const AlertsPage: React.FC = () => {
                       >
                         {cfg.icon} {cfg.label}
                       </span>
-                      <span className="text-sm text-gray-600">{count}</span>
+                      <span className="text-sm text-slate-600">{count}</span>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all ${
                           sev === "critical"
@@ -518,7 +518,7 @@ const AlertsPage: React.FC = () => {
                               ? "bg-orange-500"
                               : sev === "warning"
                                 ? "bg-amber-400"
-                                : "bg-blue-400"
+                                : "bg-primary-400"
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -530,12 +530,12 @@ const AlertsPage: React.FC = () => {
           </div>
 
           {/* By type */}
-          <div className="bg-white rounded-lg border border-gray-200 p-5">
-            <h3 className="font-semibold text-gray-900 mb-4">
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5">
+            <h3 className="font-semibold text-slate-900 mb-4">
               Active Alerts by Type
             </h3>
             {Object.keys(stats.active_by_type).length === 0 ? (
-              <p className="text-sm text-gray-400">No active alerts</p>
+              <p className="text-sm text-slate-400">No active alerts</p>
             ) : (
               <div className="space-y-3">
                 {Object.entries(stats.active_by_type)
@@ -543,12 +543,12 @@ const AlertsPage: React.FC = () => {
                   .map(([type, count]) => (
                     <div
                       key={type}
-                      className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg"
+                      className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-xl"
                     >
-                      <span className="text-sm font-mono text-gray-700">
+                      <span className="text-sm font-mono text-slate-700">
                         {type}
                       </span>
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-slate-900">
                         {count}
                       </span>
                     </div>
@@ -558,26 +558,26 @@ const AlertsPage: React.FC = () => {
           </div>
 
           {/* Summary */}
-          <div className="bg-white rounded-lg border border-gray-200 p-5 lg:col-span-2">
-            <h3 className="font-semibold text-gray-900 mb-4">Summary</h3>
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-5 lg:col-span-2">
+            <h3 className="font-semibold text-slate-900 mb-4">Summary</h3>
             <div className="grid grid-cols-3 gap-6 text-center">
               <div>
                 <p className="text-3xl font-bold text-red-600">
                   {stats.active_alerts}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Active</p>
+                <p className="text-sm text-slate-500 mt-1">Active</p>
               </div>
               <div>
                 <p className="text-3xl font-bold text-green-600">
                   {stats.acknowledged_alerts}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Acknowledged</p>
+                <p className="text-sm text-slate-500 mt-1">Acknowledged</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-gray-700">
+                <p className="text-3xl font-bold text-slate-700">
                   {stats.total_alerts}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Total</p>
+                <p className="text-sm text-slate-500 mt-1">Total</p>
               </div>
             </div>
           </div>

@@ -1,5 +1,4 @@
 import React from "react";
-import "../styles/loading-fallback.css";
 
 interface LoadingFallbackProps {
   message?: string;
@@ -7,7 +6,8 @@ interface LoadingFallbackProps {
 }
 
 /**
- * Loading fallback component for lazy-loaded pages
+ * Loading fallback component for lazy-loaded pages.
+ * Uses CSS classes defined in index.css (loading-fallback, loading-spinner, spinner-ring).
  */
 const LoadingFallback: React.FC<LoadingFallbackProps> = ({
   message = "Loading...",
