@@ -1,259 +1,341 @@
 <div align="center">
 
-# TaskFlow — Distributed Task Queue System
+<img src="https://img.icons8.com/3d-fluency/94/workflow.png" width="80" alt="TaskFlow Logo"/>
 
-**Production-grade distributed task queue with email campaign engine**
+# TaskFlow
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![Python](https://img.shields.io/badge/python-3.13-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-503%2B-brightgreen)
-![Coverage](https://img.shields.io/badge/coverage-80%25%2B-brightgreen)
-![CI](https://img.shields.io/badge/CI-GitHub%20Actions-blue)
+### ⚡ Production-Grade Distributed Task Queue System
 
-[Quick Start](#-quick-start) •
-[Features](#-features) •
-[API](#-api-overview) •
-[Architecture](#-architecture) •
-[Documentation](#-documentation) •
-[Contributing](#-contributing)
+A high-performance, scalable task queue with an integrated email campaign engine,<br/>
+real-time dashboard, and full observability stack — built with FastAPI and React.
+
+<br/>
+
+[![License](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Tailwind](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+
+[![Stars](https://img.shields.io/github/stars/AdityaPardikar/distributed-task-queue-system?style=for-the-badge&color=f59e0b)](https://github.com/AdityaPardikar/distributed-task-queue-system/stargazers)
+[![Forks](https://img.shields.io/github/forks/AdityaPardikar/distributed-task-queue-system?style=for-the-badge&color=8b5cf6)](https://github.com/AdityaPardikar/distributed-task-queue-system/network)
+[![Last Commit](https://img.shields.io/github/last-commit/AdityaPardikar/distributed-task-queue-system?style=for-the-badge&color=6366f1)](https://github.com/AdityaPardikar/distributed-task-queue-system/commits)
+[![Issues](https://img.shields.io/github/issues/AdityaPardikar/distributed-task-queue-system?style=for-the-badge&color=ef4444)](https://github.com/AdityaPardikar/distributed-task-queue-system/issues)
+
+<br/>
+
+[Features](#-features) · [Architecture](#-architecture) · [Quick Start](#-quick-start) · [API](#-api-reference) · [Contributing](#-contributing)
 
 </div>
 
+<br/>
+
 ---
 
-## Quick Start
+<br/>
 
-Get the entire stack running in three steps:
+## 📖 Overview
 
-```bash
-# 1. Clone and enter
-git clone https://github.com/yourusername/taskflow.git && cd taskflow
+**TaskFlow** is a full-stack distributed task queue system designed for reliability, observability, and scale. It combines a robust Python backend with a modern React dashboard to provide:
 
-# 2. Start everything (API, workers, Postgres, Redis, frontend)
-docker compose up -d --build
+- **Intelligent task orchestration** with DAG-based dependencies, priority queues, and automatic retries
+- **Email campaign engine** with template management, recipient tracking, and rate limiting
+- **Real-time monitoring** via WebSockets, Prometheus metrics, and structured logging
+- **Enterprise-grade security** with JWT authentication, role-based access control, and tiered rate limiting
 
-# 3. Open the dashboard
-open http://localhost:5173          # Frontend
-open http://localhost:8000/docs     # Swagger UI
+> [!NOTE]
+> TaskFlow ships with **137 API endpoints** across 19 resource groups, a complete React SPA with 16+ pages, and full Docker support for one-command deployment.
+
+<br/>
+
+---
+
+<br/>
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 🔄 Task Queue Engine
+
+- Priority queues — `CRITICAL` / `HIGH` / `MEDIUM` / `LOW`
+- Automatic retries with exponential backoff & jitter
+- DAG-based task dependency resolution
+- Cron-based scheduled task execution
+- Dead letter queue with 30-day retention & replay
+- Workflow chains, parallel fan-out, conditional branching
+
+</td>
+<td width="50%">
+
+### 📧 Email Campaign Engine
+
+- Full campaign lifecycle — create, schedule, launch, pause, resume, cancel
+- Jinja2 template engine with variable extraction & preview
+- Bulk recipient import with deduplication
+- Per-campaign send rate controls
+- Delivery status tracking & analytics
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 📊 Real-Time Dashboard
+
+- React 19 SPA with TypeScript & Tailwind CSS 4
+- WebSocket-powered live metrics & activity feeds
+- Task management — search, filter, retry, cancel, export
+- Campaign progress tracking & recipient stats
+- Alert management with severity levels
+- Command palette for keyboard-driven navigation (`Ctrl+K`)
+
+</td>
+<td width="50%">
+
+### 🔭 Observability & Security
+
+- Prometheus metrics — throughput, latency histograms, queue depth
+- Structured JSON logging via `structlog` with correlation IDs
+- OpenTelemetry distributed tracing
+- Health probes — `/health`, `/ready`, `/live`
+- JWT auth with access & refresh tokens
+- RBAC — admin, operator, viewer roles
+- Security headers — CSP, HSTS, X-Frame-Options
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+---
+
+<br/>
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+|       Layer       | Technology                                                                                                                                                                                                                                                                                                                                                                                                                             | Purpose                         |
+| :---------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------ |
+|  🖥️ **Backend**   | ![Python](https://img.shields.io/badge/Python_3.13-3776AB?style=flat-square&logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white) ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white)                                                                                                        | API server, ORM, business logic |
+|  🎨 **Frontend**  | ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) ![Tailwind](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) ![Vite](https://img.shields.io/badge/Vite_7-646CFF?style=flat-square&logo=vite&logoColor=white) | SPA dashboard, real-time UI     |
+|  🗄️ **Database**  | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_15-4169E1?style=flat-square&logo=postgresql&logoColor=white)                                                                                                                                                                                                                                                                                                                     | Primary data store              |
+|   ⚡ **Broker**   | ![Redis](https://img.shields.io/badge/Redis_7-DC382D?style=flat-square&logo=redis&logoColor=white)                                                                                                                                                                                                                                                                                                                                     | Message broker, cache, sessions |
+| 📈 **Monitoring** | ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat-square&logo=prometheus&logoColor=white) ![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-7B5EA7?style=flat-square&logo=opentelemetry&logoColor=white)                                                                                                                                                                                               | Metrics, tracing                |
+|   🚀 **DevOps**   | ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)                                                                                                                                                                                                         | Containerization, CI/CD         |
+
+</div>
+
+<br/>
+
+---
+
+<br/>
+
+## 🏗️ Architecture
+
+```mermaid
+graph TB
+    subgraph Client["🖥️ Client Layer"]
+        SPA["React SPA<br/><i>Port 5173</i>"]
+        WS["WebSocket"]
+    end
+
+    subgraph API["⚙️ API Layer"]
+        FAST["FastAPI Server<br/><i>Port 8000</i>"]
+        AUTH["JWT Auth<br/>+ RBAC"]
+        MW["Middleware Stack<br/><i>Rate Limit · CORS · Headers</i>"]
+    end
+
+    subgraph Data["🗄️ Data Layer"]
+        PG["PostgreSQL<br/><i>Primary Store</i>"]
+        RD["Redis<br/><i>Broker · Cache · Sessions</i>"]
+    end
+
+    subgraph Observe["📈 Observability"]
+        PROM["Prometheus"]
+        OTEL["OpenTelemetry"]
+        LOG["Structured Logging"]
+    end
+
+    SPA -->|REST API| FAST
+    SPA -.->|Live Feeds| WS
+    WS --> FAST
+    FAST --> AUTH
+    AUTH --> MW
+    MW --> PG
+    MW --> RD
+    FAST --> PROM
+    FAST --> OTEL
+    FAST --> LOG
+
+    style Client fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    style API fill:#e0e7ff,stroke:#6366f1,color:#312e81
+    style Data fill:#dcfce7,stroke:#22c55e,color:#14532d
+    style Observe fill:#fef3c7,stroke:#f59e0b,color:#78350f
 ```
 
-> **Without Docker:** See the [manual setup](#manual-setup) section below.
+<br/>
 
 ---
 
-## Features
+<br/>
 
-### Task Queue Engine
-
-- **Priority queues** — CRITICAL / HIGH / MEDIUM / LOW
-- **Automatic retries** — Exponential backoff with configurable jitter
-- **Task dependencies** — DAG-based execution with dependency resolution
-- **Scheduled tasks** — Cron expressions via built-in scheduler
-- **Dead letter queue** — Failed tasks with 30-day retention and replay
-- **Workflows** — Sequential chains, parallel fan-out, conditional branching
-
-### Email Campaign Engine
-
-- **Campaign lifecycle** — Create, schedule, launch, pause, resume, cancel
-- **Jinja2 templates** — Variable extraction, preview rendering, versioning
-- **Recipient management** — Bulk import, deduplication, status tracking
-- **Rate limiting** — Per-campaign send rate controls
-
-### Real-Time Dashboard
-
-- **React 19 SPA** — TypeScript, Tailwind CSS, Recharts
-- **Live metrics** — WebSocket-powered task/worker/alert feeds
-- **Task management** — Search, filter, retry, cancel, export
-- **Campaign views** — Progress tracking, recipient lists, stats
-- **Alert management** — Severity-based alerts with acknowledgement
-- **Command palette** — Keyboard-driven navigation (Ctrl+K)
-
-### Observability
-
-- **Prometheus metrics** — Task throughput, latency histograms, queue depth
-- **Grafana dashboards** — Pre-built panels for tasks, workers, system health
-- **Structured logging** — JSON via structlog with request correlation IDs
-- **OpenTelemetry** — Distributed tracing across services
-- **Health probes** — `/health`, `/ready`, `/live` for container orchestrators
-
-### Security
-
-- **JWT authentication** — Access tokens (15 min) + refresh tokens (7 days)
-- **RBAC** — Admin, operator, viewer roles
-- **Rate limiting** — Tiered: 5/min (critical), 30/min (write), 60/min (read)
-- **Security headers** — CSP, HSTS, X-Frame-Options, X-Content-Type-Options
-- **Input validation** — Pydantic v2 on all endpoints
-
----
-
-## Architecture
-
-```
-Client (React SPA / REST / WebSocket / CLI)
-          │
-          ▼
-    ┌───────────┐
-    │   Nginx   │  ← TLS termination, rate limit, gzip
-    └─────┬─────┘
-          ▼
-   ┌──────────────┐
-   │ FastAPI (API) │ ← 137 endpoints, JWT auth, middleware stack
-   └──┬────────┬──┘
-      │        │
-      ▼        ▼
-┌──────────┐ ┌───────┐
-│PostgreSQL│ │ Redis │ ← Broker, cache, sessions
-│  (data)  │ │       │
-└──────────┘ └───────┘
-      │
-      ▼
-┌──────────────────────┐
-│ Prometheus + Grafana │ ← Metrics, dashboards, alerts
-└──────────────────────┘
-```
-
-| Component     | Technology         | Version |
-| ------------- | ------------------ | ------- |
-| API           | FastAPI + Uvicorn  | 0.104.1 |
-| Database      | PostgreSQL         | 15      |
-| Broker/Cache  | Redis              | 7       |
-| Frontend      | React + TypeScript | 19.2    |
-| Build         | Vite               | 7.3     |
-| Styling       | Tailwind CSS       | 4.1     |
-| Monitoring    | Prometheus/Grafana | —       |
-| Reverse Proxy | Nginx              | 1.25    |
-| CI/CD         | GitHub Actions     | —       |
-
-Full architecture docs: [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
-
----
-
-## API Overview
-
-**137 endpoints** across **19 resource groups** — full OpenAPI spec at [docs/api/openapi.json](docs/api/openapi.json).
-
-| Group           | Endpoints | Description                         |
-| --------------- | --------- | ----------------------------------- |
-| **Auth**        | 7         | Login, register, refresh, RBAC      |
-| **Tasks**       | 16        | CRUD, retry, cancel, bulk, DLQ      |
-| **Workers**     | 10        | Register, heartbeat, drain, pause   |
-| **Campaigns**   | 13        | Lifecycle, recipients, templates    |
-| **Templates**   | 7         | CRUD, preview, variable extraction  |
-| **Workflows**   | 12        | DAG creation, chains, conditionals  |
-| **Dashboard**   | 6         | Stats, widgets, activity feed       |
-| **Analytics**   | 8         | Trends, patterns, summaries         |
-| **Search**      | 8         | Full-text, filters, presets, export |
-| **Alerts**      | 10        | CRUD, evaluate, acknowledge         |
-| **Metrics**     | 5         | Prometheus, worker metrics          |
-| **Resilience**  | 7         | Degradation, throughput, health     |
-| **Chaos**       | 7         | Fault injection, experiment mgmt    |
-| **Performance** | 6         | Profiling, DB tuning, baselines     |
-| **Operations**  | 6         | Backup, restore, maintenance        |
-| **Debug**       | 5         | Replay, compare, timeline           |
-| **Health**      | 3         | Health, ready, live probes          |
-| **WebSocket**   | 3         | Metrics, tasks, workers streams     |
-
-Interactive documentation available at `http://localhost:8000/docs` (Swagger UI) or `http://localhost:8000/redoc`.
-
----
-
-## Manual Setup
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.10+ (3.13 recommended)
-- PostgreSQL 15+
-- Redis 7+
-- Node.js 18+ (for frontend)
+| Tool       | Version                  |        Required        |
+| :--------- | :----------------------- | :--------------------: |
+| Python     | 3.10+ (3.13 recommended) |           ✅           |
+| Node.js    | 18+                      |           ✅           |
+| PostgreSQL | 15+                      | ✅ (or SQLite for dev) |
+| Redis      | 7+                       |           ✅           |
+| Docker     | 24+                      |        Optional        |
 
-### Backend
+### Option 1 — Docker (Recommended)
 
 ```bash
-# Create virtual environment
+git clone https://github.com/AdityaPardikar/distributed-task-queue-system.git
+cd distributed-task-queue-system
+docker compose up -d --build
+```
+
+### Option 2 — Manual Setup
+
+<details>
+<summary><b>🔧 Backend Setup</b></summary>
+<br/>
+
+```bash
+# Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate          # Linux/macOS
-# venv\Scripts\activate           # Windows
+venv\Scripts\activate              # Windows
+# source venv/bin/activate         # Linux / macOS
 
 # Install dependencies
 pip install -r requirements.txt
-pip install -r requirements-dev.txt  # Dev tools
 
 # Configure environment
 cp .env.example .env
 # Edit .env with your database and Redis URLs
 
-# Initialize database
+# Initialize the database
 python init_db.py
 
-# Start API server
+# Start the API server
 uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Frontend
+</details>
+
+<details>
+<summary><b>🎨 Frontend Setup</b></summary>
+<br/>
 
 ```bash
 cd frontend
 npm install
 npm run dev
-# Open http://localhost:5173
 ```
+
+</details>
+
+<br/>
+
+> [!TIP]
+> After startup, open the **Dashboard** at `http://localhost:5173` and the **Swagger UI** at `http://localhost:8000/docs`.
+
+<br/>
 
 ---
 
-## Testing
+<br/>
 
-```bash
-# Backend tests (153 tests)
-pytest                              # All tests
-pytest --cov=src                    # With coverage
-pytest tests/unit/                  # Unit only
-pytest tests/integration/           # Integration only
+## 📡 API Reference
 
-# Frontend tests (293+ tests)
-cd frontend
-npm test                            # Jest + Testing Library
-npm run test -- --coverage          # With coverage
+TaskFlow exposes **137 endpoints** across **19 resource groups** with full interactive documentation via Swagger UI.
 
-# E2E tests (57+ tests)
-cd frontend
-npx playwright test                 # Playwright
-npx playwright test --ui            # Interactive mode
-```
+<details>
+<summary><b>View All Endpoint Groups</b></summary>
+<br/>
 
-| Suite     | Framework  | Count    | Coverage |
-| --------- | ---------- | -------- | -------- |
-| Backend   | pytest     | 153      | 80%+     |
-| Frontend  | Jest + RTL | 293      | 80%+     |
-| E2E       | Playwright | 57+      | —        |
-| **Total** |            | **503+** |          |
+| Group            | Endpoints | Description                               |
+| :--------------- | :-------: | :---------------------------------------- |
+| 🔐 **Auth**      |     7     | Login, register, refresh tokens, RBAC     |
+| 📋 **Tasks**     |    16     | CRUD, retry, cancel, bulk operations, DLQ |
+| 👷 **Workers**   |    10     | Register, heartbeat, drain, pause         |
+| 📧 **Campaigns** |    13     | Full lifecycle, recipients, templates     |
+| 📝 **Templates** |     7     | CRUD, preview, variable extraction        |
+| 🔀 **Workflows** |    12     | DAG creation, chains, conditionals        |
+| 📊 **Dashboard** |     6     | Stats, widgets, activity feed             |
+| 📈 **Analytics** |     8     | Trends, patterns, summaries               |
+| 🔔 **Alerts**    |    10     | CRUD, evaluate, acknowledge               |
+| 💚 **Health**    |     3     | Health, ready, live probes                |
+| 🔌 **WebSocket** |     3     | Real-time metrics, tasks, workers         |
 
----
+</details>
 
-## Docker
-
-### Development
-
-```bash
-docker compose up -d --build
-docker compose logs -f              # Stream logs
-docker compose ps                   # Check status
-docker compose down                 # Stop
-```
-
-### Production
-
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
-Includes Nginx reverse proxy, Prometheus, Grafana (port 3001), and cAdvisor.
+<br/>
 
 ---
 
-## Configuration
+<br/>
 
-All configuration via environment variables (`.env` file):
+## 📁 Project Structure
+
+```
+taskflow/
+├── 📂 src/                         # Backend source code
+│   ├── 📂 api/                     #   FastAPI routes, middleware, schemas
+│   ├── 📂 core/                    #   Task engine, scheduler, workflows
+│   ├── 📂 models/                  #   SQLAlchemy database models
+│   ├── 📂 services/                #   Business logic layer
+│   ├── 📂 db/                      #   Database sessions & migrations
+│   ├── 📂 cache/                   #   Redis caching layer
+│   ├── 📂 config/                  #   Settings & configuration
+│   ├── 📂 monitoring/              #   Prometheus metrics
+│   ├── 📂 observability/           #   Logging & OpenTelemetry tracing
+│   ├── 📂 resilience/              #   Circuit breakers, chaos engineering
+│   └── 📂 performance/             #   Profiling & query optimization
+│
+├── 📂 frontend/                    # React TypeScript SPA
+│   └── 📂 src/
+│       ├── 📂 components/          #   Reusable UI components
+│       ├── 📂 pages/               #   Page-level components
+│       ├── 📂 context/             #   React context providers
+│       ├── 📂 hooks/               #   Custom React hooks
+│       ├── 📂 services/            #   API client & utilities
+│       └── 📂 styles/              #   Global styles & design tokens
+│
+├── 📂 tests/                       # Test suite
+│   ├── 📂 unit/                    #   Unit tests
+│   ├── 📂 integration/             #   Integration tests
+│   └── 📂 load/                    #   Load tests (Locust)
+│
+├── 📂 monitoring/                  # Prometheus configuration
+├── 📂 .github/workflows/           # CI/CD pipelines
+├── 📄 docker-compose.yml           # Development stack
+├── 📄 Dockerfile.backend           # Backend container
+├── 📄 Dockerfile.frontend          # Frontend container
+├── 📄 requirements.txt             # Python dependencies
+└── 📄 pyproject.toml               # Project metadata
+```
+
+<br/>
+
+---
+
+<br/>
+
+## ⚙️ Configuration
+
+All settings are managed through environment variables. Copy `.env.example` to `.env` and customize:
 
 ```ini
 # Database
@@ -270,56 +352,84 @@ ACCESS_TOKEN_EXPIRE_MINUTES=15
 # Workers
 WORKER_CAPACITY=5
 WORKER_TIMEOUT_SECONDS=300
-WORKER_MAX_RETRIES=5
-
-# Email (optional)
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USERNAME=user
-SMTP_PASSWORD=pass
 ```
 
----
+> [!IMPORTANT]
+> Always change `SECRET_KEY` before deploying to production. See `.env.example` for the full list of configurable options.
 
-## Documentation
-
-| Topic               | Link                                                                                                           |
-| ------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Architecture        | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)                                         |
-| API Reference       | [docs/api/API_REFERENCE.md](docs/api/API_REFERENCE.md)                                                         |
-| OpenAPI Spec        | [docs/api/openapi.json](docs/api/openapi.json)                                                                 |
-| Deployment Guide    | [docs/deployment/DEPLOYMENT_GUIDE.md](docs/deployment/DEPLOYMENT_GUIDE.md)                                     |
-| Docker Usage        | [docs/deployment/DOCKER_USAGE.md](docs/deployment/DOCKER_USAGE.md)                                             |
-| Operational Runbook | [docs/RUNBOOK.md](docs/RUNBOOK.md)                                                                             |
-| Monitoring Guide    | [docs/operations/MONITORING_GUIDE.md](docs/operations/MONITORING_GUIDE.md)                                     |
-| Troubleshooting     | [docs/operations/TROUBLESHOOTING_AND_BEST_PRACTICES.md](docs/operations/TROUBLESHOOTING_AND_BEST_PRACTICES.md) |
-| Changelog           | [docs/CHANGELOG.md](docs/CHANGELOG.md)                                                                         |
-| Contributing        | [docs/development/CONTRIBUTING.md](docs/development/CONTRIBUTING.md)                                           |
-| Code Style          | [docs/development/CODE_STYLE.md](docs/development/CODE_STYLE.md)                                               |
-| Setup Guide         | [docs/setup/PROJECT_SETUP_SUMMARY.md](docs/setup/PROJECT_SETUP_SUMMARY.md)                                     |
+<br/>
 
 ---
 
-## Contributing
+<br/>
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Follow the [Code Style Guide](docs/development/CODE_STYLE.md)
-4. Add tests for new functionality
-5. Ensure all tests pass (`pytest && cd frontend && npm test`)
-6. Commit with conventional messages (`feat:`, `fix:`, `docs:`)
-7. Submit a pull request
+## 🧪 Testing
 
-See [CONTRIBUTING.md](docs/development/CONTRIBUTING.md) for detailed guidelines.
+```bash
+# Run backend tests
+pytest
+
+# Run with coverage report
+pytest --cov=src
+
+# Run frontend tests
+cd frontend && npm test
+```
+
+<br/>
 
 ---
 
-## License
+<br/>
 
-MIT License — see [LICENSE](LICENSE) for details.
+## 🗺️ Roadmap
+
+- [ ] Grafana dashboard templates
+- [ ] Worker auto-scaling based on queue depth
+- [ ] Plugin system for custom task handlers
+- [ ] Webhook notifications for task events
+- [ ] Multi-tenant workspace support
+- [ ] CLI tool for task management
+
+<br/>
+
+---
+
+<br/>
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how to get started:
+
+1. **Fork** the repository
+2. **Create** a feature branch — `git checkout -b feature/amazing-feature`
+3. **Add tests** for new functionality
+4. **Ensure** all tests pass — `pytest && cd frontend && npm test`
+5. **Commit** with conventional messages — `feat:`, `fix:`, `docs:`
+6. **Submit** a pull request
+
+<br/>
+
+---
+
+<br/>
+
+## 📄 License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+<br/>
 
 ---
 
 <div align="center">
-<sub>Built by the TaskFlow Team — v1.0.0</sub>
+
+<br/>
+
+**Built with ❤️ by [Aditya Pardikar](https://github.com/AdityaPardikar)**
+
+⭐ Star this repo if you found it useful!
+
+<br/>
+
 </div>
