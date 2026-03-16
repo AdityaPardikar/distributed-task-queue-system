@@ -1,7 +1,7 @@
 -r requirements.txt
 
 # Development Tools
-ipython==8.19.0
+ipython==8.38.0
 ipdb==0.13.13
 rich==13.7.0
 
