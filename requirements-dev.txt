@@ -19,7 +19,7 @@ sphinx==7.2.6
 sphinx-rtd-theme==2.0.0
 
 # Environment Management
-python-dotenv==1.0.0
+python-dotenv==1.2.2
 
 # Debugging
 debugpy==1.8.1
