@@ -171,14 +171,14 @@ jobs:
 
       - name: Upload backend coverage
         if: matrix.python-version == '3.12'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage
           path: coverage-backend.xml
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-test-results-py${{ matrix.python-version }}
           path: test-results-backend.xml
@@ -218,14 +218,14 @@ jobs:
 
       - name: Upload frontend coverage
         if: matrix.node-version == '20'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-coverage
           path: frontend/coverage/
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-test-results-node${{ matrix.node-version }}
           path: frontend/junit.xml
@@ -265,7 +265,7 @@ jobs:
           du -sh dist/
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-build
           path: frontend/dist/
@@ -358,7 +358,7 @@ jobs:
 
       - name: Upload E2E report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-report
           path: e2e/playwright-report/
@@ -366,7 +366,7 @@ jobs:
 
       - name: Upload E2E test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-results
           path: e2e/test-results/
